@@ -9,13 +9,13 @@ export const ROLES = {
 }
 
 export const ROLE_LABELS = {
-  [ROLES.DIRECTOR]: 'Director',
-  [ROLES.SECRETARY]: 'Secretary',
-  [ROLES.CASHIER]: 'Cashier',
-  [ROLES.TEACHER]: 'Teacher',
-  [ROLES.EDUCATOR]: 'Educator',
-  [ROLES.STUDENT]: 'Student',
-  [ROLES.BOARDING]: 'Boarding Student',
+  [ROLES.DIRECTOR]: 'Drejtor',
+  [ROLES.SECRETARY]: 'Sekretar',
+  [ROLES.CASHIER]: 'Arkatar',
+  [ROLES.TEACHER]: 'Mesues',
+  [ROLES.EDUCATOR]: 'Edukator',
+  [ROLES.STUDENT]: 'Nxenes',
+  [ROLES.BOARDING]: 'Nxenes konviktor',
 }
 
 export const DEMO_USERS = [

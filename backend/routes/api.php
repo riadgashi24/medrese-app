@@ -6,6 +6,7 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisciplineController;
 use App\Http\Controllers\DocumentsController;
 use App\Http\Controllers\DormitoryController;
@@ -39,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:director,cashier,secretary');
 
     // Staff directory
-    Route::get('/staff', [StaffController::class, 'index']);
+    Route::apiResource('staff', StaffController::class);
 
     Route::apiResource('classes', ClassController::class);
     // Academic
@@ -48,6 +49,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/timetable', [AcademicController::class, 'timetable']);
     Route::get('/academic-years', [AcademicController::class, 'academicYears']);
     Route::get('/academic-years/{id}', [AcademicController::class, 'academicYear']);
+
+    // Dashboard
+    Route::middleware('auth:sanctum')->get(
+        '/dashboard/secretary',
+        [DashboardController::class, 'secretary']
+    );
 
     // Finance
     Route::middleware('role:director,cashier,secretary')->group(function () {

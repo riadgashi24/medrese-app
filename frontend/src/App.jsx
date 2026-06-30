@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
+import { api } from '@/lib/api'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import {
@@ -45,6 +46,32 @@ import {
 
 const queryClient = new QueryClient()
 
+const staffColumns = [
+  { key: 'name', label: 'Emri' },
+  { key: 'email', label: 'Email' },
+  { key: 'role', label: 'Roli' },
+]
+
+const simpleNameColumns = [
+  { key: 'name', label: 'Emri' },
+]
+
+const academicYearColumns = [
+  { key: 'label', label: 'Viti shkollor' },
+  { key: 'is_active', label: 'Statusi', render: (row) => (row.is_active ? 'Aktiv' : 'Joaktiv') },
+]
+
+const documentColumns = [
+  { key: 'title', label: 'Titulli' },
+  { key: 'visibility', label: 'Dukshmeria' },
+]
+
+const assignmentColumns = [
+  { key: 'title', label: 'Titulli' },
+  { key: 'subject', label: 'Lenda' },
+  { key: 'due_date', label: 'Afati' },
+]
+
 function DashboardRoute() {
   const { user } = useAuth()
   return <DashboardPage role={user?.role} />
@@ -68,16 +95,16 @@ function AppRoutes() {
         <Route path="/students/:id/edit" element={<StudentFormPage mode="edit" />} />
 
         {/* Staff lists */}
-        <Route path="/teachers" element={<GenericListPage title="Teachers" description="Staff directory — teachers" items={['Mehmet Kaya — Mathematics', 'Sister Amina — Arabic', 'Ustadh Ibrahim — Quran']} />} />
-        <Route path="/educators" element={<GenericListPage title="Educators" description="Dormitory educators" items={['Yusuf Ali — Block A & B']} />} />
-        <Route path="/cashiers" element={<GenericListPage title="Cashiers" description="Finance staff" items={['Emre Yilmaz']} />} />
-        <Route path="/secretaries" element={<GenericListPage title="Secretaries" description="Administrative staff" items={['Fatima Oz']} />} />
+        <Route path="/teachers" element={<GenericListPage title="Mesuesit" description="Lista e stafit mesimor" loader={() => api.staff.index({ role: 'teacher' })} columns={staffColumns} />} />
+        <Route path="/educators" element={<GenericListPage title="Edukatoret" description="Edukatoret e konviktit" loader={() => api.staff.index({ role: 'educator' })} columns={staffColumns} />} />
+        <Route path="/cashiers" element={<GenericListPage title="Arkataret" description="Stafi financiar" loader={() => api.staff.index({ role: 'cashier' })} columns={staffColumns} />} />
+        <Route path="/secretaries" element={<GenericListPage title="Sekretaret" description="Stafi administrativ" loader={() => api.staff.index({ role: 'secretary' })} columns={staffColumns} />} />
 
         {/* Academic */}
-        <Route path="/classes" element={<GenericListPage title="Classes" description="Class and section management" items={['7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '12A']} />} />
-        <Route path="/subjects" element={<GenericListPage title="Subjects" description="Curriculum subjects" items={['Mathematics', 'Arabic', 'Quran', 'Science', 'History']} />} />
+        <Route path="/classes" element={<GenericListPage title="Klasat" description="Menaxhimi i klasave dhe paraleleve" loader={api.classes.index} columns={simpleNameColumns} />} />
+        <Route path="/subjects" element={<GenericListPage title="Lendet" description="Lendet mesimore" loader={api.academic.subjects} columns={simpleNameColumns} />} />
         <Route path="/timetable" element={<TimetablePage />} />
-        <Route path="/academic-years" element={<GenericListPage title="Academic Years" description="Manage academic calendar" items={['2025–2026 (Active)', '2024–2025']} />} />
+        <Route path="/academic-years" element={<GenericListPage title="Vitet shkollore" description="Menaxhimi i kalendarit akademik" loader={api.academic.academicYears} columns={academicYearColumns} />} />
 
         {/* Finance */}
         <Route path="/finance" element={<FinanceOverviewPage />} />
@@ -119,9 +146,9 @@ function AppRoutes() {
         <Route path="/extracurricular/hifz" element={<ExtracurricularPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
         <Route path="/reports" element={<FinanceReportsPage />} />
-        <Route path="/documents" element={<GenericListPage title="Documents" description="Official documents and certificates" />} />
-        <Route path="/documents/my-documents" element={<GenericListPage title="My Documents" description="Your certificates and transcripts" />} />
-        <Route path="/assignments" element={<GenericListPage title="Assignments" description="Course materials and assignments" />} />
+        <Route path="/documents" element={<GenericListPage title="Dokumentet" description="Dokumente zyrtare dhe certifikata" loader={api.documents.index} columns={documentColumns} />} />
+        <Route path="/documents/my-documents" element={<GenericListPage title="Dokumentet e mia" description="Certifikatat dhe dokumentet e tua" loader={api.documents.myDocuments} columns={documentColumns} mapRow={(row) => row.document || row} />} />
+        <Route path="/assignments" element={<GenericListPage title="Detyrat" description="Materiale dhe detyra mesimore" loader={api.assignments.index} columns={assignmentColumns} mapRow={(row) => ({ ...row, subject: row.subject?.name || '-' })} />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/settings/fee-structure" element={<FeeStructurePage />} />
       </Route>

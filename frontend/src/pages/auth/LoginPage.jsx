@@ -55,7 +55,7 @@ export function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Fjalekalimi</Label>
             <Input
               id="password"
               type="password"
@@ -68,15 +68,15 @@ export function LoginPage() {
           {loading && (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           )}
-          {loading ? 'Signin in...' : 'Sign In'}
+          {loading ? 'Duke hyre...' : 'Hyr'}
         </Button>
           <p className="text-center text-xs text-surface-700">
-            Demo password for all accounts: <span className="font-mono text-surface-300">demo123</span>
+            Fjalekalimi demo per te gjitha llogarite: <span className="font-mono text-surface-300">demo123</span>
           </p>
         </form>
 
         <div className="mt-6 glass p-4">
-          <p className="section-label mb-3">Quick login by role</p>
+          <p className="section-label mb-3">Hyrje e shpejte sipas rolit</p>
           <div className="grid grid-cols-2 gap-2">
             {DEMO_USERS.map((user) => (
               <button

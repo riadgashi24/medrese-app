@@ -17,8 +17,8 @@ export function DirectorDashboard() {
   return (
     <div>
       <PageHeader
-        title="Dashboard"
-        description={`Welcome back, ${user?.name}`}
+        title="Paneli Kryesor"
+        description={`Përshëndetje, Drejtor! Ja një përmbledhje e gjendjes së shkollës për sot.`}
       />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value="248" hint="+12 this month" icon={Users} trend="up" />

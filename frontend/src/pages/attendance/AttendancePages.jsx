@@ -1,23 +1,77 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Select, Label } from '@/components/ui/Input'
-import { students } from '@/data/mockData'
-import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
+import { cn, formatDate } from '@/lib/utils'
 
-const STATUSES = ['present', 'absent', 'late']
+const STATUSES = ['Present', 'Absent', 'Late']
 const statusConfig = {
-  present: { label: 'P', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  absent: { label: 'A', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  late: { label: 'L', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  Present: { label: 'P', text: 'Prezent', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', badge: 'success' },
+  Absent: { label: 'M', text: 'Mungon', color: 'bg-red-500/20 text-red-400 border-red-500/30', badge: 'red' },
+  Late: { label: 'V', text: 'Vonesë', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', badge: 'amber' },
 }
 
-function AttendanceGrid({ title, description }) {
-  const [records, setRecords] = useState(
-    Object.fromEntries(students.slice(0, 8).map((s) => [s.id, 'present'])),
-  )
+function studentName(student) {
+  return student.full_name || [student.first_name, student.last_name].filter(Boolean).join(' ') || student.name || '-'
+}
+
+function initials(name) {
+  return name.split(' ').filter(Boolean).map((part) => part[0]).join('').slice(0, 3).toUpperCase()
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function AttendanceGrid({ title, description, kind = 'Regular', fajr = false }) {
+  const [classes, setClasses] = useState([])
+  const [classId, setClassId] = useState('')
+  const [students, setStudents] = useState([])
+  const [records, setRecords] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function loadClasses() {
+      try {
+        const response = await api.classes.index()
+        const loadedClasses = response?.data ?? []
+        setClasses(loadedClasses)
+        setClassId(loadedClasses[0]?.id ?? '')
+      } catch (err) {
+        console.error(err)
+        setError('Klasat nuk u ngarkuan.')
+      }
+    }
+
+    loadClasses()
+  }, [])
+
+  useEffect(() => {
+    if (!classId) return
+
+    async function loadStudents() {
+      setLoading(true)
+      try {
+        const response = await api.students.index({ class_id: classId, per_page: 100 })
+        const loadedStudents = response?.data ?? []
+        setStudents(loadedStudents)
+        setRecords(Object.fromEntries(loadedStudents.map((student) => [student.id, 'Present'])))
+      } catch (err) {
+        console.error(err)
+        setError('Nxenesit nuk u ngarkuan.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStudents()
+  }, [classId])
 
   const cycle = (id) => {
     setRecords((prev) => {
@@ -27,51 +81,90 @@ function AttendanceGrid({ title, description }) {
     })
   }
 
+  async function saveAttendance() {
+    setSaving(true)
+    setMessage('')
+    setError('')
+
+    try {
+      const payload = {
+        class_id: Number(classId),
+        date: today(),
+        kind,
+        records: students.map((student) => ({
+          student_id: student.id,
+          status: fajr && records[student.id] === 'Late' ? 'Excused' : records[student.id],
+        })),
+      }
+
+      if (fajr) await api.attendance.storeFajr(payload)
+      else await api.attendance.store(payload)
+
+      setMessage('Prezenca u ruajt me sukses.')
+    } catch (err) {
+      console.error(err)
+      setError('Prezenca nuk u ruajt.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div>
-      <PageHeader title={title} description={description} actions={<Button>Save Attendance</Button>} />
+      <PageHeader title={title} description={description} actions={<Button onClick={saveAttendance} disabled={saving || !students.length}>{saving ? 'Duke ruajtur...' : 'Ruaj prezencen'}</Button>} />
       <Card className="mb-4">
         <CardContent className="flex flex-wrap gap-4">
           <div className="space-y-2">
-            <Label>Class</Label>
-            <Select className="w-40"><option>10A</option><option>10B</option></Select>
+            <Label>Klasa</Label>
+            <Select className="w-44" value={classId} onChange={(e) => setClassId(e.target.value)}>
+              {classes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </Select>
           </div>
           <div className="space-y-2">
-            <Label>Date</Label>
-            <Select className="w-40"><option>Today</option><option>Yesterday</option></Select>
+            <Label>Data</Label>
+            <Select className="w-44" value={today()} disabled><option value={today()}>{formatDate(today())}</option></Select>
           </div>
         </CardContent>
       </Card>
+      {(message || error) && (
+        <div className={cn('mb-4 rounded-lg p-3 text-sm', message ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400')}>
+          {message || error}
+        </div>
+      )}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-body font-medium">Quick Take View</CardTitle>
+          <CardTitle className="text-base font-body font-medium">Regjistrim i shpejte</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-3">
-            {students.slice(0, 8).map((s) => {
-              const status = records[s.id]
-              const cfg = statusConfig[status]
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => cycle(s.id)}
-                  className={cn(
-                    'flex flex-col items-center gap-1 rounded-xl border p-3 min-w-[72px] transition-colors',
-                    cfg.color,
-                  )}
-                >
-                  <span className="text-xs font-bold">{cfg.label}</span>
-                  <span className="text-[10px]">{s.name.split(' ').map((n) => n[0]).join('')}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div className="flex gap-4 mt-6 text-xs text-surface-300">
-            <span><Badge variant="success">P</Badge> Present</span>
-            <span><Badge variant="red">A</Badge> Absent</span>
-            <span><Badge variant="amber">L</Badge> Late</span>
-          </div>
+          {loading ? (
+            <p className="text-sm text-surface-300">Duke ngarkuar...</p>
+          ) : students.length ? (
+            <>
+              <div className="flex flex-wrap gap-3">
+                {students.map((student) => {
+                  const status = records[student.id]
+                  const cfg = statusConfig[status]
+                  const name = studentName(student)
+                  return (
+                    <button
+                      key={student.id}
+                      type="button"
+                      onClick={() => cycle(student.id)}
+                      className={cn('flex flex-col items-center gap-1 rounded-xl border p-3 min-w-[72px] transition-colors', cfg.color)}
+                    >
+                      <span className="text-xs font-bold">{cfg.label}</span>
+                      <span className="text-[10px]">{initials(name)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex gap-4 mt-6 text-xs text-surface-300">
+                {STATUSES.map((status) => <span key={status}><Badge variant={statusConfig[status].badge}>{statusConfig[status].label}</Badge> {statusConfig[status].text}</span>)}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-surface-300">Nuk ka nxenes ne kete klase.</p>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -79,36 +172,72 @@ function AttendanceGrid({ title, description }) {
 }
 
 export function AttendancePage() {
-  return <AttendanceGrid title="Class Attendance" description="Mark daily attendance per class" />
+  return <AttendanceGrid title="Prezenca e klases" description="Sheno prezencen ditore sipas klases" />
 }
 
 export function FajrAttendancePage() {
-  return <AttendanceGrid title="Fajr Prayer Attendance" description="Morning prayer attendance for boarding students" />
+  return <AttendanceGrid title="Prezenca e namazit te sabahut" description="Prezenca e mengjesit per nxenesit konviktore" kind="Fajr" fajr />
 }
 
 export function StudyHoursPage() {
-  return <AttendanceGrid title="Study Hours Attendance" description="Evening study hours in dormitory" />
+  return <AttendanceGrid title="Prezenca ne oret e mesimit" description="Oret e mesimit ne mbremje ne konvikt" kind="Study" />
 }
 
 export function AttendanceReportsPage() {
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const statuses = ['present', 'present', 'present', 'absent', 'present', 'late', 'off']
-    return statuses[i % statuses.length]
-  })
-  const colors = { present: 'bg-emerald-500/40', absent: 'bg-red-500/40', late: 'bg-amber-500/40', off: 'bg-surface-700/40' }
+  const [records, setRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const response = await api.attendance.reports({ scope: 'my', per_page: 50 })
+        setRecords(response?.data ?? [])
+      } catch (err) {
+        console.error(err)
+        setError('Raporti nuk u ngarkua.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
+
+  const stats = useMemo(() => {
+    const total = records.length
+    const present = records.filter((record) => record.status === 'Present').length
+    return {
+      total,
+      rate: total ? Math.round((present / total) * 100) : 0,
+    }
+  }, [records])
+
+  const colors = {
+    Present: 'bg-emerald-500/40',
+    Absent: 'bg-red-500/40',
+    Late: 'bg-amber-500/40',
+    Excused: 'bg-blue-500/40',
+  }
 
   return (
     <div>
-      <PageHeader title="My Attendance" description="Your attendance record this term" />
+      <PageHeader title="Prezenca ime" description="Raporti yt i prezences per kete periudhe" />
       <Card>
-        <CardHeader><CardTitle className="text-base font-body font-medium">Attendance Heatmap</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base font-body font-medium">Harta e prezences</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-1 max-w-xs">
-            {days.map((d, i) => (
-              <div key={i} className={cn('aspect-square rounded', colors[d])} title={d} />
-            ))}
-          </div>
-          <p className="text-sm text-surface-300 mt-4">Overall attendance: <span className="text-emerald-400 font-mono">94%</span></p>
+          {records.length ? (
+            <>
+              <div className="grid grid-cols-7 gap-1 max-w-xs">
+                {records.slice(0, 49).map((record) => (
+                  <div key={record.id} className={cn('aspect-square rounded', colors[record.status] || 'bg-surface-700/40')} title={`${record.date} - ${record.status}`} />
+                ))}
+              </div>
+              <p className="text-sm text-surface-300 mt-4">Prezenca: <span className="text-emerald-400 font-mono">{stats.rate}%</span></p>
+            </>
+          ) : (
+            <p className={cn('text-sm', error ? 'text-red-400' : 'text-surface-300')}>{loading ? 'Duke ngarkuar...' : error || 'Nuk ka te dhena te prezences.'}</p>
+          )}
         </CardContent>
       </Card>
     </div>

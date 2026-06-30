@@ -115,14 +115,66 @@ export const api = {
       request(`/classes/${id}`, { method: 'DELETE' }),
   },
 
+  staff: {
+    index: (params) => request('/staff', { method: 'GET', query: params }),
+  },
+
+  academic: {
+    subjects: () => request('/subjects', { method: 'GET' }),
+    timetable: (params) => request('/timetable', { method: 'GET', query: params }),
+    academicYears: () => request('/academic-years', { method: 'GET' }),
+  },
+
+  dashboard: {
+    secretary: () => request('/dashboard/secretary', { method: 'GET' }),
+  },
+
 
   finance: {
     overview: () => request('/finance/overview', { method: 'GET' }),
     payments: (params) => request('/payments', { method: 'GET', query: params }),
+    recordPayment: (payload) => request('/payments', { method: 'POST', body: payload }),
+    outstanding: () => request('/outstanding', { method: 'GET' }),
+    reports: () => request('/finance/reports', { method: 'GET' }),
+    feeStructures: () => request('/fee-structures', { method: 'GET' }),
+    invoices: () => request('/invoices', { method: 'GET' }),
   },
 
   announcements: {
     index: () => request('/announcements', { method: 'GET' }),
+  },
+
+  attendance: {
+    index: (params) => request('/attendance', { method: 'GET', query: params }),
+    store: (payload) => request('/attendance', { method: 'POST', body: payload }),
+    storeFajr: (payload) => request('/attendance/fajr', { method: 'POST', body: payload }),
+    reports: (params) => request('/attendance/reports', { method: 'GET', query: params }),
+  },
+
+  dormitory: {
+    overview: () => request('/dormitory', { method: 'GET' }),
+    rooms: () => request('/dormitory/rooms', { method: 'GET' }),
+    inspections: () => request('/dormitory/inspections', { method: 'GET' }),
+    myRoom: () => request('/dormitory/my-room', { method: 'GET' }),
+  },
+
+  discipline: {
+    history: (params) => request('/discipline/history', { method: 'GET', query: params }),
+    myRecord: () => request('/discipline/my-record', { method: 'GET' }),
+  },
+
+  extracurricular: {
+    index: () => request('/extracurricular', { method: 'GET' }),
+  },
+
+  documents: {
+    index: () => request('/documents', { method: 'GET' }),
+    myDocuments: () => request('/documents/my-documents', { method: 'GET' }),
+  },
+
+  assignments: {
+    index: () => request('/assignments', { method: 'GET' }),
+    myAssignments: () => request('/assignments/my', { method: 'GET' }),
   },
 }
 

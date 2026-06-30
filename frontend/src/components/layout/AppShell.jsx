@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, Link } from 'react-router-dom'
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getNavForRole } from '@/data/navigation'
@@ -87,17 +87,17 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
   const content = (
     <>
       <div className="flex items-center gap-0 px-3 py-4 mb-2 ml-3">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          {collapsed && <img src={logo} alt="Logo" className="h-10 w-full" />}
 
-        {collapsed && <img src={logo} alt="Logo" className="h-10 w-full" />}
-
-        {!collapsed && (
-          <>
-          <img src={logo} alt="Logo" className="h-15 w-20" />
-          <span className="font-display text-lg text-surface-50 leading-4 mu-2 ">
-            MEDRESEJA <span className="text-brand-400 ">ALAUDDIN</span>
-          </span>
-          </>
-        )}
+          {!collapsed && (
+            <>
+              <img src={logo} alt="Logo" className="h-15 w-20" />
+              <span className="font-display text-lg text-surface-50 leading-4 mu-2 ">
+                MEDRESEJA <span className="text-brand-400 ">ALAUDDIN</span>
+              </span>
+            </>
+          )}</Link>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-2">
         {navItems.map((item) => (
@@ -174,7 +174,7 @@ export function TopBar({ onMenuClick, collapsed, onToggleCollapse }) {
           onClick={logout}
           className="text-xs text-surface-300 hover:text-surface-100"
         >
-          Sign out
+          Dil
         </button>
       </div>
     </header>
