@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AcademicController;
 use App\Http\Controllers\AnnouncementsController;
+use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\AttendanceController;
@@ -42,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Staff directory
     Route::apiResource('staff', StaffController::class);
 
+    //Approvals
+    Route::apiResource('approval', ApprovalController::class);
+
     Route::apiResource('classes', ClassController::class);
     // Academic
     Route::get('/classes', [AcademicController::class, 'classes']);
@@ -54,6 +58,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('auth:sanctum')->get(
         '/dashboard/secretary',
         [DashboardController::class, 'secretary']
+    );
+    Route::middleware('auth:sanctum')->get(
+        '/dashboard/principal',
+        [DashboardController::class, 'principal']
     );
 
     // Finance

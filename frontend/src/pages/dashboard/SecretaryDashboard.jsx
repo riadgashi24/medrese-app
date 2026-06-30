@@ -13,14 +13,6 @@ export function SecretaryDashboard() {
   const { user } = useAuth()
   const [dashboard, setDashboard] = useState(null)
 
-  // if (!dashboard) {
-  //   return (
-  //     <div className="flex items-center justify-center h-full">
-  //       <p className="text-surface-400">Duke ngarkuar të dhënat...</p>
-  //     </div>
-  //   )
-  // }
-
   useEffect(() => {
     loadDashboard()
   }, [])

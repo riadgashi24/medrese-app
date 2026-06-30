@@ -127,6 +127,7 @@ export const api = {
 
   dashboard: {
     secretary: () => request('/dashboard/secretary', { method: 'GET' }),
+    principal: () => request('/dashboard/principal', { method: 'GET' }),
   },
 
 

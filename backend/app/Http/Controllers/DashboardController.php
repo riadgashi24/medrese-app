@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
+use App\Models\Approval;
 use App\Models\Document;
 use App\Models\Staff;
 use App\Models\Student;
@@ -61,13 +62,13 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function director()
+    public function principal()
     {
         $stats = [
             'total_students' => Student::count(),
             'total_staff' => Staff::count(),
             'boarding' => Student::where('type', 'Boarding')->count(),
-            'documents' => Document::count(),
+            'approvals' => Approval::where('status', 'Pending')->count(),
         ];
 
         $enrollmentByClass = Student::select(
