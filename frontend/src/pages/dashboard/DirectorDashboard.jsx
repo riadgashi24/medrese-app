@@ -15,7 +15,8 @@ import { api } from '@/lib/api'
 
 export function DirectorDashboard() {
   const { user } = useAuth()
-  const [dashboard, setDashboard] = useState(null)
+  const [dashboard, setDashboard] = useState({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadDashboard()
@@ -25,61 +26,85 @@ export function DirectorDashboard() {
     try {
       const response = await api.dashboard.principal()
       setDashboard(response)
-      console.log(dashboard);
 
     } catch (error) {
       console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
 
   return (
     <div>
+      {/* Header */}
       <PageHeader
         title="Paneli Kryesor"
-        description={`Përshëndetje, Drejtor! Ja një përmbledhje e gjendjes së shkollës për sot.`}
+        description={`Përshëndetje, ${user?.name}! Ja një përmbledhje e gjendjes së shkollës për sot.`}
       />
+
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           label="Nxënës"
-          value={dashboard?.stats.total_students ?? '-'}
+          value={dashboard?.stats?.total_students ?? '-'}
           hint="Gjithsej"
           icon={Users}
         />
         <StatCard
           label="Konviktor"
-          value={dashboard?.stats.boarding ?? '-'}
-          hint={`${(dashboard?.stats.boarding / dashboard?.stats.total_students * 100) ?? '-'}% of total`}
+          value={dashboard?.stats?.boarding ?? '-'}
+          hint={
+            dashboard?.stats?.total_students
+              ? `${Math.round(
+                (dashboard?.stats?.boarding / dashboard?.stats?.total_students) * 100
+              )}% e nxënësve`
+              : "-"
+          }
           icon={Bed} />
         <StatCard
           label="Stafi"
-          value={dashboard?.stats.total_staff ?? '-'}
+          value={dashboard?.stats?.total_staff ?? '-'}
           hint="Gjithsej"
           icon={GraduationCap} />
         <StatCard
           label="Kërkesa në pritje"
-          value={dashboard?.stats.approvals ?? '-'}
-          hint="+8% vs last month"
+          value={dashboard?.stats?.approvals ?? '-'}
           icon={CheckCircle} />
       </div>
+
+      {/* Charts */}
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        {/* Attendance */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Attendance Overview (Last 7 Days)</CardTitle>
+            <CardTitle className="text-base font-body font-medium">Frekuentimi gjatë 7 ditëve të fundit</CardTitle>
           </CardHeader>
           <CardContent>
-            <AttendanceBarChart data={attendanceOverview} />
+            {loading ? (<div >Loading...</div>) : (
+              <AttendanceBarChart data={dashboard.charts.attendance_overview} />
+            )}
           </CardContent>
         </Card>
+
+        {/* Today Attendance */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Fee Collection</CardTitle>
+            <CardTitle className="text-base font-body font-medium">Frekuentimi sot</CardTitle>
           </CardHeader>
           <CardContent>
-            <FeePieChart />
+            {loading ?
+              <div>Loading...</div>
+              :
+              <FeePieChart
+                data={dashboard.charts.today_attendance}
+              />
+            }
           </CardContent>
         </Card>
       </div>
+
+      {/* Tjera */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-body font-medium">Recent Activity</CardTitle>

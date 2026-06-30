@@ -63,32 +63,46 @@ export function TrendLineChart({ data, dataKey = 'rate', xKey = 'week', color = 
   )
 }
 
-const PIE_COLORS = ['#22c55e', '#3b82f6', '#ef4444']
+const PIE_COLORS = ['#22c55e', '#ef4444', '#f6be3b']
 
-export function FeePieChart() {
-  const data = [
-    { name: 'Collected', value: 65 },
-    { name: 'Online', value: 25 },
-    { name: 'Outstanding', value: 10 },
-  ]
+export function FeePieChart({ data }) {
+
+  const hasData = data.some(item => item.value > 0);
+
+  if (!hasData) {
+    return (
+      <div className="h-40 flex items-center justify-center text-gray-500">
+        Nuk ka të dhëna për frekuentimin e sotëm.
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={160}>
-      <PieChart>
-        <Pie
-          data={data}
-          innerRadius={45}
-          outerRadius={70}
-          dataKey="value"
-          stroke="none"
-        >
-          {data.map((_, i) => (
-            <Cell key={i} fill={PIE_COLORS[i]} fillOpacity={0.7} />
-          ))}
-        </Pie>
-        <Tooltip contentStyle={tooltipStyle} />
-      </PieChart>
-    </ResponsiveContainer>
+    <>
+      <div className="mb-3 space-y-1">
+        <p className="text-sm" style={{ color: "#22c55e" }}>● Prezent</p>
+        <p className="text-sm" style={{ color: "#ef4444" }}>● Mungesë</p>
+        <p className="text-sm" style={{ color: "#f6be3b" }}>● Të arsyetuara</p>
+      </div>
+
+      <ResponsiveContainer width="100%" height={160}>
+        <PieChart>
+          <Pie
+            data={data}
+            innerRadius={45}
+            outerRadius={70}
+            dataKey="value"
+            stroke="none"
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={PIE_COLORS[i]} fillOpacity={0.7} />
+            ))}
+          </Pie>
+
+          <Tooltip contentStyle={tooltipStyle} />
+        </PieChart>
+      </ResponsiveContainer>
+    </>
   )
 }
 
