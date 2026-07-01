@@ -157,4 +157,19 @@ class AttendanceController extends Controller
             ],
         ]);
     }
+
+    public function update(Request $request, AttendanceRecord $attendance): JsonResponse
+    {
+        $request->validate([
+            'status' => ['required', 'in:Present,Absent,Late,Excused'],
+            'note' => ['nullable', 'string'],
+        ]);
+
+        $attendance->status = $request->status;
+        if ($request->filled('note'))
+            $attendance->note = $request->note;
+        $attendance->save();
+
+        return response()->json(['success' => true, 'data' => $attendance]);
+    }
 }

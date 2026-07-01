@@ -101,6 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index']);
 
+    Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])
+        ->middleware('role:teacher,educator,director,secretary');
+
     Route::post('/attendance/fajr', [AttendanceController::class, 'storeFajr'])
         ->middleware('role:educator');
 
