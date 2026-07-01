@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateStudentRequest;
 use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class StudentsController extends Controller
 {
@@ -56,7 +57,38 @@ class StudentsController extends Controller
 
     public function store(CreateStudentRequest $request): JsonResponse
     {
-        $student = Student::create($request->validated());
+        $data = $request->validated();
+
+        // Validate business rule: if municipality is outside Prishtinë, student must be Boarding
+        if (!empty($data['municipality']) && mb_strtolower(trim($data['municipality'])) !== mb_strtolower('Prishtinë') && ($data['type'] ?? '') !== 'Boarding') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nxënësi duhet të jetë konviktor nëse komuna nuk është Prishtinë.',
+            ], 422);
+        }
+
+        // Create student
+        $student = Student::create($data);
+
+        // Automatically create a User for the student if not provided
+        if (!$student->user_id) {
+            $email = $data['parent_email'] ?? null;
+
+            if (!$email) {
+                // fallback email using student id
+                $email = strtolower(str_replace(' ', '.', $student->student_id)) . '@medrese.local';
+            }
+
+            $user = \App\Models\User::create([
+                'name' => trim($student->first_name . ' ' . $student->last_name),
+                'email' => $email,
+                'role' => 'student',
+                'password' => config('medrese.default_student_password', 'medrese2026'),
+            ]);
+
+            $student->user_id = $user->id;
+            $student->save();
+        }
 
         $student->load(['class', 'user']);
 
@@ -162,6 +194,27 @@ class StudentsController extends Controller
                 'fee_structures' => $feeStructures,
                 'balance' => $student->balance,
             ],
+        ]);
+    }
+
+    public function resetPassword(int $id): JsonResponse
+    {
+        $student = Student::with('user')->findOrFail($id);
+
+        if (!$student->user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No user attached to student.',
+            ], 404);
+        }
+
+        $user = $student->user;
+        $user->password = Hash::make(config('medrese.default_student_password', 'medrese2026'));
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset to default.',
         ]);
     }
 }

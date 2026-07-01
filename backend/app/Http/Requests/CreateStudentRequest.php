@@ -16,6 +16,8 @@ class CreateStudentRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
+            'municipality' => ['sometimes', 'string', 'max:255'],
+            'parent_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'class_id' => ['required', 'exists:classes,id'],
             'type' => ['required', 'in:Regular,Boarding'],
             'status' => ['sometimes', 'in:Active,Inactive'],

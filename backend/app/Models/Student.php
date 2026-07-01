@@ -16,6 +16,8 @@ class Student extends Model
         'type',
         'status',
         'user_id',
+        'municipality',
+        'parent_email',
     ];
 
     protected static function booted(): void

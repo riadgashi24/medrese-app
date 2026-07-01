@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/students/{id}', [StudentsController::class, 'update']);
         Route::delete('/students/{id}', [StudentsController::class, 'destroy']);
         Route::post('/students/import', [StudentsController::class, 'import']);
+        Route::post('/students/{id}/reset-password', [StudentsController::class, 'resetPassword']);
     });
 
     Route::get('/students', [StudentsController::class, 'index']);
@@ -124,6 +125,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:teacher,educator,director');
 
     Route::get('/discipline/history', [DisciplineController::class, 'history'])
+        ->middleware('role:teacher,educator,director');
+
+    Route::get('/discipline/categories', [DisciplineController::class, 'categories'])
         ->middleware('role:teacher,educator,director');
 
     Route::get('/discipline/my-record', [DisciplineController::class, 'myRecord'])

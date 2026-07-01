@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import { api } from '@/lib/api'
+import { t } from '@/i18n'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -96,11 +97,11 @@ export function StudentsPage() {
   return (
     <div>
       <PageHeader
-        title="Nxënësit"
-        description="Menaxhimi i regjistrimeve të nxënësve"
+        title={t('students.title')}
+        description={t('students.description')}
         actions={
           <Link to="/students/new">
-            <Button>Regjistro Nxënës</Button>
+            <Button>{t('students.register')}</Button>
           </Link>
         }
       />
@@ -108,7 +109,7 @@ export function StudentsPage() {
       <Card className="mb-4">
         <CardContent className="pt-0">
           <Input
-            placeholder="Kërko sipas emrit ose ID..."
+            placeholder={t('students.search_placeholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-md"
@@ -149,6 +150,8 @@ export function StudentFormPage({ mode = 'create' }) {
   const [lastName, setLastName] = useState('')
   const [type, setType] = useState('Regular')
   const [email, setEmail] = useState('')
+  const [municipality, setMunicipality] = useState('')
+  const [step, setStep] = useState(1)
 
   const [classes, setClasses] = useState([])
   const [classId, setClassId] = useState('')
@@ -177,6 +180,12 @@ export function StudentFormPage({ mode = 'create' }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // if not final step, advance
+    if (step !== 3) {
+      setStep((s) => Math.min(3, s + 1))
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -186,6 +195,8 @@ export function StudentFormPage({ mode = 'create' }) {
         last_name: lastName,
         class_id: Number(classId),
         type,
+        parent_email: email || null,
+        municipality: municipality || null,
       })
 
       navigate('/students')
@@ -213,75 +224,111 @@ export function StudentFormPage({ mode = 'create' }) {
               </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-4">
+            {/* Multi-step form */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Emri</Label>
+                    <Input
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Mbiemri</Label>
+                    <Input
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-w-md">
+                  <Label>Komuna</Label>
+                  <Input
+                    placeholder="Shkruaj komunën e banimit"
+                    value={municipality}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setMunicipality(v)
+                      // If municipality is not Prishtinë, enforce Boarding
+                      if (v && v.trim().toLowerCase() !== 'prishtinë' && type !== 'Boarding') {
+                        setType('Boarding')
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-surface-400">Nëse komuna nuk është Prishtinë, nxënësi do të konsiderohet konviktor.</p>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Klasa</Label>
+                  <Select
+                    value={classId}
+                    onChange={(e) => setClassId(e.target.value)}
+                  >
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Lloji i nxënësit</Label>
+                  <Select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    disabled={municipality && municipality.trim().toLowerCase() !== 'prishtinë'}
+                  >
+                    <option value="Regular">Ditor</option>
+                    <option value="Boarding">Konviktor</option>
+                  </Select>
+                  {municipality && municipality.trim().toLowerCase() !== 'prishtinë' && (
+                    <p className="text-xs text-surface-400">Komuna jashtë Prishtinës — konviktor kërkohet.</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
               <div className="space-y-2">
-                <Label>Emri</Label>
+                <Label>Email i prindit</Label>
                 <Input
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label>Mbiemri</Label>
-                <Input
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Klasa</Label>
-                <Select
-                  value={classId}
-                  onChange={(e) => setClassId(e.target.value)}
-                >
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Lloji i nxënësit</Label>
-                <Select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  <option value="Regular">Ditor</option>
-                  <option value="Boarding">Konviktor</option>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Email i prindit</Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+            )}
 
             <div className="flex gap-2 pt-2">
+              {step > 1 && (
+                <Button type="button" variant="secondary" onClick={() => setStep((s) => Math.max(1, s - 1))}>
+                  Mbrapa
+                </Button>
+              )}
+
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2"
               >
                 {loading && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 )}
-                {loading ? 'Duke ruajtur...' : 'Ruaj Nxënësin'}
+                {loading ? 'Duke ruajtur...' : (step === 3 ? 'Ruaj Nxënësin' : 'Vazhdo')}
               </Button>
 
               <Button
                 type="button"
-                variant="secondary"
+                variant="ghost"
                 onClick={() => navigate('/students')}
               >
                 Anulo
@@ -300,6 +347,8 @@ export function StudentFormPage({ mode = 'create' }) {
 ========================================================= */
 export function StudentDetailPage() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const [msg, setMsg] = useState('')
 
   const [student, setStudent] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -330,6 +379,18 @@ export function StudentDetailPage() {
 
     loadStudent()
   }, [id])
+
+  const handleResetPassword = async () => {
+    if (!confirm('Rivendos fjalëkalimin e këtij nxënësi në parazgjedhje?')) return
+
+    try {
+      await api.students.resetPassword(id)
+      setMsg('Fjalëkalimi u rivendos.')
+    } catch (e) {
+      setMsg('Gabim gjatë rivendosjes së fjalëkalimit.')
+    }
+    setTimeout(() => setMsg(''), 4000)
+  }
 
   if (loading) {
     return (
@@ -365,11 +426,18 @@ export function StudentDetailPage() {
         title={student.name}
         description={student.studentId}
         actions={
-          <Link to={`/students/${student.id}/edit`}>
-            <Button variant="secondary">Edito</Button>
-          </Link>
+          <div className="flex gap-2">
+            {(user?.role === 'secretary' || user?.role === 'director') && (
+              <Button variant="danger" onClick={handleResetPassword}>Rivendos fjalëkalimin</Button>
+            )}
+            <Link to={`/students/${student.id}/edit`}>
+              <Button variant="secondary">Edito</Button>
+            </Link>
+          </div>
         }
       />
+
+      {msg && <div className="mt-2 text-sm text-surface-50">{msg}</div>}
 
       <div className="grid md:grid-cols-4 gap-4">
         {[

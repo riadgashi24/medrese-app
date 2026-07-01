@@ -177,16 +177,78 @@ export function DisciplinePage() {
 }
 
 export function DisciplineRecordPage() {
+  const [studentId, setStudentId] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [location, setLocation] = useState('')
+  const [description, setDescription] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const studentsLoad = () => api.students.index({ per_page: 1000 })
+  const categoriesLoad = () => api.discipline.categories()
+
+  const { data: students = [], loading: studentsLoading } = useApiData(studentsLoad, [])
+  const { data: categories = [], loading: categoriesLoading } = useApiData(categoriesLoad, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    setError('')
+    try {
+      await api.discipline.store({
+        student_id: studentId,
+        category_id: categoryId,
+        location,
+        description,
+        discipline_date: new Date().toISOString().slice(0, 10),
+      })
+
+      setStudentId('')
+      setCategoryId('')
+      setLocation('')
+      setDescription('')
+      // Optionally show toast — omitted for minimal changes
+    } catch (e) {
+      setError('Gabim gjatë ruajtjes së shënimit')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div>
       <PageHeader title="Regjistro disipline" description="Shto nje shenim te ri per sjelljen" />
       <Card className="max-w-xl">
         <CardContent className="space-y-4">
-          <div className="space-y-2"><Label>Nxenesi</Label><Select><option>Zgjidh nxenesin</option></Select></div>
-          <div className="space-y-2"><Label>Kategoria</Label><Select><option>Pozitive</option><option>E lehte</option><option>Mesatare</option><option>Serioze</option></Select></div>
-          <div className="space-y-2"><Label>Vendi</Label><Input placeholder="Klasa, konvikti ose kampusi" /></div>
-          <div className="space-y-2"><Label>Pershkrimi</Label><Input placeholder="Pershkruaj rastin..." /></div>
-          <Button>Ruaj shenimin</Button>
+          {error && <div className="text-red-400">{error}</div>}
+          <div className="space-y-2">
+            <Label>Nxenesi</Label>
+            <Select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
+              <option value="">Zgjidh nxenesin</option>
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>{(s.first_name || '') + ' ' + (s.last_name || '')} - {s.student_id}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Kategoria</Label>
+            <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">Zgjidh kategorine</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-2"><Label>Vendi</Label><Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Klasa, konvikti ose kampusi" /></div>
+          <div className="space-y-2"><Label>Pershkrimi</Label><Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Pershkruaj rastin..." /></div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleSave} disabled={saving || studentsLoading || categoriesLoading}>
+              {saving ? 'Duke ruajtur...' : 'Ruaj shenimin'}
+            </Button>
+            <Button variant="secondary" onClick={() => { setStudentId(''); setCategoryId(''); setLocation(''); setDescription('') }}>Pastro</Button>
+          </div>
         </CardContent>
       </Card>
     </div>

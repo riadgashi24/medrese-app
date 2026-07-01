@@ -57,7 +57,7 @@ class DisciplineController extends Controller
         $user = $request->user();
         $student = $user->student;
 
-        if (! $student) {
+        if (!$student) {
             return response()->json([
                 'success' => false,
                 'error' => ['message' => 'No student profile found.', 'code' => 'NOT_FOUND'],
@@ -72,6 +72,16 @@ class DisciplineController extends Controller
         return response()->json([
             'success' => true,
             'data' => $records,
+        ]);
+    }
+
+    public function categories(): JsonResponse
+    {
+        $cats = \App\Models\DisciplineCategory::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $cats,
         ]);
     }
 }

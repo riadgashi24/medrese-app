@@ -16,6 +16,8 @@ class UpdateStudentRequest extends FormRequest
         return [
             'first_name' => ['sometimes', 'string', 'max:255'],
             'last_name' => ['sometimes', 'string', 'max:255'],
+            'municipality' => ['sometimes', 'string', 'max:255'],
+            'parent_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'class_id' => ['sometimes', 'exists:classes,id'],
             'type' => ['sometimes', 'in:Regular,Boarding'],
             'status' => ['sometimes', 'in:Active,Inactive'],

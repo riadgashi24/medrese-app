@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { api } from '@/lib/api'
+import { t } from '@/i18n'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import {
@@ -10,6 +11,7 @@ import {
   StudentFormPage,
   StudentDetailPage,
 } from '@/pages/students/StudentsPage'
+import UsersManagementPage from '@/pages/users/UsersManagement'
 import { StudentImportPage } from '@/pages/students/StudentImportPage'
 import {
   FinanceOverviewPage,
@@ -43,6 +45,7 @@ import {
   TimetablePage,
   GradesPage,
 } from '@/pages/modules/ModulePages'
+import ClassDetailPage from '@/pages/classes/ClassDetail'
 
 const queryClient = new QueryClient()
 
@@ -101,7 +104,8 @@ function AppRoutes() {
         <Route path="/secretaries" element={<GenericListPage title="Sekretaret" description="Stafi administrativ" loader={() => api.staff.index({ role: 'secretary' })} columns={staffColumns} />} />
 
         {/* Academic */}
-        <Route path="/classes" element={<GenericListPage title="Klasat" description="Menaxhimi i klasave dhe paraleleve" loader={api.classes.index} columns={simpleNameColumns} />} />
+        <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/classes/:id" element={<ClassDetailPage />} />
         <Route path="/subjects" element={<GenericListPage title="Lendet" description="Lendet mesimore" loader={api.academic.subjects} columns={simpleNameColumns} />} />
         <Route path="/timetable" element={<TimetablePage />} />
         <Route path="/academic-years" element={<GenericListPage title="Vitet shkollore" description="Menaxhimi i kalendarit akademik" loader={api.academic.academicYears} columns={academicYearColumns} />} />
@@ -151,6 +155,7 @@ function AppRoutes() {
         <Route path="/assignments" element={<GenericListPage title="Detyrat" description="Materiale dhe detyra mesimore" loader={api.assignments.index} columns={assignmentColumns} mapRow={(row) => ({ ...row, subject: row.subject?.name || '-' })} />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/settings/fee-structure" element={<FeeStructurePage />} />
+        <Route path="/users" element={<UsersManagementPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

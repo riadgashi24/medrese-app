@@ -65,11 +65,11 @@ export function LoginPage() {
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2">
-          {loading && (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          )}
-          {loading ? 'Duke hyre...' : 'Hyr'}
-        </Button>
+            {loading && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            )}
+            {loading ? 'Duke hyre...' : 'Hyr'}
+          </Button>
           <p className="text-center text-xs text-surface-700">
             Fjalekalimi demo per te gjitha llogarite: <span className="font-mono text-surface-300">demo123</span>
           </p>

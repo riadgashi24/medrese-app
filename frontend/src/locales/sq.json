@@ -1,0 +1,25 @@
+{
+  "app": {
+    "welcome": "Mirë se vini në Sistemin e Menaxhimit të Medresesë"
+  },
+  "nav": {
+    "dashboard": "Paneli",
+    "students": "Nxënësit",
+    "register_student": "Regjistro Nxënës",
+    "finance": "Financat",
+    "dormitory": "Konvikti",
+    "attendance": "Prezenca",
+    "grades": "Notat"
+  },
+  "students": {
+    "title": "Nxënësit",
+    "description": "Menaxhimi i regjistrimeve të nxënësve",
+    "search_placeholder": "Kërko sipas emrit ose ID...",
+    "register": "Regjistro Nxënës",
+    "saving": "Duke ruajtur...",
+    "save": "Ruaj Nxënësin",
+    "cancel": "Anulo",
+    "back": "Mbrapa",
+    "continue": "Vazhdo"
+  }
+}
