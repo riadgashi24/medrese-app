@@ -10,7 +10,7 @@ class ClassModel extends Model
 {
     protected $table = 'classes';
 
-    protected $fillable = ['name', 'section', 'academic_year_id'];
+    protected $fillable = ['name', 'section', 'academic_year_id', 'homeroom_staff_id'];
 
     public function academicYear(): BelongsTo
     {

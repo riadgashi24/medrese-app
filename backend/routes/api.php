@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('approval', ApprovalController::class);
 
     Route::apiResource('classes', ClassController::class);
+    Route::post('/classes/{class}/assign-homeroom', [ClassController::class, 'assignHomeroom'])->middleware('role:director,secretary');
+    Route::post('/classes/{class}/assign-students', [ClassController::class, 'assignStudents'])->middleware('role:director,secretary');
     // Academic
     Route::get('/classes', [AcademicController::class, 'classes']);
     Route::get('/subjects', [AcademicController::class, 'subjects']);

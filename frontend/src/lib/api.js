@@ -114,6 +114,8 @@ export const api = {
 
     destroy: (id) =>
       request(`/classes/${id}`, { method: 'DELETE' }),
+    assignHomeroom: (id, staffId) => request(`/classes/${id}/assign-homeroom`, { method: 'POST', body: { staff_id: staffId } }),
+    assignStudents: (id, studentIds) => request(`/classes/${id}/assign-students`, { method: 'POST', body: { student_ids: studentIds } }),
   },
 
   staff: {

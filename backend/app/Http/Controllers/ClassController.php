@@ -98,4 +98,26 @@ class ClassController extends Controller
             'message' => 'Class deleted successfully.',
         ]);
     }
+
+    public function assignHomeroom(Request $request, ClassModel $class): JsonResponse
+    {
+        $request->validate(['staff_id' => ['required', 'exists:staff,id']]);
+
+        $class->homeroom_staff_id = $request->staff_id;
+        $class->save();
+
+        return response()->json(['success' => true, 'data' => $class]);
+    }
+
+    public function assignStudents(Request $request, ClassModel $class): JsonResponse
+    {
+        $request->validate(['student_ids' => ['required', 'array'], 'student_ids.*' => ['exists:students,id']]);
+
+        $ids = $request->student_ids;
+        \App\Models\Student::whereIn('id', $ids)->update(['class_id' => $class->id]);
+
+        $class->load('students');
+
+        return response()->json(['success' => true, 'data' => $class]);
+    }
 }
