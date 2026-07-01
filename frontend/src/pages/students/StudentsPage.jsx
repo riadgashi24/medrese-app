@@ -79,11 +79,14 @@ export function StudentsPage() {
     {
       key: 'status',
       label: 'Statusi',
-      render: (r) => (
-        <Badge variant="success">
-          {r.status === 'active' ? 'Aktiv' : r.status}
-        </Badge>
-      ),
+      render: (r) => {
+        const isActive = String(r.status).toLowerCase() === 'active'
+        return (
+          <Badge variant={isActive ? 'success' : 'secondary'}>
+            {isActive ? 'Aktiv' : 'Joaktiv'}
+          </Badge>
+        )
+      },
     },
     {
       key: 'balance',
@@ -145,10 +148,12 @@ export function StudentFormPage({ mode = 'create' }) {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [type, setType] = useState('Regular')
+  const [status, setStatus] = useState('Active')
   const [email, setEmail] = useState('')
   const [municipality, setMunicipality] = useState('')
   const [step, setStep] = useState(1)
@@ -157,6 +162,8 @@ export function StudentFormPage({ mode = 'create' }) {
   const [classId, setClassId] = useState('')
 
   /* load classes */
+  const { id } = useParams()
+
   useEffect(() => {
     const loadClasses = async () => {
       try {
@@ -172,10 +179,36 @@ export function StudentFormPage({ mode = 'create' }) {
 
   /* default class */
   useEffect(() => {
-    if (classes.length > 0) {
+    if (classes.length > 0 && !classId) {
       setClassId(classes[0].id)
     }
   }, [classes])
+
+  useEffect(() => {
+    if (mode === 'edit' && id) {
+      const loadStudent = async () => {
+        setLoading(true)
+        try {
+          const res = await api.students.show(id)
+          const data = res?.data
+          setFirstName(data.first_name || '')
+          setLastName(data.last_name || '')
+          setType(data.type || 'Regular')
+          setStatus(data.status || 'Active')
+          setEmail(data.parent_email || '')
+          setMunicipality(data.municipality || '')
+          setClassId(data.class_id || '')
+        } catch (err) {
+          console.error('Gabim gjatë ngarkimit të nxënësit', err)
+          setError('Nuk u ngarkua nxënësi.')
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      loadStudent()
+    }
+  }, [mode, id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -190,16 +223,29 @@ export function StudentFormPage({ mode = 'create' }) {
     setError('')
 
     try {
-      await api.students.store({
+      if (!classId) {
+        setError('Zgjidhni një klasë për nxënësin.')
+        setLoading(false)
+        return
+      }
+
+      const payload = {
         first_name: firstName,
         last_name: lastName,
         class_id: Number(classId),
         type,
+        status,
         parent_email: email || null,
         municipality: municipality || null,
-      })
+      }
 
-      navigate('/students')
+      if (mode === 'edit' && id) {
+        await api.students.update(id, payload)
+        navigate(`/students/${id}`)
+      } else {
+        await api.students.store(payload)
+        navigate('/students')
+      }
     } catch (err) {
       setError('Gabim gjatë ruajtjes së nxënësit')
     } finally {
@@ -211,7 +257,7 @@ export function StudentFormPage({ mode = 'create' }) {
     <div>
       <PageHeader
         title={mode === 'create' ? 'Regjistro Nxënës' : 'Edito Nxënës'}
-        description="Shto një nxënës të ri në sistem"
+        description={mode === 'create' ? 'Shto një nxënës të ri në sistem' : 'Përditëso informacionin e nxënësit'}
       />
 
       <form onSubmit={handleSubmit}>
@@ -221,6 +267,12 @@ export function StudentFormPage({ mode = 'create' }) {
             {error && (
               <div className="rounded-lg bg-red-500/10 p-4 text-red-400">
                 {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="rounded-lg bg-green-500/10 p-4 text-green-200">
+                {success}
               </div>
             )}
 
@@ -293,6 +345,13 @@ export function StudentFormPage({ mode = 'create' }) {
                   {municipality && municipality.trim().toLowerCase() !== 'prishtinë' && (
                     <p className="text-xs text-surface-400">Komuna jashtë Prishtinës — konviktor kërkohet.</p>
                   )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Statusi</Label>
+                  <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="Active">Aktiv</option>
+                    <option value="Inactive">Joaktiv</option>
+                  </Select>
                 </div>
               </div>
             )}

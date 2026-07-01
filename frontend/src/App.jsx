@@ -45,6 +45,7 @@ import {
   TimetablePage,
   GradesPage,
 } from '@/pages/modules/ModulePages'
+import ClassesPage from '@/pages/classes/ClassesPage'
 import ClassDetailPage from '@/pages/classes/ClassDetail'
 
 const queryClient = new QueryClient()

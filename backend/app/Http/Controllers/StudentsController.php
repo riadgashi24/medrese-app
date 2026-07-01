@@ -39,7 +39,6 @@ class StudentsController extends Controller
         $students = $query->paginate($request->get('per_page', 15));
 
         $students->getCollection()->transform(function ($student) {
-            $student->balance = $student->balance;
             return $student;
         });
 
@@ -101,7 +100,6 @@ class StudentsController extends Controller
     public function show(int $id): JsonResponse
     {
         $student = Student::with(['class', 'user'])->findOrFail($id);
-        $student->balance = $student->balance;
 
         return response()->json([
             'success' => true,
@@ -168,7 +166,6 @@ class StudentsController extends Controller
     public function payInfo(int $studentId): JsonResponse
     {
         $student = Student::with(['class'])->findOrFail($studentId);
-        $student->balance = $student->balance;
 
         $academicYear = \App\Models\AcademicYear::where('is_active', true)->first();
         $feeStructures = [];

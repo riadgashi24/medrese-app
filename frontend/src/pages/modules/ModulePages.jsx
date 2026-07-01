@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -382,6 +383,7 @@ export function ProfilePage() {
 
 export function TimetablePage() {
   const { data, loading, error } = useApiData(api.academic.timetable)
+  const navigate = useNavigate()
 
   return (
     <div>
@@ -389,9 +391,9 @@ export function TimetablePage() {
       <Card>
         <CardContent className="space-y-0">
           {data.map((slot) => (
-            <div key={slot.id} className="flex gap-4 py-3 border-b border-white/5 text-sm">
+            <div key={slot.id} className="flex gap-4 py-3 border-b border-white/5 text-sm items-center">
               <span className="font-mono text-brand-400 w-12">{slot.start_time}</span>
-              <span className="flex-1 text-surface-200">{slot.subject?.name || '-'}</span>
+              <button onClick={() => navigate(`/attendance?timetable_class=${slot.class?.id || ''}`)} className="flex-1 text-left text-surface-200 hover:underline">{slot.subject?.name || '-'}</button>
               <span className="text-surface-700">{slot.class?.name || ''}</span>
             </div>
           ))}

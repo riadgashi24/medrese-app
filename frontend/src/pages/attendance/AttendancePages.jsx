@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -26,7 +28,8 @@ function today() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function AttendanceGrid({ title, description, kind = 'Regular', fajr = false }) {
+
+function AttendanceGrid({ title, description, kind = 'Regular', fajr = false, initialClassId = '' }) {
   const [classes, setClasses] = useState([])
   const [classId, setClassId] = useState('')
   const [students, setStudents] = useState([])
@@ -36,13 +39,17 @@ function AttendanceGrid({ title, description, kind = 'Regular', fajr = false }) 
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
+  const location = useLocation()
+
   useEffect(() => {
     async function loadClasses() {
       try {
         const response = await api.classes.index()
         const loadedClasses = response?.data ?? []
         setClasses(loadedClasses)
-        setClassId(loadedClasses[0]?.id ?? '')
+        const params = new URLSearchParams(location.search)
+        const qClass = params.get('timetable_class') || initialClassId
+        setClassId(qClass || (loadedClasses[0]?.id ?? ''))
       } catch (err) {
         console.error(err)
         setError('Klasat nuk u ngarkuan.')
@@ -184,14 +191,18 @@ export function StudyHoursPage() {
 }
 
 export function AttendanceReportsPage() {
+  const { user } = useAuth()
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
 
   useEffect(() => {
     async function load() {
       try {
-        const response = await api.attendance.reports({ scope: 'my', per_page: 50 })
+        // teachers and staff can view all records; students see only their own
+        const params = user && ['teacher', 'educator', 'director', 'secretary', 'cashier'].includes(user.role) ? { per_page: 200 } : { scope: 'my', per_page: 50 }
+        const response = await api.attendance.reports(params)
         setRecords(response?.data ?? [])
       } catch (err) {
         console.error(err)
@@ -230,9 +241,37 @@ export function AttendanceReportsPage() {
             <>
               <div className="grid grid-cols-7 gap-1 max-w-xs">
                 {records.slice(0, 49).map((record) => (
-                  <div key={record.id} className={cn('aspect-square rounded', colors[record.status] || 'bg-surface-700/40')} title={`${record.date} - ${record.status}`} />
+                  <div key={record.id} className="relative">
+                    <div className={cn('aspect-square rounded', colors[record.status] || 'bg-surface-700/40')} title={`${record.date} - ${record.status}${record.note ? ' - ' + record.note : ''}`} />
+                    {user && ['teacher', 'educator', 'director', 'secretary'].includes(user.role) && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            try {
+                              const newStatus = record.status === 'Excused' ? 'Absent' : 'Excused'
+                              const payload = { status: newStatus }
+                              if (newStatus === 'Excused') {
+                                const note = window.prompt('Shkruaj shënim për justifikim (opsionale):', '')
+                                if (note !== null && note.trim() !== '') payload.note = note.trim()
+                              }
+                              await api.attendance.update(record.id, payload)
+                              setRecords((prev) => prev.map((r) => (r.id === record.id ? { ...r, status: newStatus, note: payload.note || r.note } : r)))
+                              setNotice('Ndryshimi u ruajt.')
+                              setTimeout(() => setNotice(''), 3000)
+                            } catch (err) {
+                              console.error(err)
+                              setError('Ndryshim nuk u krye.')
+                            }
+                          }}
+                          className="text-[10px] bg-black/30 text-white rounded px-2 py-1"
+                        >{record.status === 'Excused' ? 'Undo' : 'Excuse'}</button>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
+              {notice && <div className="mt-2 text-sm text-emerald-400">{notice}</div>}
               <p className="text-sm text-surface-300 mt-4">Prezenca: <span className="text-emerald-400 font-mono">{stats.rate}%</span></p>
             </>
           ) : (

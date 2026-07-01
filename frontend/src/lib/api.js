@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://192.168.0.21:8000/api/v1'
+export const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
 const TOKEN_KEY = 'medrese-token'
 
@@ -74,6 +74,7 @@ export const api = {
     index: (params) => request('/students', { method: 'GET', query: params }),
     show: (id) => request(`/students/${id}`, { method: 'GET' }),
     store: (payload) => request('/students', { method: 'POST', body: payload }),
+    update: (id, payload) => request(`/students/${id}`, { method: 'PUT', body: payload }),
     resetPassword: (id) => request(`/students/${id}/reset-password`, { method: 'POST' }),
 
     import: async (file) => {

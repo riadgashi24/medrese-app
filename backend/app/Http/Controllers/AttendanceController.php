@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RecordAttendanceRequest;
 use App\Models\AttendanceRecord;
+use App\Models\AttendanceAudit;
 use App\Models\StudyHour;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -165,10 +166,22 @@ class AttendanceController extends Controller
             'note' => ['nullable', 'string'],
         ]);
 
+        $old = $attendance->status;
+
         $attendance->status = $request->status;
-        if ($request->filled('note'))
+        if ($request->filled('note')) {
             $attendance->note = $request->note;
+        }
         $attendance->save();
+
+        // create audit record
+        AttendanceAudit::create([
+            'attendance_record_id' => $attendance->id,
+            'changed_by_user_id' => $request->user()->id ?? null,
+            'old_status' => $old,
+            'new_status' => $attendance->status,
+            'note' => $request->get('note'),
+        ]);
 
         return response()->json(['success' => true, 'data' => $attendance]);
     }
