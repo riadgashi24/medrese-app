@@ -18,6 +18,7 @@ use App\Models\FeeStructure;
 use App\Models\FeeType;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\StudyHour;
@@ -32,130 +33,301 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create users for each role
-        $director = User::create([
-            'name' => 'Director User',
+        $director = User::updateOrCreate([
             'email' => 'director@medrese.edu',
+        ], [
+            'name' => 'Director User',
             'password' => Hash::make('demo123'),
             'role' => 'director',
         ]);
 
-        $secretary = User::create([
-            'name' => 'Secretary User',
+        $secretary = User::updateOrCreate([
             'email' => 'secretary@medrese.edu',
+        ], [
+            'name' => 'Secretary User',
             'password' => Hash::make('demo123'),
             'role' => 'secretary',
         ]);
 
-        $cashier = User::create([
-            'name' => 'Cashier User',
+        $cashier = User::updateOrCreate([
             'email' => 'cashier@medrese.edu',
+        ], [
+            'name' => 'Cashier User',
             'password' => Hash::make('demo123'),
             'role' => 'cashier',
         ]);
 
-        $teacher = User::create([
-            'name' => 'Teacher User',
+        $teacher = User::updateOrCreate([
             'email' => 'teacher@medrese.edu',
+        ], [
+            'name' => 'Teacher User',
             'password' => Hash::make('demo123'),
             'role' => 'teacher',
         ]);
 
-        $educator = User::create([
-            'name' => 'Educator User',
+        $educator = User::updateOrCreate([
             'email' => 'educator@medrese.edu',
+        ], [
+            'name' => 'Educator User',
             'password' => Hash::make('demo123'),
             'role' => 'educator',
         ]);
 
-        $studentUser = User::create([
-            'name' => 'Student User',
+        $studentUser = User::updateOrCreate([
             'email' => 'student@medrese.edu',
+        ], [
+            'name' => 'Student User',
             'password' => Hash::make('demo123'),
             'role' => 'student',
         ]);
 
-        $boardingUser = User::create([
-            'name' => 'Boarding User',
+        $boardingUser = User::updateOrCreate([
             'email' => 'boarding@medrese.edu',
+        ], [
+            'name' => 'Boarding User',
             'password' => Hash::make('demo123'),
             'role' => 'boarding',
         ]);
 
+        $staffSeedData = [
+            [
+                'email' => 'director2@medrese.edu',
+                'name' => 'Ardian Hoxha',
+                'first_name' => 'Ardian',
+                'last_name' => 'Hoxha',
+                'role' => 'director',
+                'position' => 'Drejtor',
+                'department' => 'Menaxhimi',
+                'gender' => 'Male',
+            ],
+            [
+                'email' => 'secretary2@medrese.edu',
+                'name' => 'Linda Berisha',
+                'first_name' => 'Linda',
+                'last_name' => 'Berisha',
+                'role' => 'secretary',
+                'position' => 'Sekretar',
+                'department' => 'Sekretaria',
+                'gender' => 'Female',
+            ],
+            [
+                'email' => 'cashier2@medrese.edu',
+                'name' => 'Blerim Krasniqi',
+                'first_name' => 'Blerim',
+                'last_name' => 'Krasniqi',
+                'role' => 'cashier',
+                'position' => 'Arkatar',
+                'department' => 'Financa',
+                'gender' => 'Male',
+            ],
+            [
+                'email' => 'teacher2@medrese.edu',
+                'name' => 'Enes Gashi',
+                'first_name' => 'Enes',
+                'last_name' => 'Gashi',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Matematika',
+                'gender' => 'Male',
+            ],
+            [
+                'email' => 'teacher3@medrese.edu',
+                'name' => 'Drenusha Deliu',
+                'first_name' => 'Drenusha',
+                'last_name' => 'Deliu',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Gjuha Shqipe',
+                'gender' => 'Female',
+            ],
+            [
+                'email' => 'teacher4@medrese.edu',
+                'name' => 'Hamdi Mustafa',
+                'first_name' => 'Hamdi',
+                'last_name' => 'Mustafa',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Biologji',
+                'gender' => 'Male',
+            ],
+            [
+                'email' => 'teacher5@medrese.edu',
+                'name' => 'Amina Salihu',
+                'first_name' => 'Amina',
+                'last_name' => 'Salihu',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Gjuha Angleze',
+                'gender' => 'Female',
+            ],
+            [
+                'email' => 'teacher6@medrese.edu',
+                'name' => 'Naim Hajrizi',
+                'first_name' => 'Naim',
+                'last_name' => 'Hajrizi',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Fizikë',
+                'gender' => 'Male',
+            ],
+            [
+                'email' => 'teacher7@medrese.edu',
+                'name' => 'Lejla Ahmeti',
+                'first_name' => 'Lejla',
+                'last_name' => 'Ahmeti',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Histori',
+                'gender' => 'Female',
+            ],
+            [
+                'email' => 'teacher8@medrese.edu',
+                'name' => 'Besnik Morina',
+                'first_name' => 'Besnik',
+                'last_name' => 'Morina',
+                'role' => 'teacher',
+                'position' => 'Profesor',
+                'department' => 'Shkenca Kompjuterike',
+                'gender' => 'Male',
+            ],
+        ];
+
+        foreach ($staffSeedData as $staffData) {
+            $user = User::updateOrCreate([
+                'email' => $staffData['email'],
+            ], [
+                'name' => $staffData['name'],
+                'password' => Hash::make('demo123'),
+                'role' => $staffData['role'],
+            ]);
+
+            Staff::updateOrCreate([
+                'user_id' => $user->id,
+            ], [
+                'first_name' => $staffData['first_name'],
+                'last_name' => $staffData['last_name'],
+                'email' => $user->email,
+                'position' => $staffData['position'],
+                'department' => $staffData['department'],
+                'gender' => $staffData['gender'],
+                'status' => 'Active',
+                'hire_date' => now()->subYears(2)->toDateString(),
+            ]);
+        }
+
         // Academic Year
-        $academicYear = AcademicYear::create([
+        $academicYear = AcademicYear::updateOrCreate([
             'label' => '2025-2026',
+        ], [
             'is_active' => true,
         ]);
 
         // Classes
-        $class10A = ClassModel::create([
+        $class10A = ClassModel::updateOrCreate([
+            'name' => '10A',
+            'section' => 'A',
+            'academic_year_id' => $academicYear->id,
+        ], [
             'name' => '10A',
             'section' => 'A',
             'academic_year_id' => $academicYear->id,
         ]);
 
-        $class10B = ClassModel::create([
+        $class10B = ClassModel::updateOrCreate([
+            'name' => '10B',
+            'section' => 'B',
+            'academic_year_id' => $academicYear->id,
+        ], [
             'name' => '10B',
             'section' => 'B',
             'academic_year_id' => $academicYear->id,
         ]);
 
-        $class11A = ClassModel::create([
+        $class11A = ClassModel::updateOrCreate([
+            'name' => '11A',
+            'section' => 'A',
+            'academic_year_id' => $academicYear->id,
+        ], [
             'name' => '11A',
             'section' => 'A',
             'academic_year_id' => $academicYear->id,
         ]);
 
         // Subjects
-        $math = Subject::create(['name' => 'Mathematics']);
-        $arabic = Subject::create(['name' => 'Arabic']);
-        $english = Subject::create(['name' => 'English']);
-        $islamic = Subject::create(['name' => 'Islamic Studies']);
-        $science = Subject::create(['name' => 'Science']);
+        $math = Subject::firstOrCreate(['name' => 'Mathematics']);
+        $arabic = Subject::firstOrCreate(['name' => 'Arabic']);
+        $english = Subject::firstOrCreate(['name' => 'English']);
+        $islamic = Subject::firstOrCreate(['name' => 'Islamic Studies']);
+        $science = Subject::firstOrCreate(['name' => 'Science']);
 
         // Students
-        $student1 = Student::create([
+        $student1 = Student::updateOrCreate([
             'student_id' => 'STD-2025-0001',
+        ], [
             'first_name' => 'Ahmed',
             'last_name' => 'Hoxha',
+            'parent_name' => 'Ali Hoxha',
+            'parent_phone' => '+38344111111',
+            'parent_phone_secondary' => null,
+            'municipality' => 'Prishtinë',
             'class_id' => $class10A->id,
             'type' => 'Regular',
             'status' => 'Active',
             'user_id' => $studentUser->id,
         ]);
 
-        $student2 = Student::create([
+        $student2 = Student::updateOrCreate([
             'student_id' => 'STD-2025-0002',
+        ], [
             'first_name' => 'Fatima',
             'last_name' => 'Krasniqi',
+            'parent_name' => 'Ahmed Krasniqi',
+            'parent_phone' => '+38344222222',
+            'parent_phone_secondary' => null,
+            'municipality' => 'Prizren',
             'class_id' => $class10A->id,
             'type' => 'Boarding',
             'status' => 'Active',
             'user_id' => $boardingUser->id,
         ]);
 
-        $student3 = Student::create([
+        $student3 = Student::updateOrCreate([
             'student_id' => 'STD-2025-0003',
+        ], [
             'first_name' => 'Mohamed',
             'last_name' => 'Berisha',
+            'parent_name' => 'Ali Berisha',
+            'parent_phone' => '+38344333333',
+            'parent_phone_secondary' => null,
+            'municipality' => 'Pejë',
             'class_id' => $class10B->id,
             'type' => 'Regular',
             'status' => 'Active',
         ]);
 
-        $student4 = Student::create([
+        $student4 = Student::updateOrCreate([
             'student_id' => 'STD-2025-0004',
+        ], [
             'first_name' => 'Aisha',
             'last_name' => 'Rama',
+            'parent_name' => 'Ahmed Rama',
+            'parent_phone' => '+38344444444',
+            'parent_phone_secondary' => null,
+            'municipality' => 'Gjakovë',
             'class_id' => $class11A->id,
             'type' => 'Boarding',
             'status' => 'Active',
         ]);
 
-        $student5 = Student::create([
+        $student5 = Student::updateOrCreate([
             'student_id' => 'STD-2025-0005',
+        ], [
             'first_name' => 'Omar',
             'last_name' => 'Maliqi',
+            'parent_name' => 'Ali Maliqi',
+            'parent_phone' => '+38344555555',
+            'parent_phone_secondary' => null,
+            'municipality' => 'Ferizaj',
             'class_id' => $class10A->id,
             'type' => 'Regular',
             'status' => 'Active',
@@ -193,76 +365,83 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Fee Types
-        $tuition = FeeType::create([
+        $tuition = FeeType::updateOrCreate([
             'code' => 'TUITION',
+        ], [
             'name' => 'Tuition Fee',
             'default_amount' => 500.00,
             'is_recurring' => true,
         ]);
 
-        $boardingFee = FeeType::create([
+        $boardingFee = FeeType::updateOrCreate([
             'code' => 'BOARDING',
+        ], [
             'name' => 'Boarding Fee',
             'default_amount' => 300.00,
             'is_recurring' => true,
         ]);
 
-        $materials = FeeType::create([
+        $materials = FeeType::updateOrCreate([
             'code' => 'MATERIALS',
+        ], [
             'name' => 'Materials Fee',
             'default_amount' => 50.00,
             'is_recurring' => false,
         ]);
 
         // Fee Structures
-        FeeStructure::create([
+        FeeStructure::updateOrCreate([
             'academic_year_id' => $academicYear->id,
             'fee_type_id' => $tuition->id,
             'class_id' => null,
             'applies_to_type' => 'All',
+        ], [
             'amount' => 500.00,
         ]);
 
-        FeeStructure::create([
+        FeeStructure::updateOrCreate([
             'academic_year_id' => $academicYear->id,
             'fee_type_id' => $boardingFee->id,
             'class_id' => null,
             'applies_to_type' => 'Boarding',
+        ], [
             'amount' => 300.00,
         ]);
 
-        FeeStructure::create([
+        FeeStructure::updateOrCreate([
             'academic_year_id' => $academicYear->id,
             'fee_type_id' => $materials->id,
             'class_id' => null,
             'applies_to_type' => 'All',
+        ], [
             'amount' => 50.00,
         ]);
 
         // Payments
-        Payment::create([
+        Payment::updateOrCreate([
             'student_id' => $student1->id,
             'fee_type_id' => $tuition->id,
             'amount' => 500.00,
             'method' => 'Cash',
             'status' => 'Completed',
-            'paid_at' => now()->subDays(30),
+            'paid_at' => now()->subDays(30)->toDateTimeString(),
             'created_by_user_id' => $cashier->id,
-        ]);
+        ], []);
 
-        Payment::create([
+        Payment::updateOrCreate([
             'student_id' => $student2->id,
             'fee_type_id' => $tuition->id,
             'amount' => 300.00,
             'method' => 'Transfer',
             'status' => 'Completed',
-            'paid_at' => now()->subDays(20),
+            'paid_at' => now()->subDays(20)->toDateTimeString(),
             'created_by_user_id' => $cashier->id,
-        ]);
+        ], []);
 
         // Invoices
-        Invoice::create([
+        Invoice::updateOrCreate([
             'invoice_no' => 'INV-2025-0001',
+        ], [
             'student_id' => $student3->id,
             'period_start' => now()->startOfYear(),
             'period_end' => now()->endOfYear(),

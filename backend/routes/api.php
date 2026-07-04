@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/students', [StudentsController::class, 'index']);
     Route::get('/students/{id}', [StudentsController::class, 'show']);
+    Route::delete('/students/{id}/delete', [StudentsController::class, 'softDelete'])->middleware('role:director,secretary');
     Route::get('/students/{studentId}/pay', [StudentsController::class, 'payInfo'])
         ->middleware('role:director,cashier,secretary');
 

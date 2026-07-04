@@ -10,25 +10,47 @@ class Student extends Model
 {
     protected $fillable = [
         'student_id',
+
         'first_name',
         'last_name',
+
+        'date_of_birth',
+        'gender',
+
+        'municipality',
+        'address',
+
+        'student_email',
+
+        'parent_name',
+        'parent_phone',
+        'parent_phone_secondary',
+
         'class_id',
+
         'type',
         'status',
+
         'user_id',
-        'municipality',
-        'parent_email',
+    ];
+
+    protected $casts = [
+        'date_of_birth' => 'date',
     ];
 
     protected static function booted(): void
     {
         static::creating(function (Student $student) {
-            if (!$student->student_id) {
-                $student->student_id = self::generateStudentId();
-            }
 
-            if (!$student->status) {
-                $student->status = 'Active';
+            $student->student_id ??= self::generateStudentId();
+
+            $student->status ??= 'Active';
+
+            if (
+                $student->municipality &&
+                $student->municipality !== 'Prishtinë'
+            ) {
+                $student->type = 'Boarding';
             }
         });
     }
@@ -92,6 +114,11 @@ class Student extends Model
         return "{$this->first_name} {$this->last_name}";
     }
 
+    public function hasLogin(): bool
+    {
+        return $this->user()->exists();
+    }
+
     public function getBalanceAttribute(): float
     {
         $academicYear = AcademicYear::where('is_active', true)->first();
@@ -133,7 +160,7 @@ class Student extends Model
         }
 
         return sprintf(
-            'STD-%d-%04d',
+            '%d-%04d',
             $year,
             $number
         );

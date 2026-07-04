@@ -21,7 +21,13 @@ function useApiData(load, fallback = []) {
     async function run() {
       try {
         const response = await load()
-        if (mounted) setData(response?.data ?? fallback)
+        if (mounted) {
+          const normalized = Array.isArray(response)
+            ? response
+            : response?.data ?? fallback
+
+          setData(normalized)
+        }
       } catch (err) {
         console.error(err)
         if (mounted) setError('Te dhenat nuk u ngarkuan.')
@@ -47,6 +53,30 @@ function EmptyMessage({ loading, error, message = 'Nuk ka te dhena per t’u shf
 
 function roomName(room) {
   return [room?.block, room?.name || room?.room_no || room?.number].filter(Boolean).join(' - ') || 'Dhome'
+}
+
+function getStaffRoleMeta(role) {
+  const normalized = String(role ?? '').toLowerCase()
+
+  switch (normalized) {
+    case 'director':
+      return { label: 'Drejtor', badge: 'purple' }
+    case 'teacher':
+      return { label: 'Profesor', badge: 'blue' }
+    case 'educator':
+      return { label: 'Edukator', badge: 'amber' }
+    case 'cashier':
+      return { label: 'Arkatar', badge: 'slate' }
+    default:
+      return { label: 'Të tjerë', badge: 'slate' }
+  }
+}
+
+function getStaffRoleOrder(role) {
+  const normalized = String(role ?? '').toLowerCase()
+  const order = ['director', 'teacher', 'educator', 'cashier']
+  const index = order.indexOf(normalized)
+  return index === -1 ? 999 : index
 }
 
 export function DormitoryPage() {
@@ -333,13 +363,53 @@ export function AnnouncementsPage() {
 
 export function GenericListPage({ title, description, loader, columns, mapRow = (item) => item }) {
   const { data, loading, error } = useApiData(loader)
+
   const rows = data.map(mapRow)
+  const isStaffPage = title === 'Stafi'
+  const staffRows = isStaffPage
+    ? [...rows].sort((a, b) => getStaffRoleOrder(a.role) - getStaffRoleOrder(b.role))
+    : rows
 
   return (
     <div>
       <PageHeader title={title} description={description} />
-      {rows.length ? (
-        <DataTable columns={columns} data={rows} />
+      {staffRows.length ? (
+        isStaffPage ? (
+          <div className="space-y-4">
+            {['director', 'teacher', 'educator', 'cashier'].map((roleKey) => {
+              const roleItems = staffRows.filter((row) => String(row.role ?? '').toLowerCase() === roleKey)
+              if (!roleItems.length) return null
+
+              const meta = getStaffRoleMeta(roleKey)
+
+              return (
+                <Card key={roleKey}>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-surface-100">{meta.label}</h3>
+                      <Badge variant={meta.badge}>{roleItems.length}</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {roleItems.map((row) => (
+                        <div key={row.id || `${row.name}-${row.email}`} className="rounded-lg border border-white/8 bg-surface-900/30 p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-medium text-surface-100">{row.name}</p>
+                              <p className="text-xs text-surface-400">{row.email}</p>
+                            </div>
+                            <Badge variant={meta.badge}>{meta.label}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <DataTable columns={columns} data={rows} />
+        )
       ) : (
         <Card><CardContent><EmptyMessage loading={loading} error={error} message="Ky modul eshte gati, por nuk ka te dhena." /></CardContent></Card>
       )}
@@ -348,18 +418,56 @@ export function GenericListPage({ title, description, loader, columns, mapRow = 
 }
 
 export function SettingsPage() {
-  const sections = ['Te pergjithshme', 'Vitet shkollore', 'Njoftimet', 'Siguria']
+  const { theme, setTheme } = useAuth()
 
   return (
     <div>
-      <PageHeader title="Cilesimet" description="Konfigurimet e pergjithshme te shkolles" />
-      <div className="grid md:grid-cols-2 gap-4">
-        {sections.map((section) => (
-          <Card key={section}>
-            <CardHeader><CardTitle className="text-base font-body font-medium">{section}</CardTitle></CardHeader>
-            <CardContent><p className="text-sm text-surface-300">Konfiguro seksionin: {section.toLowerCase()}.</p></CardContent>
-          </Card>
-        ))}
+      <PageHeader title="Cilësimet" description="Konfigurimet e preferencave të aplikacionit" />
+
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-body font-medium">Tema e aplikacionit</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-surface-300">
+              Zgjidh mënyrën e preferuar të dukjes së aplikacionit. Përzgjedhja ruhet për llogarinë tuaj.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant={theme === 'light' ? 'default' : 'secondary'}
+                onClick={() => setTheme('light')}
+              >
+                Ditor
+              </Button>
+              <Button
+                type="button"
+                variant={theme === 'dark' ? 'default' : 'secondary'}
+                onClick={() => setTheme('dark')}
+              >
+                Natën
+              </Button>
+            </div>
+            <p className="text-xs text-surface-400">
+              Tema aktuale: <span className="font-medium text-surface-100">{theme === 'light' ? 'Ditor' : 'Natën'}</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-body font-medium">Preferencat</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-lg border border-white/8 bg-surface-900/30 p-3 text-sm text-surface-300">
+              Tema ndryshohet menjëherë dhe do të mbahet edhe kur hapni aplikacionin përsëri.
+            </div>
+            <div className="rounded-lg border border-white/8 bg-surface-900/30 p-3 text-sm text-surface-300">
+              Në të ardhmen mund të shtohen edhe njoftime, siguri dhe preferenca të tjera të sistemit.
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

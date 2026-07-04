@@ -8,6 +8,7 @@ use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class StudentsController extends Controller
 {
@@ -20,7 +21,10 @@ class StudentsController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('student_id', 'like', "%{$search}%");
+                    ->orWhere('student_id', 'like', "%{$search}%")
+                    ->orWhere('parent_name', 'like', "%{$search}%")
+                    ->orWhere('parent_phone', 'like', "%{$search}%")
+                    ->orWhere('municipality', 'like', "%{$search}%");
             });
         }
 
@@ -57,34 +61,29 @@ class StudentsController extends Controller
     public function store(CreateStudentRequest $request): JsonResponse
     {
         $data = $request->validated();
-
-        // Validate business rule: if municipality is outside Prishtinë, student must be Boarding
-        if (!empty($data['municipality']) && mb_strtolower(trim($data['municipality'])) !== mb_strtolower('Prishtinë') && ($data['type'] ?? '') !== 'Boarding') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Nxënësi duhet të jetë konviktor nëse komuna nuk është Prishtinë.',
-            ], 422);
+        if ($data['municipality'] !== 'Prishtinë') {
+            $data['type'] = 'Boarding';
         }
+        $data['status'] = 'Active';
 
         // Create student
         $student = Student::create($data);
 
         // Automatically create a User for the student if not provided
         if (!$student->user_id) {
-            $email = $data['parent_email'] ?? null;
 
-            if (!$email) {
-                // fallback email using student id
-                $email = strtolower(str_replace(' ', '.', $student->student_id)) . '@medrese.local';
+            $email = $data['student_email'] ?? null;
+
+            if ($email) {
+                $user = User::create([
+                    'name' => $student->full_name,
+                    'email' => $email,
+                    'role' => 'student',
+                    'password' => Hash::make(
+                        config('medrese.default_student_password', 'medrese2026')
+                    ),
+                ]);
             }
-
-            $user = \App\Models\User::create([
-                'name' => trim($student->first_name . ' ' . $student->last_name),
-                'email' => $email,
-                'role' => 'student',
-                'password' => config('medrese.default_student_password', 'medrese2026'),
-            ]);
-
             $student->user_id = $user->id;
             $student->save();
         }
@@ -110,6 +109,21 @@ class StudentsController extends Controller
     public function update(UpdateStudentRequest $request, int $id): JsonResponse
     {
         $student = Student::findOrFail($id);
+
+        $data = $request->validated();
+
+        $student->update($data);
+
+        if (
+            $student->user &&
+            !empty($data['student_email'])
+        ) {
+            $student->user->update([
+                'email' => $data['student_email'],
+                'name' => $student->full_name,
+            ]);
+        }
+
         $student->update($request->validated());
         $student->load(['class', 'user']);
 
@@ -153,6 +167,12 @@ class StudentsController extends Controller
                 'class_id' => $data['class_id'] ?? 1,
                 'type' => $data['type'] ?? 'Regular',
                 'status' => $data['status'] ?? 'Active',
+                'municipality' => $data['municipality'] ?? null,
+                'address' => $data['address'] ?? null,
+                'student_email' => $data['student_email'] ?? null,
+                'parent_name' => $data['parent_name'] ?? null,
+                'parent_phone' => $data['parent_phone'] ?? null,
+                'parent_phone_secondary' => $data['parent_phone_secondary'] ?? null,
             ]);
             $imported++;
         }

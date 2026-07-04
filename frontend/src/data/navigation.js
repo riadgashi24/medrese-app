@@ -46,10 +46,7 @@ export const NAV_BY_ROLE = {
       icon: Users,
       children: [
         { label: 'Nxenesit', path: '/students' },
-        { label: 'Mesuesit', path: '/teachers' },
-        { label: 'Edukatorët', path: '/educators' },
-        { label: 'Arkatarët', path: '/cashiers' },
-        { label: 'Sekretarët', path: '/secretaries' },
+        { label: 'Stafi', path: '/staff' },
       ],
     },
     {

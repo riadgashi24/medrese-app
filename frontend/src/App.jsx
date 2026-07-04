@@ -56,6 +56,19 @@ const staffColumns = [
   { key: 'role', label: 'Roli' },
 ]
 
+const mapStaffRow = (row) => ({
+  ...row,
+  name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.name || '-',
+  email: row.email || row.user?.email || '-',
+  role: row.role || (() => {
+    const position = String(row.position || '').toLowerCase()
+    if (position.includes('drejtor')) return 'director'
+    if (position.includes('sekretar')) return 'secretary'
+    if (position.includes('arkatar')) return 'cashier'
+    return 'teacher'
+  })(),
+})
+
 const simpleNameColumns = [
   { key: 'name', label: 'Emri' },
 ]
@@ -99,10 +112,7 @@ function AppRoutes() {
         <Route path="/students/:id/edit" element={<StudentFormPage mode="edit" />} />
 
         {/* Staff lists */}
-        <Route path="/teachers" element={<GenericListPage title="Mesuesit" description="Lista e stafit mesimor" loader={() => api.staff.index({ role: 'teacher' })} columns={staffColumns} />} />
-        <Route path="/educators" element={<GenericListPage title="Edukatoret" description="Edukatoret e konviktit" loader={() => api.staff.index({ role: 'educator' })} columns={staffColumns} />} />
-        <Route path="/cashiers" element={<GenericListPage title="Arkataret" description="Stafi financiar" loader={() => api.staff.index({ role: 'cashier' })} columns={staffColumns} />} />
-        <Route path="/secretaries" element={<GenericListPage title="Sekretaret" description="Stafi administrativ" loader={() => api.staff.index({ role: 'secretary' })} columns={staffColumns} />} />
+        <Route path="/staff" element={<GenericListPage title="Stafi" description="Lista e stafit" loader={() => api.staff.index()} columns={staffColumns} mapRow={mapStaffRow} />} />
 
         {/* Academic */}
         <Route path="/classes" element={<ClassesPage />} />
