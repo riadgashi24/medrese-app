@@ -363,8 +363,6 @@ export function StudentFormPage({ mode = 'create' }) {
     }
   }, [mode, id])
 
-  const isPrishtine = municipality === 'Prishtinë'
-
   const validate = () => {
     setError('')
 
@@ -534,15 +532,13 @@ export function StudentFormPage({ mode = 'create' }) {
                 <div className="rounded-xl border border-white/8 bg-surface-900/40 p-4">
                   <h2 className="mb-4 text-lg font-semibold text-surface-100">Statusi dhe lloji</h2>
                   <div className="space-y-4">
-                    {isPrishtine && (
-                      <div className="space-y-2">
-                        <Label>Lloji i nxënësit</Label>
-                        <Select value={type} onChange={(e) => setType(e.target.value)}>
-                          <option value="Regular">Ditor</option>
-                          <option value="Boarding">Konviktor</option>
-                        </Select>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      <Label>Lloji i nxënësit</Label>
+                      <Select value={type} onChange={(e) => setType(e.target.value)}>
+                        <option value="Regular">Ditor</option>
+                        <option value="Boarding">Konviktor</option>
+                      </Select>
+                    </div>
                     <div className="space-y-2">
                       <Label>Statusi</Label>
                       <Select value={status} onChange={(e) => setStatus(e.target.value)}>

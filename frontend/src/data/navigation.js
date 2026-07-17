@@ -41,50 +41,77 @@ const allStaff = [
 export const NAV_BY_ROLE = {
   [ROLES.DIRECTOR]: [
     { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },
-    {
-      label: 'Menaxhimi i perdoruesve',
-      icon: Users,
-      children: [
-        { label: 'Nxenesit', path: '/students' },
-        { label: 'Stafi', path: '/staff' },
-      ],
-    },
+
     {
       label: 'Akademike',
       icon: GraduationCap,
       children: [
         { label: 'Klasat', path: '/classes' },
-        { label: 'Lendet', path: '/subjects' },
+        { label: 'Lëndët', path: '/subjects' },
         { label: 'Orari', path: '/timetable' },
-        { label: 'Vitet shkollore', path: '/academic-years' },
+        { label: 'Vitet Shkollore', path: '/academic-years' },
       ],
     },
+
+    {
+      label: 'Stafi',
+      icon: Users,
+      path: '/staff'
+    },
+
     {
       label: 'Financat',
       icon: DollarSign,
       children: [
-        { label: 'Permbledhje', path: '/finance' },
+        { label: 'Përmbledhje', path: '/finance' },
         { label: 'Pagesat', path: '/finance/payments' },
         { label: 'Borxhet', path: '/finance/outstanding' },
         { label: 'Raportet', path: '/finance/reports' },
       ],
     },
+
     {
       label: 'Konvikti',
       icon: Building2,
       children: [
-        { label: 'Permbledhje', path: '/dormitory' },
+        { label: 'Përmbledhje', path: '/dormitory' },
         { label: 'Dhomat', path: '/dormitory/rooms' },
         { label: 'Kontrollet', path: '/dormitory/inspections' },
       ],
     },
-    { label: 'Prezenca', path: '/attendance', icon: CheckSquare },
-    { label: 'Notat', path: '/grades', icon: NotebookPen },
-    { label: 'Disiplina', path: '/discipline', icon: Gavel },
-    { label: 'Aktivitete', path: '/extracurricular', icon: BookOpen },
-    { label: 'Raporte', path: '/reports', icon: BarChart3 },
-    { label: 'Njoftime', path: '/announcements', icon: Megaphone },
-    { label: 'Cilesimet', path: '/settings', icon: Settings },
+
+    {
+      label: 'Disiplina',
+      icon: Gavel,
+      children: [
+        { label: 'Rastet', path: '/discipline' },
+        { label: 'Masat Disiplinore', path: '/discipline/actions' },
+      ],
+    },
+
+    {
+      label: 'Aktivitetet',
+      icon: BookOpen,
+      children: [
+        { label: 'Aktivitetet', path: '/extracurricular' },
+        { label: 'Klubet', path: '/clubs' },
+      ],
+    },
+
+    {
+      label: 'Raportet',
+      icon: BarChart3,
+      children: [
+        { label: 'Akademike', path: '/reports/academic' },
+        { label: 'Financiare', path: '/reports/finance' },
+        { label: 'Prezenca', path: '/reports/attendance' },
+        { label: 'Disiplina', path: '/reports/discipline' },
+      ],
+    },
+
+    { label: 'Njoftimet', path: '/announcements', icon: Megaphone },
+
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
   ],
   [ROLES.SECRETARY]: [
     { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },

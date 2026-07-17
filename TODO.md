@@ -16,65 +16,7 @@ Rules:
 
 Priority Tasks
 
-## 1. Localization
-- Translate the entire application into Albanian.
-- Variables/functions remain English.
-- Only UI text becomes Albanian.
 
----
-
-## 2. Student Registration
-Redesign registration.
-
-Requirements:
-- Multi-step form.
-- Only important fields required.
-- Optional fields editable later by student.
-- If municipality != Prishtinë
-    -> Dormitory becomes required.
-- Better UX.
-
----
-
-## 3. Automatic User Creation
-
-When a student is created:
-
-Automatically create:
-
-User
-- role = student
-- username/email according to existing project rules
-- default password (same for every student)
-
-Student changes password after first login.
-
-Secretary can reset password back to default.
-
----
-
-## 4. ModulePages.jsx
-
-Completely functional.
-
-No placeholder data.
-
-Everything connected to backend.
-
----
-
-## 5. User Management (Director)
-
-Only two groups:
-
-- Students
-- Staff
-
-Display role badges.
-
-Simple filters.
-
----
 
 ## 6. Students Module
 

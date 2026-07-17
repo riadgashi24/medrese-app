@@ -10,9 +10,9 @@ import {
   StudentsPage,
   StudentFormPage,
   StudentDetailPage,
-} from '@/pages/students/StudentsPage'
+} from '@/pages/StudentsPage'
 import UsersManagementPage from '@/pages/users/UsersManagement'
-import { StudentImportPage } from '@/pages/students/StudentImportPage'
+import { StudentImportPage } from '@/pages/StudentImportPage'
 import {
   FinanceOverviewPage,
   PaymentsPage,
@@ -28,7 +28,7 @@ import {
   FajrAttendancePage,
   StudyHoursPage,
   AttendanceReportsPage,
-} from '@/pages/attendance/AttendancePages'
+} from '@/pages/AttendancePages'
 import {
   DormitoryPage,
   RoomsPage,
@@ -105,10 +105,10 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* Students */}
-        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/classes/:id/students" element={<StudentsPage />} />
         <Route path="/students/new" element={<StudentFormPage mode="create" />} />
         <Route path="/students/import" element={<StudentImportPage />} />
-        <Route path="/students/:id" element={<StudentDetailPage />} />
+        <Route path="/classes/:classId/students/:studentId" element={<StudentDetailPage />} />
         <Route path="/students/:id/edit" element={<StudentFormPage mode="edit" />} />
 
         {/* Staff lists */}
@@ -117,9 +117,12 @@ function AppRoutes() {
         {/* Academic */}
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/:id" element={<ClassDetailPage />} />
-        <Route path="/subjects" element={<GenericListPage title="Lendet" description="Lendet mesimore" loader={api.academic.subjects} columns={simpleNameColumns} />} />
-        <Route path="/timetable" element={<TimetablePage />} />
-        <Route path="/academic-years" element={<GenericListPage title="Vitet shkollore" description="Menaxhimi i kalendarit akademik" loader={api.academic.academicYears} columns={academicYearColumns} />} />
+        {/* TODO: Implement class management routes */}
+        {/* <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
+        <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} /> */}
+        {/* <Route path="/classes/:id/subjects" element={<SubjectsPage />} /> */}
+        <Route path="timetable" element={<TimetablePage />} />
+        {/* <Route path="/academic-years" element={<AcademicYearsPage />} /> */}
 
         {/* Finance */}
         <Route path="/finance" element={<FinanceOverviewPage />} />
@@ -137,18 +140,18 @@ function AppRoutes() {
         <Route path="/dormitory/my-room" element={<MyRoomPage />} />
 
         {/* Attendance */}
-        <Route path="/attendance" element={<AttendancePage />} />
-        <Route path="/attendance/take" element={<AttendancePage />} />
-        <Route path="/attendance/fajr" element={<FajrAttendancePage />} />
-        <Route path="/attendance/study-hours" element={<StudyHoursPage />} />
-        <Route path="/attendance/reports" element={<AttendanceReportsPage />} />
+        <Route path="/classes/:id/attendance" element={<AttendancePage />} />
+        <Route path="/classes/:id/attendance/take" element={<AttendancePage />} />
+        <Route path="/classes/:id/attendance/fajr" element={<FajrAttendancePage />} />
+        <Route path="/classes/:id/attendance/study-hours" element={<StudyHoursPage />} />
+        <Route path="/classes/:id/attendance/reports" element={<AttendanceReportsPage />} />
 
         {/* Grades */}
-        <Route path="/grades" element={<GradesPage />} />
-        <Route path="/grades/entry" element={<GradesPage />} />
-        <Route path="/grades/exams" element={<GradesPage />} />
-        <Route path="/grades/reports" element={<GradesPage />} />
-        <Route path="/grades/transcripts" element={<GradesPage />} />
+        <Route path="/classes/:id/grades" element={<GradesPage />} />
+        <Route path="/classes/:id/grades/entry" element={<GradesPage />} />
+        <Route path="/classes/:id/grades/exams" element={<GradesPage />} />
+        <Route path="/classes/:id/grades/reports" element={<GradesPage />} />
+        <Route path="/classes/:id/grades/transcripts" element={<GradesPage />} />
 
         {/* Discipline */}
         <Route path="/discipline" element={<DisciplinePage />} />
@@ -161,9 +164,9 @@ function AppRoutes() {
         <Route path="/extracurricular/hifz" element={<ExtracurricularPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
         <Route path="/reports" element={<FinanceReportsPage />} />
-        <Route path="/documents" element={<GenericListPage title="Dokumentet" description="Dokumente zyrtare dhe certifikata" loader={api.documents.index} columns={documentColumns} />} />
+        {/* <Route path="/documents" element={<DocumentsPage />} /> */}
         <Route path="/documents/my-documents" element={<GenericListPage title="Dokumentet e mia" description="Certifikatat dhe dokumentet e tua" loader={api.documents.myDocuments} columns={documentColumns} mapRow={(row) => row.document || row} />} />
-        <Route path="/assignments" element={<GenericListPage title="Detyrat" description="Materiale dhe detyra mesimore" loader={api.assignments.index} columns={assignmentColumns} mapRow={(row) => ({ ...row, subject: row.subject?.name || '-' })} />} />
+        {/* <Route path="/assignments" element={<AssignmentsPage />} /> */}
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/settings/fee-structure" element={<FeeStructurePage />} />
         <Route path="/users" element={<UsersManagementPage />} />

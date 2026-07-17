@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicController;
+use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\ClassController;
@@ -54,7 +55,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Academic
     Route::get('/academic/classes', [AcademicController::class, 'classes']);
     Route::get('/subjects', [AcademicController::class, 'subjects']);
-    Route::get('/timetable', [AcademicController::class, 'timetable']);
+
+
+    // Nëse rrugët e tua i takojnë grupit 'academic', vendose brenda tij:
+    Route::get('timetable', [TimetableController::class, 'index']);
     Route::get('/academic-years', [AcademicController::class, 'academicYears']);
     Route::get('/academic-years/{id}', [AcademicController::class, 'academicYear']);
 

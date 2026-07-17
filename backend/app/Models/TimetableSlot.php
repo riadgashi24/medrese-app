@@ -9,6 +9,7 @@ class TimetableSlot extends Model
 {
     protected $fillable = [
         'day',
+        'slot_number', // U shtua kjo fushë për numrin e orës (1-7)
         'start_time',
         'end_time',
         'class_id',
@@ -27,7 +28,8 @@ class TimetableSlot extends Model
         return $this->belongsTo(Subject::class);
     }
 
-    public function teacher(): BelongsTo
+    // E emërojmë teacher_user që të përshtatet ekzaktësisht me `slot.teacher_user` në React
+    public function teacher_user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');
     }
