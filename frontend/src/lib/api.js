@@ -125,11 +125,17 @@ export const api = {
   },
 
   academic: {
-    subjects: () => request('/subjects', { method: 'GET' }),
-    timetable: (params) => request('/timetable', { method: 'GET', query: params }),
+    subjects: () => request('/academic/subjects', { method: 'GET' }),
+    timetable: (params) => request('/academic/timetable', { method: 'GET', query: params }),
     academicYears: () => request('/academic-years', { method: 'GET' }),
-  },
 
+    // METODAT E REJA TË SHTUARA:
+    storeSubject: (payload) => request('/academic/subjects', { method: 'POST', body: payload }),
+    updateSubject: (id, payload) => request(`/academic/subjects/${id}`, { method: 'PUT', body: payload }),
+    destroySubject: (id) => request(`/academic/subjects/${id}`, { method: 'DELETE' }),
+    showSubjectDetails: (id) => request(`/academic/subjects/${id}/details`, { method: 'GET' }),
+    getClassSubjectReport: (classId, subjectId) => request(`/academic/report/class/${classId}/subject/${subjectId}`, { method: 'GET' }),
+  },
   dashboard: {
     secretary: () => request('/dashboard/secretary', { method: 'GET' }),
     principal: () => request('/dashboard/principal', { method: 'GET' }),

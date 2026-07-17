@@ -42,11 +42,15 @@ import {
   GenericListPage,
   SettingsPage,
   ProfilePage,
-  TimetablePage,
-  GradesPage,
 } from '@/pages/modules/ModulePages'
+import {
+  TimetablePage,
+  GradesPage
+} from '@/pages/modules/AcademicModules/AcademicModules'
 import ClassesPage from '@/pages/classes/ClassesPage'
 import ClassDetailPage from '@/pages/classes/ClassDetail'
+import { SubjectsPage } from './pages/modules/AcademicModules/Subject/SubjectsPage'
+import { SubjectDetailPage } from './pages/modules/AcademicModules/Subject/SubjectDetailPage'
 
 const queryClient = new QueryClient()
 
@@ -115,14 +119,17 @@ function AppRoutes() {
         <Route path="/staff" element={<GenericListPage title="Stafi" description="Lista e stafit" loader={() => api.staff.index()} columns={staffColumns} mapRow={mapStaffRow} />} />
 
         {/* Academic */}
+        <Route path="/timetable" element={<TimetablePage />} />
+        <Route path="/subjects" element={<SubjectsPage />} />
+        <Route path="/subjects/:id" element={<SubjectDetailPage />} />
+
+        {/* <Route path="/academic-years" element={<AcademicYearsPage />} /> */}
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/:id" element={<ClassDetailPage />} />
-        {/* TODO: Implement class management routes */}
         {/* <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
         <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} /> */}
         {/* <Route path="/classes/:id/subjects" element={<SubjectsPage />} /> */}
-        <Route path="timetable" element={<TimetablePage />} />
-        {/* <Route path="/academic-years" element={<AcademicYearsPage />} /> */}
+
 
         {/* Finance */}
         <Route path="/finance" element={<FinanceOverviewPage />} />
