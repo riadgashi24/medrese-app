@@ -16,7 +16,14 @@ class UpdateStudentRequest extends FormRequest
         return [
             'first_name' => ['sometimes', 'string', 'max:255'],
             'last_name' => ['sometimes', 'string', 'max:255'],
-            'municipality' => ['sometimes', 'string', 'max:255'],
+            'date_of_birth' => ['sometimes', 'nullable', 'date'], // 👈 SHTUAR
+            'gender' => ['sometimes', 'nullable', 'string', 'in:Male,Female'], // 👈 SHTUAR
+            'municipality' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'student_email' => ['sometimes', 'nullable', 'email', 'max:255'],
+            'parent_name' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'parent_phone' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'parent_phone_secondary' => ['sometimes', 'nullable', 'string', 'max:50'],
             'parent_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'class_id' => ['sometimes', 'exists:classes,id'],
             'type' => ['sometimes', 'in:Regular,Boarding'],

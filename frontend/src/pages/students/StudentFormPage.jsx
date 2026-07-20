@@ -146,6 +146,7 @@ export function StudentFormPage({ mode = 'create', studentData: propStudentData 
       }
 
       if (mode === 'edit' && id) {
+        console.log(payload);
         await api.students.update(id, payload)
         navigate(`/students/${id}`)
       } else {

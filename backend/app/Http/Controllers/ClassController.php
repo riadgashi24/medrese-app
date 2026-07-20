@@ -70,15 +70,27 @@ class ClassController extends Controller
     /**
      * Display the specified class.
      */
-    public function show(ClassModel $class): JsonResponse
-    {
-        $class->load(['academicYear', 'students']);
+public function show(ClassModel $class): JsonResponse
+{
+    // Ngarkojmë relacionet dhe numërimin e nxënësve
+    $class->load(['academicYear', 'homeroomStaff'])->loadCount('students');
 
-        return response()->json([
-            'success' => true,
-            'data' => $class,
-        ]);
-    }
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'id' => $class->id,
+            'name' => $class->name,
+            'section' => $class->section,
+            'guardian' => $class->homeroomStaff 
+                ? $class->homeroomStaff->full_name 
+                : 'S\'ka kujdestar',
+            'students' => $class->students_count ?? 0,
+            'academic_year' => $class->academicYear,
+            'homeroom_staff_id' => $class->homeroom_staff_id,
+            'academic_year_id' => $class->academic_year_id,
+        ],
+    ]);
+}
 
     /**
      * Update the specified class.
@@ -115,15 +127,27 @@ class ClassController extends Controller
         ]);
     }
 
-    public function assignHomeroom(Request $request, ClassModel $class): JsonResponse
-    {
-        $request->validate(['staff_id' => ['required', 'exists:staff,id']]);
+    public function assignHomeroom(Request $request, $id)
+{
+    $request->validate([
+        'staff_id' => 'required|exists:staff,id', // Ose 'homeroom_staff_id' sipas request-it
+    ]);
 
-        $class->homeroom_staff_id = $request->staff_id;
-        $class->save();
+    $class = ClassModel::findOrFail($id);
+    
+    // Suporton si 'staff_id' ashtu edhe 'homeroom_staff_id'
+    $staffId = $request->input('staff_id') ?? $request->input('homeroom_staff_id');
 
-        return response()->json(['success' => true, 'data' => $class]);
-    }
+    $class->update([
+        'homeroom_staff_id' => $staffId,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Kujdestari u caktua me sukses.',
+        'data' => $class,
+    ]);
+}
 
     public function assignStudents(Request $request, ClassModel $class): JsonResponse
     {

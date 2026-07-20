@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card' // Përshtat sipas UI tënd
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+import { api } from '@/lib/api'
 
-export function ClassFormPage({ mode = 'create' }) {
+export default function ClassFormPage({ mode = 'create' }) {
     const navigate = useNavigate()
     const { id } = useParams()
 
@@ -18,7 +19,7 @@ export function ClassFormPage({ mode = 'create' }) {
         academic_year_id: '',
     })
 
-    // Select Options State
+    // Dropdown options State
     const [staffList, setStaffList] = useState([])
     const [academicYears, setAcademicYears] = useState([])
 
@@ -27,38 +28,43 @@ export function ClassFormPage({ mode = 'create' }) {
     const [submitting, setSubmitting] = useState(false)
     const [errors, setErrors] = useState({})
 
-    // 1. Fetch dropdown options & existing class data if editing
+    // 1. Initial Fetch (Dropdowns + Class details if Edit mode)
     useEffect(() => {
         async function initForm() {
             try {
                 setLoading(true)
 
-                // Marrim listën e stafit dhe viteve akademike për dropdowns
+                // Marrim listat për dropdown-e duke përdorur strukturën tuaj ekzistuese të `api`
                 const [staffRes, yearsRes] = await Promise.all([
-                    api.staff.index({ per_page: 500 }), // Përshtat sipas endpoint-eve tua të API
-                    api.academicYears.index({ per_page: 100 }),
+                    api.staff.index({ per_page: 500 }),
+                    api.academic.academicYears(),
                 ])
 
-                const staffData = staffRes.data?.data || staffRes.data || []
-                const yearsData = yearsRes.data?.data || yearsRes.data || []
+                // Nxjerrim vargun e të dhënave (duhet marrë parasysh nëse vjen direkt apo brenda .data)
+                const staffData = staffRes?.data || staffRes || []
+                const yearsData = yearsRes?.data || yearsRes || []
 
-                setStaffList(staffData)
-                setAcademicYears(yearsData)
+                setStaffList(Array.isArray(staffData) ? staffData : [])
+                setAcademicYears(Array.isArray(yearsData) ? yearsData : [])
 
-                // Nëse është 'edit', marrim të dhënat e klasës
+                // Nëse jemi në EDIT mode, marrim klasën ekzistuese
                 if (isEdit && id) {
                     const classRes = await api.classes.show(id)
-                    const classData = classRes.data?.data || classRes.data
+                    // Nëse backend e mban në res.data.data apo direkt res.data
+                    const classData = classRes?.data || classRes
 
-                    setFormData({
-                        name: classData.name || '',
-                        section: classData.section || '',
-                        homeroom_staff_id: classData.homeroom_staff_id || '',
-                        academic_year_id: classData.academic_year_id || '',
-                    })
+                    if (classData) {
+                        setFormData({
+                            name: classData.name || '',
+                            section: classData.section || '',
+                            // I konvertojmë në String sepse HTML <select> punon me string
+                            homeroom_staff_id: classData.homeroom_staff_id ? String(classData.homeroom_staff_id) : '',
+                            academic_year_id: classData.academic_year_id ? String(classData.academic_year_id) : '',
+                        })
+                    }
                 }
             } catch (err) {
-                console.error('Gabim gjatë ngarkimit të të dhënave:', err)
+                console.error('Gabim gjatë marrjes së të dhënave për formë:', err)
             } finally {
                 setLoading(false)
             }
@@ -67,18 +73,17 @@ export function ClassFormPage({ mode = 'create' }) {
         initForm()
     }, [id, isEdit])
 
-    // Handle Input Changes
+    // Handle input values
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
 
-        // Pastrojmë gabimin për atë fushë nëse përdoruesi shkruan diçka
         if (errors[name]) {
             setErrors((prev) => ({ ...prev, [name]: null }))
         }
     }
 
-    // Submit Handler
+    // Handle Form Submit
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSubmitting(true)
@@ -86,17 +91,27 @@ export function ClassFormPage({ mode = 'create' }) {
 
         try {
             if (isEdit) {
+                // 1. Përditësojmë të dhënat bazë të klasës
                 await api.classes.update(id, formData)
+
+                // 2. Nëse është zgjedhur ose ndryshuar mësuesi kujdestar, thërrasim edhe endpoint-in specifik:
+                if (formData.homeroom_staff_id) {
+                    await api.classes.assignHomeroom(id, formData.homeroom_staff_id)
+                }
             } else {
-                await api.classes.store(formData)
+                // Nëse është krijim i ri
+                const newClassRes = await api.classes.store(formData)
+                const createdId = newClassRes?.data?.id || newClassRes?.id
+
+                if (createdId && formData.homeroom_staff_id) {
+                    await api.classes.assignHomeroom(createdId, formData.homeroom_staff_id)
+                }
             }
 
-            // Kthehemi te lista e klasave
-            navigate('/classes')
+            navigate(isEdit ? `/classes/${id}` : '/classes')
         } catch (err) {
-            if (err.response?.status === 422) {
-                // Validation errors nga Laravel
-                setErrors(err.response.data.errors || {})
+            if (err.response?.status === 422 || err.status === 422) {
+                setErrors(err.response?.data?.errors || {})
             } else {
                 console.error('Gabim gjatë ruajtjes:', err)
             }
@@ -120,7 +135,7 @@ export function ClassFormPage({ mode = 'create' }) {
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate('/classes')}
+                    onClick={() => navigate(-1)}
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -146,14 +161,14 @@ export function ClassFormPage({ mode = 'create' }) {
                         {/* Emri i Klasës */}
                         <div>
                             <label className="mb-1 block text-sm font-medium">
-                                Emri i Klasës (p.sh. 10/1) *
+                                Emri i Klasës *
                             </label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                placeholder="10/1"
+                                placeholder="p.sh. 10/1"
                                 required
                                 className="w-full rounded-md border border-surface-700 bg-surface-900 p-2 text-sm focus:border-brand-500 focus:outline-none"
                             />
@@ -172,7 +187,7 @@ export function ClassFormPage({ mode = 'create' }) {
                                 name="section"
                                 value={formData.section}
                                 onChange={handleChange}
-                                placeholder="1"
+                                placeholder="p.sh. 1"
                                 className="w-full rounded-md border border-surface-700 bg-surface-900 p-2 text-sm focus:border-brand-500 focus:outline-none"
                             />
                             {errors.section && (
@@ -180,7 +195,7 @@ export function ClassFormPage({ mode = 'create' }) {
                             )}
                         </div>
 
-                        {/* Kujdestari (Homeroom Staff) */}
+                        {/* Kujdestari */}
                         <div>
                             <label className="mb-1 block text-sm font-medium">
                                 Mësuesi Kujdestar
@@ -193,7 +208,7 @@ export function ClassFormPage({ mode = 'create' }) {
                             >
                                 <option value="">Zgjidh Mësuesin Kujdestar</option>
                                 {staffList.map((staff) => (
-                                    <option key={staff.id} value={staff.id}>
+                                    <option key={staff.id} value={String(staff.id)}>
                                         {staff.first_name} {staff.last_name}
                                     </option>
                                 ))}
@@ -219,8 +234,8 @@ export function ClassFormPage({ mode = 'create' }) {
                             >
                                 <option value="">Zgjidh Vitin Akademik</option>
                                 {academicYears.map((year) => (
-                                    <option key={year.id} value={year.id}>
-                                        {year.label || year.year}
+                                    <option key={year.id} value={String(year.id)}>
+                                        {year.label || year.name || year.year}
                                     </option>
                                 ))}
                             </select>
@@ -236,7 +251,7 @@ export function ClassFormPage({ mode = 'create' }) {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => navigate('/classes')}
+                                onClick={() => navigate(-1)}
                             >
                                 Anulo
                             </Button>

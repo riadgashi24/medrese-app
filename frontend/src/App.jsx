@@ -51,7 +51,7 @@ import { StudentFormPage } from './pages/students/StudentFormPage'
 import { StudentDetailPage } from './pages/students/StudentDetailPage'
 import { AllStudentsPage } from './pages/students/AllStudentsPAge'
 import { ClassStudentsPage } from './pages/students/ClassStudentsPage'
-import { ClassFormPage } from './pages/modules/AcademicModules/classes/ClassFormPage'
+import ClassFormPage from './pages/modules/AcademicModules/classes/ClassFormPage'
 
 const queryClient = new QueryClient()
 

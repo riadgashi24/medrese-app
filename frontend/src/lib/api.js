@@ -77,7 +77,7 @@ export const api = {
     store: (payload) => request('/students', { method: 'POST', body: payload }),
     update: (id, payload) => request(`/students/${id}`, { method: 'PUT', body: payload }),
     resetPassword: (id) => request(`/students/${id}/reset-password`, { method: 'POST' }),
-
+    destroy: (id) => request(`/students/${id}`, { method: 'DELETE' }),
     import: async (file) => {
       const formData = new FormData()
       formData.append('file', file)

@@ -6,6 +6,8 @@ import {
   KeyRound,
   Pencil,
   User,
+  Trash2,
+  Loader2,
   CalendarDays,
   MapPin,
   Mail,
@@ -48,12 +50,13 @@ export function StudentDetailPage() {
       try {
         const res = await api.students.show(id)
         const data = res?.data || {}
+
         setRawData(data)
 
-        const extractedClassId = data.class_id || data.class?.id || null
+        const extractedClassId = data.class_id || null
         setClassId(extractedClassId)
 
-        const rawDob = data.date_of_birth || data.dob || ''
+        const rawDob = data.date_of_birth || ''
         const formattedDob = typeof rawDob === 'string' ? rawDob.split('T')[0] : '-'
 
         setStudent({
@@ -62,7 +65,7 @@ export function StudentDetailPage() {
           name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || '-',
           firstName: data.first_name || '',
           lastName: data.last_name || '',
-          className: data.class?.name ?? 'Pa klasë',
+          className: data.class_name ?? 'Pa klasë',
           type: data.type || 'Regular',
           status: data.status || 'Active',
           balance: data.balance ?? 0,
@@ -97,6 +100,27 @@ export function StudentDetailPage() {
     setTimeout(() => setMsg(''), 4000)
   }
 
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteStudent = async () => {
+    const confirmDelete = window.confirm(
+      'A jeni të sigurt që dëshironi ta fshini këtë nxënës? Kjo procedurë nuk mund të kthehet mbrapa!'
+    )
+    if (!confirmDelete) return
+
+    try {
+      setDeleting(true)
+      // Thërrasim API-në për fshirjen e nxënësit
+      await api.students.destroy(id) // ose student.id varësisht nga variabla juaj
+      navigate('/students')
+    } catch (err) {
+      console.error('Gabim gjatë fshirjes së nxënësit:', err)
+      alert('Dështoi fshirja e nxënësit. Ju lutem provoni përsëri.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <Card>
@@ -129,11 +153,31 @@ export function StudentDetailPage() {
             description={`ID e Nxënësit: ${student.studentId}`}
             actions={
               <div className="flex items-center gap-2">
+                {/* Rivendos Fjalëkalimin (vetëm për secretary ose director) */}
                 {(user?.role === 'secretary' || user?.role === 'director') && (
-                  <Button variant="destructive" onClick={handleResetPassword} className="gap-2">
+                  <Button variant="outline" onClick={handleResetPassword} className="gap-2">
                     <KeyRound className="h-4 w-4" /> Rivendos Fjalëkalimin
                   </Button>
                 )}
+
+                {/* Butoni për Fshirje (vetëm për secretary ose director) */}
+                {(user?.role === 'secretary' || user?.role === 'director') && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteStudent}
+                    disabled={deleting}
+                    className="gap-2"
+                  >
+                    {deleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    {deleting ? 'Po fshihet...' : 'Fshij'}
+                  </Button>
+                )}
+
+                {/* Butoni për Editim */}
                 <Link to={editUrl} state={{ studentData: rawData }}>
                   <Button variant="secondary" className="gap-2">
                     <Pencil className="h-4 w-4" /> Edito
