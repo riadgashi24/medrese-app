@@ -43,4 +43,9 @@ class ClassModel extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+
+    public function homeroomStaff()
+    {
+        return $this->belongsTo(Staff::class, 'homeroom_staff_id');
+    }
 }

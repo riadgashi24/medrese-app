@@ -17,16 +17,32 @@ class ClassController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $classes = ClassModel::with('academicYear')
+        $classes = ClassModel::with(['academicYear', 'homeroomStaff'])
+            ->withCount('students')
             ->orderBy('name')
             ->orderBy('section')
             ->paginate(
                 $request->integer('per_page', 15)
             );
 
+        // Transformimi i saktë në PHP
+        $formattedItems = collect($classes->items())->map(function ($class) {
+            return [
+                'id' => $class->id,
+                'name' => $class->name,
+                'section' => $class->section,
+                // 💡 Përdorim -> me e marrë emrin e plotë përmes accessor-it full_name
+                'guardian' => $class->homeroomStaff
+                    ? $class->homeroomStaff->full_name
+                    : 'S\'ka kujdestar',
+                'students' => $class->students_count ?? 0,
+                'academic_year' => $class->academicYear,
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $classes->items(),
+            'data' => $formattedItems,
             'meta' => [
                 'current_page' => $classes->currentPage(),
                 'last_page' => $classes->lastPage(),

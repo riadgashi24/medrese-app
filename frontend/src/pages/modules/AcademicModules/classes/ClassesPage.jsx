@@ -48,15 +48,20 @@ export default function ClassesPage() {
                             .substring(0, 2)
                     ),
 
+                // 💡 MARRJA E SAKTË E KUJDESTARIT:
+                // Kontrollon nëse është string direkt (item.guardian), pastaj nëse është objekt apo field tjetër
                 guardian:
-                    item.guardian?.name ||
+                    (typeof item.guardian === 'string' ? item.guardian : item.guardian?.name) ||
                     item.guardian_name ||
+                    (item.homeroom_staff ? `${item.homeroom_staff.first_name} ${item.homeroom_staff.last_name}` : null) ||
                     'Pa kujdestar',
 
+                // 💡 MARRJA E SAKTË E NXËNËSVE:
+                // Së pari me marrë item.students nëse është numër, pastaj fallback te çelësat tjerë
                 students:
+                    (typeof item.students === 'number' ? item.students : null) ??
                     item.students_count ??
-                    item.students?.length ??
-                    0,
+                    (Array.isArray(item.students) ? item.students.length : 0),
             }))
 
             setClasses(mapped)
@@ -191,7 +196,7 @@ function ClassGroup({ title, classes, navigate }) {
                             onClick={() => navigate(`/classes/${item.id}`)}
                         >
 
-                            <CardContent className="space-y-5">
+                            {/* <CardContent className="space-y-5">
 
                                 <div>
 
@@ -223,7 +228,7 @@ function ClassGroup({ title, classes, navigate }) {
 
                                 </div>
 
-                            </CardContent>
+                            </CardContent> */}
 
                         </ClassCard>
 

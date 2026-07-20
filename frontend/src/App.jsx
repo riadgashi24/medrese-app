@@ -51,6 +51,7 @@ import { StudentFormPage } from './pages/students/StudentFormPage'
 import { StudentDetailPage } from './pages/students/StudentDetailPage'
 import { AllStudentsPage } from './pages/students/AllStudentsPAge'
 import { ClassStudentsPage } from './pages/students/ClassStudentsPage'
+import { ClassFormPage } from './pages/modules/AcademicModules/classes/ClassFormPage'
 
 const queryClient = new QueryClient()
 
@@ -129,8 +130,9 @@ function AppRoutes() {
         <Route path="/classes/:id" element={<ClassDetailPage />} />
         <Route path="/classes/:classId/students" element={<ClassStudentsPage />} />
         <Route path="/classes/:classId/students/:id" element={<StudentDetailPage />} />
-        {/* <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
-        <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} /> */}
+        <Route path="/classes/:classId/students/:id/edit" element={<StudentFormPage mode="edit" />} />
+        <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
+        <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} />
         {/* <Route path="/classes/:id/subjects" element={<SubjectsPage />} /> */}
 
 

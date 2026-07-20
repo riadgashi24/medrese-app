@@ -9,7 +9,7 @@ import {
   CalendarDays,
   MapPin,
   Mail,
-  Wallet
+  Wallet,
 } from 'lucide-react'
 
 import { api } from '@/lib/api'
@@ -21,12 +21,14 @@ import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
 function getInitials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('') || 'NX'
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || '')
+      .join('') || 'NX'
+  )
 }
 
 export function StudentDetailPage() {
@@ -36,14 +38,23 @@ export function StudentDetailPage() {
 
   const [msg, setMsg] = useState('')
   const [student, setStudent] = useState(null)
+  const [rawData, setRawData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [classId, setClassId] = useState(null)
 
   useEffect(() => {
     const loadStudent = async () => {
       try {
         const res = await api.students.show(id)
         const data = res?.data || {}
+        setRawData(data)
+
+        const extractedClassId = data.class_id || data.class?.id || null
+        setClassId(extractedClassId)
+
+        const rawDob = data.date_of_birth || data.dob || ''
+        const formattedDob = typeof rawDob === 'string' ? rawDob.split('T')[0] : '-'
 
         setStudent({
           id: data.id,
@@ -51,7 +62,7 @@ export function StudentDetailPage() {
           name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || '-',
           firstName: data.first_name || '',
           lastName: data.last_name || '',
-          className: data.class?.name ?? '-',
+          className: data.class?.name ?? 'Pa klasë',
           type: data.type || 'Regular',
           status: data.status || 'Active',
           balance: data.balance ?? 0,
@@ -61,7 +72,7 @@ export function StudentDetailPage() {
           parentPhoneSecondary: data.parent_phone_secondary || '-',
           municipality: data.municipality || '-',
           address: data.address || '-',
-          dateOfBirth: data.date_of_birth || data.dob || '-',
+          dateOfBirth: formattedDob,
           gender: data.gender === 'Male' ? 'Mashkull' : data.gender === 'Female' ? 'Femër' : '-',
           photo: data.photo || null,
         })
@@ -102,6 +113,10 @@ export function StudentDetailPage() {
     return <div className="text-surface-400 text-sm">Nxënësi nuk u gjet.</div>
   }
 
+  const editUrl = classId
+    ? `/classes/${classId}/students/${id}/edit`
+    : `/students/${id}/edit`
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -119,7 +134,7 @@ export function StudentDetailPage() {
                     <KeyRound className="h-4 w-4" /> Rivendos Fjalëkalimin
                   </Button>
                 )}
-                <Link to={`/students/${student.id}/edit`}>
+                <Link to={editUrl} state={{ studentData: rawData }}>
                   <Button variant="secondary" className="gap-2">
                     <Pencil className="h-4 w-4" /> Edito
                   </Button>
@@ -130,10 +145,13 @@ export function StudentDetailPage() {
         </div>
       </div>
 
-      {msg && <div className="rounded-lg bg-surface-800 p-3 text-sm text-surface-200 animate-fade-in">{msg}</div>}
+      {msg && (
+        <div className="rounded-lg bg-surface-800 p-3 text-sm text-surface-200 animate-fade-in">
+          {msg}
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        {/* Profile Card Summary */}
         <Card className="h-fit">
           <CardContent className="p-6 space-y-6">
             <div className="flex flex-col items-center text-center">
@@ -154,30 +172,41 @@ export function StudentDetailPage() {
 
             <div className="grid gap-3 grid-cols-2 text-xs">
               <div className="rounded-xl border border-white/5 bg-surface-900/50 p-3">
-                <span className="text-surface-400 flex items-center gap-1"><Users className="h-3 w-3" /> Klasa</span>
+                <span className="text-surface-400 flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Klasa
+                </span>
                 <p className="mt-1 font-semibold text-surface-100 truncate">{student.className}</p>
               </div>
               <div className="rounded-xl border border-white/5 bg-surface-900/50 p-3">
-                <span className="text-surface-400 flex items-center gap-1"><User className="h-3 w-3" /> Lloji</span>
-                <p className="mt-1 font-semibold text-surface-100">{student.type === 'Boarding' ? 'Konviktor' : 'Ditor'}</p>
+                <span className="text-surface-400 flex items-center gap-1">
+                  <User className="h-3 w-3" /> Lloji
+                </span>
+                <p className="mt-1 font-semibold text-surface-100">
+                  {student.type === 'Boarding' ? 'Konviktor' : 'Ditor'}
+                </p>
               </div>
               <div className="rounded-xl border border-white/5 bg-surface-900/50 p-3 col-span-2">
-                <span className="text-surface-400 flex items-center gap-1"><Wallet className="h-3 w-3" /> Balanca financiare</span>
+                <span className="text-surface-400 flex items-center gap-1">
+                  <Wallet className="h-3 w-3" /> Balanca financiare
+                </span>
                 <p className="mt-1 text-sm font-bold text-surface-100">{formatCurrency(student.balance)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Full Details tab/grid */}
         <div className="space-y-6">
           <Card>
             <CardContent className="p-6 space-y-4">
-              <h3 className="text-md font-semibold text-surface-100 border-b border-white/5 pb-2">Të dhënat Personale</h3>
+              <h3 className="text-md font-semibold text-surface-100 border-b border-white/5 pb-2">
+                Të dhënat Personale
+              </h3>
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-xs text-surface-400 block">Emri dhe Mbiemri</span>
-                  <span className="text-surface-100 font-medium">{student.firstName} {student.lastName}</span>
+                  <span className="text-surface-100 font-medium">
+                    {student.firstName} {student.lastName}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-surface-400 block">Gjinia</span>
@@ -185,15 +214,21 @@ export function StudentDetailPage() {
                 </div>
                 <div>
                   <span className="text-xs text-surface-400 block">Email i Nxënësit</span>
-                  <span className="text-surface-100 font-medium flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-surface-400" /> {student.email}</span>
+                  <span className="text-surface-100 font-medium flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-surface-400" /> {student.email}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-surface-400 block">Data e Lindjes</span>
-                  <span className="text-surface-100 font-medium flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-surface-400" /> {student.dateOfBirth}</span>
+                  <span className="text-surface-100 font-medium flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5 text-surface-400" /> {student.dateOfBirth}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-surface-400 block">Komuna</span>
-                  <span className="text-surface-100 font-medium flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-surface-400" /> {student.municipality}</span>
+                  <span className="text-surface-100 font-medium flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-surface-400" /> {student.municipality}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-surface-400 block">Adresa e Vendbanimit</span>
@@ -206,7 +241,9 @@ export function StudentDetailPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
               <CardContent className="p-5 space-y-3 text-sm">
-                <h3 className="text-sm font-semibold text-surface-100 border-b border-white/5 pb-2">Prindi / Kujdestari</h3>
+                <h3 className="text-sm font-semibold text-surface-100 border-b border-white/5 pb-2">
+                  Prindi / Kujdestari
+                </h3>
                 <div>
                   <span className="text-xs text-surface-400 block">Emri i Plotë</span>
                   <span className="text-surface-100 font-medium">{student.parentName}</span>
@@ -226,7 +263,9 @@ export function StudentDetailPage() {
 
             <Card>
               <CardContent className="p-5 space-y-2">
-                <h3 className="text-sm font-semibold text-surface-100 border-b border-white/5 pb-2">Vëzhgime & Suksesi</h3>
+                <h3 className="text-sm font-semibold text-surface-100 border-b border-white/5 pb-2">
+                  Vëzhgime & Suksesi
+                </h3>
                 <div className="rounded-xl border border-white/5 bg-surface-900/30 p-3 text-xs text-surface-400 leading-relaxed">
                   Moduli i mungesave, notave dhe vëzhgimeve akademike do të pasqyrohet këtu automatikisht në përditësimet e ardhshme.
                 </div>
