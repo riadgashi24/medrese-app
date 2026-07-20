@@ -64,7 +64,7 @@ export function ClassSubjectReportPage() {
                             </tr>
                         ) : (
                             report.students.map((student, index) => (
-                                <tr key={student.student_id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                <tr key={student.student_id} onClick={() => navigate(`/subjects/${subject.id}`)} className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
                                     <td className="p-3 text-center font-mono text-surface-500">{index + 1}</td>
                                     <td className="p-3 font-medium text-surface-100">{student.student_name}</td>
                                     <td className="p-3">

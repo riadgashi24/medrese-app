@@ -1,9 +1,9 @@
 // Classes
-export { default as ClassesPage } from './classes/ClassesPage'
-export { default as ClassDetailPage } from './classes/ClassDetailPage'
+export { default as ClassesPage } from './modules/AcademicModules/classes/ClassesPage'
+export { default as ClassDetailPage } from './modules/AcademicModules/classes/ClassDetailPage'
 
 // Students
-export { default as StudentsPage } from './StudentsPage'
+export { default as StudentsPage } from './students/StudentFormPage'
 export { default as StudentProfilePage } from './students/StudentProfilePage'
 export { default as StudentCreatePage } from './students/StudentCreatePage'
 export { default as StudentEditPage } from './students/StudentEditPage'

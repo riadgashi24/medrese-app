@@ -6,13 +6,8 @@ import { api } from '@/lib/api'
 import { t } from '@/i18n'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
-import {
-  StudentsPage,
-  StudentFormPage,
-  StudentDetailPage,
-} from '@/pages/StudentsPage'
 import UsersManagementPage from '@/pages/users/UsersManagement'
-import { StudentImportPage } from '@/pages/StudentImportPage'
+import { StudentImportPage } from '@/pages/students/StudentImportPage'
 import {
   FinanceOverviewPage,
   PaymentsPage,
@@ -47,10 +42,15 @@ import {
   TimetablePage,
   GradesPage
 } from '@/pages/modules/AcademicModules/AcademicModules'
-import ClassesPage from '@/pages/classes/ClassesPage'
-import ClassDetailPage from '@/pages/classes/ClassDetail'
+import ClassesPage from '@/pages/modules/AcademicModules/classes/ClassesPage'
+import ClassDetailPage from '@/pages/modules/AcademicModules/classes/ClassDetail'
 import { SubjectsPage } from './pages/modules/AcademicModules/Subject/SubjectsPage'
 import { SubjectDetailPage } from './pages/modules/AcademicModules/Subject/SubjectDetailPage'
+import { ClassSubjectReportPage } from './pages/modules/AcademicModules/Subject/ClassSubjectReportPage'
+import { StudentFormPage } from './pages/students/StudentFormPage'
+import { StudentDetailPage } from './pages/students/StudentDetailPage'
+import { AllStudentsPage } from './pages/students/AllStudentsPAge'
+import { ClassStudentsPage } from './pages/students/ClassStudentsPage'
 
 const queryClient = new QueryClient()
 
@@ -109,11 +109,11 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* Students */}
-        <Route path="/classes/:id/students" element={<StudentsPage />} />
+        <Route path="/students" element={<AllStudentsPage />} />
         <Route path="/students/new" element={<StudentFormPage mode="create" />} />
-        <Route path="/students/import" element={<StudentImportPage />} />
-        <Route path="/classes/:classId/students/:studentId" element={<StudentDetailPage />} />
+        <Route path="/students/:id" element={<StudentDetailPage />} />
         <Route path="/students/:id/edit" element={<StudentFormPage mode="edit" />} />
+        <Route path="/students/import" element={<StudentImportPage />} />
 
         {/* Staff lists */}
         <Route path="/staff" element={<GenericListPage title="Stafi" description="Lista e stafit" loader={() => api.staff.index()} columns={staffColumns} mapRow={mapStaffRow} />} />
@@ -122,10 +122,13 @@ function AppRoutes() {
         <Route path="/timetable" element={<TimetablePage />} />
         <Route path="/subjects" element={<SubjectsPage />} />
         <Route path="/subjects/:id" element={<SubjectDetailPage />} />
+        <Route path="/subjects/:subjectId/class/:classId" element={<ClassSubjectReportPage />} />
 
         {/* <Route path="/academic-years" element={<AcademicYearsPage />} /> */}
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/:id" element={<ClassDetailPage />} />
+        <Route path="/classes/:classId/students" element={<ClassStudentsPage />} />
+        <Route path="/classes/:classId/students/:id" element={<StudentDetailPage />} />
         {/* <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
         <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} /> */}
         {/* <Route path="/classes/:id/subjects" element={<SubjectsPage />} /> */}

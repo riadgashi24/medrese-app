@@ -94,77 +94,102 @@ export function SubjectsPage() {
     if (error) return <p className="text-sm text-red-400 p-6">{error}</p>
 
     return (
-        <div className="space-y-10 p-6">
-            <div className="flex justify-between items-center">
-                <PageHeader title="Planprogrami i Lëndëve" description="Menaxhimi dhe pasqyra e lëndëve" />
+        <div className="space-y-8 p-4 sm:p-6 max-w-[1600px] mx-auto text-surface-200">
+
+            {/* Header Section - Responsive (Butoni kalon poshtë në celular nëse s'ka hapësirë) */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-5">
+                <PageHeader title="Planprogrami i Lëndëve" description="Menaxhimi dhe pasqyra e lëndëve sipas klasave" />
                 {canManage && (
                     <button
                         onClick={() => { setFormData({ id: null, name: '', category: 'Gjuhët dhe komunikimi', level: 10 }); setIsModalOpen(true); }}
-                        className="bg-brand-500 hover:bg-brand-600 text-white text-xs px-4 py-2 rounded-lg font-medium transition-colors"
+                        className="inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white text-xs px-4 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-brand-500/10 cursor-pointer self-start sm:self-auto"
                     >
-                        + Shto Lëndë
+                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Shto Lëndë
                     </button>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Ndryshuar: grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 items-start">
                 {[10, 11, 12].map((level) => {
                     const levelSubjects = subjects.filter(s => parseInt(s.level) === level)
 
                     return (
-                        <div key={level} className="space-y-4">
-                            <h2 className="text-lg font-bold text-brand-400 border-b border-white/10 pb-2">
-                                Klasa {level}
-                            </h2>
+                        <div key={level} className="flex flex-col space-y-3 bg-surface-900/40 border border-white/5 rounded-xl p-4 backdrop-blur-sm shadow-xl">
 
-                            <Card className="overflow-hidden bg-surface-900 border border-white/10">
-                                <table className="w-full border-collapse text-xs text-left">
+                            {/* Titulli i Klasës me informacione shtesë */}
+                            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                                <h2 className="text-sm font-bold text-brand-400 uppercase tracking-wider">
+                                    Klasa {level}
+                                </h2>
+                                <span className="text-[10px] bg-brand-400/10 text-brand-400 px-2 py-0.5 rounded-full font-semibold">
+                                    {levelSubjects.length} Lëndë
+                                </span>
+                            </div>
+
+                            {/* Tabela me overflow-x që mos ta prishë layout-in në ekrane shumë të vogla */}
+                            <div className="overflow-x-auto w-full subtle-scrollbar">
+                                <table className="w-full border-collapse text-left table-fixed"> {/* w-full dhe table-fixed janë kyçe këtu */}
                                     <thead>
-                                        <tr className="bg-surface-950 text-surface-300 border-b border-white/10">
-                                            <th className="p-2.5 w-12 text-center">Nr.</th>
-                                            <th className="p-2.5">Lënda</th>
-                                            <th className="p-2.5">Kategoria</th>
-                                            {canManage && <th className="p-2.5 text-right">Veprime</th>}
+                                        <tr className="text-[10px] font-semibold text-surface-400 border-b border-white/5 uppercase tracking-wider">
+                                            <th className="py-2.5 px-2 w-10 text-center">Nr.</th>
+                                            <th className="py-2.5 px-2 w-[40%]">Lënda</th> {/* I japim 40% të hapësirës lëndës */}
+                                            <th className="py-2.5 px-2 w-[35%]">Kategoria</th> {/* I japim 35% kategorisë */}
+                                            {canManage && <th className="py-2.5 px-2 w-[20%] text-right">Veprime</th>} {/* 20% për butonat */}
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="divide-y divide-white/[0.02] text-xs">
                                         {levelSubjects.length === 0 ? (
                                             <tr>
-                                                <td colSpan={canManage ? 4 : 3} className="p-4 text-center text-surface-500">
+                                                <td colSpan={canManage ? 4 : 3} className="py-8 text-center text-surface-500 font-medium">
                                                     Nuk ka lëndë për këtë klasë.
                                                 </td>
                                             </tr>
                                         ) : (
                                             levelSubjects.map((subject, index) => {
-                                                const badgeStyle = categoryStyles[subject.category] || 'bg-surface-800 text-surface-400'
+                                                const badgeStyle = categoryStyles[subject.category] || 'bg-surface-800 text-surface-400 border-white/5';
 
                                                 return (
                                                     <tr
                                                         key={subject.id}
                                                         onClick={() => navigate(`/subjects/${subject.id}`)}
-                                                        className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                                                        className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
                                                     >
-                                                        <td className="p-2.5 text-center font-mono text-surface-400">{index + 1}</td>
-                                                        <td className="p-2.5 font-medium text-surface-100">{subject.name}</td>
-                                                        <td className="p-2.5">
-                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] border ${badgeStyle}`}>
+                                                        <td className="py-3 px-2 text-center font-mono text-surface-500 group-hover:text-surface-450 transition-colors">
+                                                            {index + 1}
+                                                        </td>
+
+                                                        {/* Emri i lëndës nuk e shtyn më tabelën nëse është i gjatë */}
+                                                        <td className="py-3 px-2 font-semibold text-surface-100 truncate">
+                                                            {subject.name}
+                                                        </td>
+
+                                                        <td className="py-3 px-2">
+                                                            <span className={`inline-block truncate max-w-full px-2 py-0.5 rounded text-[10px] font-medium border shadow-sm ${badgeStyle}`}>
                                                                 {subject.category}
                                                             </span>
                                                         </td>
+
+                                                        {/* Butonat tani qëndrojnë në bllok dhe nuk thyhen apo ngjeshen */}
                                                         {canManage && (
-                                                            <td className="p-2.5 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
-                                                                <button
-                                                                    onClick={() => { setFormData(subject); setIsModalOpen(true); }}
-                                                                    className="text-blue-400 hover:underline bg-transparent border-0 cursor-pointer"
-                                                                >
-                                                                    Modifiko
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => handleDelete(subject.id, e)}
-                                                                    className="text-red-400 hover:underline bg-transparent border-0 cursor-pointer"
-                                                                >
-                                                                    Fshij
-                                                                </button>
+                                                            <td className="py-3 px-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                                                <div className="inline-flex justify-end space-x-2">
+                                                                    <button
+                                                                        onClick={() => { setFormData(subject); setIsModalOpen(true); }}
+                                                                        className="text-blue-400 hover:text-blue-305 font-medium text-xs transition-colors"
+                                                                    >
+                                                                        Mod
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => handleDelete(subject.id, e)}
+                                                                        className="text-rose-400 hover:text-rose-300 font-medium text-xs transition-colors"
+                                                                    >
+                                                                        Fshij
+                                                                    </button>
+                                                                </div>
                                                             </td>
                                                         )}
                                                     </tr>
@@ -173,53 +198,72 @@ export function SubjectsPage() {
                                         )}
                                     </tbody>
                                 </table>
-                            </Card>
+                            </div>
                         </div>
                     )
                 })}
             </div>
 
-            {/* Modal-i për Menaxhimin e Lëndëve */}
+            {/* Modal-i i modernizuar */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md p-6 bg-surface-900 border border-white/10 space-y-4 shadow-xl">
-                        <h3 className="text-base font-bold text-surface-100">
-                            {formData.id ? 'Modifiko Lëndën' : 'Shto Lëndë të Re'}
-                        </h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
+                    <Card className="w-full max-w-md p-6 bg-surface-900 border border-white/10 space-y-5 shadow-2xl rounded-xl">
+                        <div className="border-b border-white/5 pb-3">
+                            <h3 className="text-sm font-bold text-surface-100 uppercase tracking-wide">
+                                {formData.id ? ' Modifiko Lëndën' : ' Shto Lëndë të Re'}
+                            </h3>
+                        </div>
+
                         <form onSubmit={handleSave} className="space-y-4 text-xs">
-                            <div className="space-y-1">
-                                <label className="text-surface-400">Emri i Lëndës</label>
+                            <div className="space-y-1.5">
+                                <label className="text-surface-400 font-medium">Emri i Lëndës</label>
                                 <input
                                     type="text" required value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full p-2 rounded bg-surface-800 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500"
+                                    className="w-full p-2.5 rounded-lg bg-surface-950 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500 transition-colors"
+                                    placeholder="Shkruaj emrin e lëndës..."
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-surface-400">Kategoria</label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-surface-400 font-medium">Kategoria</label>
                                 <select
                                     value={formData.category}
                                     onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full p-2 rounded bg-surface-800 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500"
+                                    className="w-full p-2.5 rounded-lg bg-surface-950 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500 transition-colors appearance-none"
                                 >
                                     {Object.keys(categoryStyles).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-surface-400">Klasa (Niveli)</label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-surface-400 font-medium">Klasa (Niveli)</label>
                                 <select
                                     value={formData.level}
                                     onChange={e => setFormData({ ...formData, level: parseInt(e.target.value) })}
-                                    className="w-full p-2 rounded bg-surface-800 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500"
+                                    className="w-full p-2.5 rounded-lg bg-surface-950 border border-white/10 text-surface-100 focus:outline-none focus:border-brand-500 transition-colors"
                                 >
                                     <option value={10}>Klasa 10</option>
                                     <option value={11}>Klasa 11</option>
                                     <option value={12}>Klasa 12</option>
                                 </select>
                             </div>
-                            <div className="flex justify-end space-x-2 pt-2">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-surface-800 hover:bg-surface-750 text-surface-300 rounded">Anulo</button>
-                                <button type="submit" className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded">Ruaj</button>
+
+                            {/* Butonat e Action-it në Modal */}
+                            <div className="flex justify-end space-x-2 pt-3 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="px-4 py-2 bg-surface-800 hover:bg-surface-750 text-surface-300 font-medium rounded-lg transition-colors cursor-pointer"
+                                >
+                                    Anulo
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-lg transition-colors shadow-lg shadow-brand-500/20 cursor-pointer"
+                                >
+                                    Ruaj
+                                </button>
                             </div>
                         </form>
                     </Card>
