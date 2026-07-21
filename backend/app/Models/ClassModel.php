@@ -28,6 +28,14 @@ class ClassModel extends Model
         return $this->hasMany(TimetableSlot::class);
     }
 
+    public function homeroomTeacher(): BelongsTo
+    {
+        // Nëse lidhet me modelin Staff përmes 'homeroom_staff_id':
+        return $this->belongsTo(Staff::class, 'homeroom_staff_id');
+
+        // Shënim: Nëse te ju lidhet direkt me User, përdor User::class
+    }
+
     public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);

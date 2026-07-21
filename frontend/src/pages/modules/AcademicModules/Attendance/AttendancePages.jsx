@@ -178,10 +178,6 @@ function AttendanceGrid({ title, description, kind = 'Regular', fajr = false, in
   )
 }
 
-export function AttendancePage() {
-  return <AttendanceGrid title="Prezenca e klases" description="Sheno prezencen ditore sipas klases" />
-}
-
 export function FajrAttendancePage() {
   return <AttendanceGrid title="Prezenca e namazit te sabahut" description="Prezenca e mengjesit per nxenesit konviktore" kind="Fajr" fajr />
 }

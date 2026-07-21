@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AcademicYear;
+use App\Models\AttendanceRecord;
 use App\Models\ClassModel;
 use App\Models\Staff;
 use App\Models\Student;
@@ -10,6 +11,7 @@ use App\Models\Subject;
 use App\Models\TimetableSlot;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -24,7 +26,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Viti Akademik
         $academicYear = AcademicYear::updateOrCreate(
-            ['label' => '2025-2026'], 
+            ['label' => '2025-2026'],
             ['is_active' => true]
         );
 
@@ -48,7 +50,7 @@ class DatabaseSeeder extends Seeder
 
         $teachersUsers = [];
         $teachersStaff = [];
-        
+
         foreach ($teachersData as $t) {
             $user = User::updateOrCreate(
                 ['email' => $t['email']],
@@ -68,7 +70,7 @@ class DatabaseSeeder extends Seeder
                     'hire_date' => now()->subYears(2)->toDateString()
                 ]
             );
-            
+
             $teachersUsers[$t['name']] = $user;
             $teachersStaff[$t['name']] = $staff;
         }
@@ -78,7 +80,7 @@ class DatabaseSeeder extends Seeder
         $classes = [];
         foreach ($classesData as $index => $cName) {
             $assignedStaff = array_values($teachersStaff)[$index % count($teachersStaff)];
-            
+
             $classes[$cName] = ClassModel::updateOrCreate(
                 ['name' => $cName, 'academic_year_id' => $academicYear->id],
                 [
@@ -154,10 +156,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $days = ['E hënë', 'E martë', 'E mërkurë', 'E enjte', 'E premte'];
-        
-        // Mbajmë mend zënien e sloteve për të evituar përplasjet e dyfishta
-        $teacherSchedules = []; // Çelësi: profesor-ditë-slot
-        $classSchedules = [];   // Çelësi: klasë-ditë-slot
+        $teacherSchedules = [];
+        $classSchedules = [];
 
         // 6. LIDHJA E KLASAVE ME LËNDËT DHE ORARIN
         foreach ($classes as $cName => $classObj) {
@@ -165,7 +165,7 @@ class DatabaseSeeder extends Seeder
 
             foreach ($createdSubjects as $key => $subObj) {
                 if ($subObj->level == $level) {
-                    
+
                     $teacherUser = $teachersUsers['Jakup Çunaku'];
                     if (str_contains($subObj->name, 'Kuran') || str_contains($subObj->name, 'Komentimi')) {
                         $teacherUser = $teachersUsers['Jakup Çunaku'];
@@ -179,7 +179,6 @@ class DatabaseSeeder extends Seeder
                         $teacherUser = $teachersUsers['Besnik Jaha'];
                     }
 
-                    // Lidhim në pivot
                     $classObj->subjects()->syncWithoutDetaching([
                         $subObj->id => [
                             'teacher_user_id' => $teacherUser->id,
@@ -187,20 +186,13 @@ class DatabaseSeeder extends Seeder
                         ]
                     ]);
 
-                    // 7. SHTIMI I TIMETABLE SLOTS ME KONTROLL TË DYFISHTË
-                    $foundSlot = false;
-                    
-                    // Kërkojmë në mënyrë sekuenciale një slot të lirë që i konvenon edhe klasës edhe profesorit
+                    // Timetable slots
                     foreach ($days as $day) {
                         for ($slotNumber = 1; $slotNumber <= 6; $slotNumber++) {
-                            
                             $tKey = "{$teacherUser->id}-{$day}-{$slotNumber}";
                             $cKey = "{$classObj->id}-{$day}-{$slotNumber}";
 
-                            // NËSE sloti është i lirë edhe për profesorin EDHE për klasën
                             if (!isset($teacherSchedules[$tKey]) && !isset($classSchedules[$cKey])) {
-                                
-                                // Bëjmë bllokimin e sloteve
                                 $teacherSchedules[$tKey] = true;
                                 $classSchedules[$cKey] = true;
 
@@ -213,8 +205,7 @@ class DatabaseSeeder extends Seeder
                                     'academic_year_id' => $academicYear->id,
                                 ]);
 
-                                $foundSlot = true;
-                                break 2; // Dil nga dy ciklet (for dhe foreach e ditëve) dhe kalon te lënda tjetër
+                                break 2;
                             }
                         }
                     }
@@ -222,34 +213,110 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 8. Studentët
-        $studentNames = [
-            ['first' => 'Ahmed', 'last' => 'Hoxha', 'class' => '12/2', 'email' => 'student1@medrese.edu'],
-            ['first' => 'Fatmir', 'last' => 'Krasniqi', 'class' => '12/2', 'email' => 'student2@medrese.edu'],
-            ['first' => 'Yll', 'last' => 'Berisha', 'class' => '10/1', 'email' => 'student3@medrese.edu'],
-            ['first' => 'Blerim', 'last' => 'Gashi', 'class' => '11/3', 'email' => 'student4@medrese.edu'],
-        ];
+        // 7. GJENERIMI I RREGULLT I NXËNËSVE (Rreth 15 nxënës për secilën klasë)
+        $firstNames = ['Ahmed', 'Fatmir', 'Yll', 'Blerim', 'Dren', 'Arian', 'Fisnik', 'Valon', 'Alban', 'Eris', 'Blendi', 'Leart', 'Endrit', 'Lirim', 'Genc'];
+        $lastNames = ['Hoxha', 'Krasniqi', 'Berisha', 'Gashi', 'Morina', 'Kastrati', 'Kelmendi', 'Shala', 'Bytyqi', 'Gecaj', 'Rama', 'Zyba', 'Lushi', 'Tahiri'];
 
-        foreach ($studentNames as $idx => $sData) {
-            $studentUser = User::updateOrCreate(
-                ['email' => $sData['email']], 
-                ['name' => $sData['first'] . ' ' . $sData['last'], 'password' => Hash::make('demo123'), 'role' => 'student']
-            );
+        $createdStudents = [];
+        $studentCounter = 1;
 
-            Student::updateOrCreate(
-                ['student_id' => 'STD-2025-000' . ($idx + 1)], 
-                [
-                    'first_name' => $sData['first'],
-                    'last_name' => $sData['last'],
-                    'parent_name' => 'Ali',
-                    'parent_phone' => '+3834411111' . $idx,
-                    'municipality' => 'Prishtinë',
-                    'class_id' => $classes[$sData['class']]->id,
-                    'type' => 'Regular',
-                    'status' => 'Active',
-                    'user_id' => $studentUser->id
-                ]
-            );
+        foreach ($classes as $cName => $classObj) {
+            for ($i = 1; $i <= 15; $i++) {
+                $fn = $firstNames[array_rand($firstNames)];
+                $ln = $lastNames[array_rand($lastNames)];
+                $email = strtolower($fn . '.' . $ln . $studentCounter . '@medrese.edu');
+
+                $studentUser = User::updateOrCreate(
+                    ['email' => $email],
+                    [
+                        'name' => $fn . ' ' . $ln,
+                        'password' => Hash::make('demo123'),
+                        'role' => 'student'
+                    ]
+                );
+
+                $student = Student::updateOrCreate(
+                    ['student_id' => 'STD-2025-' . str_pad($studentCounter, 4, '0', STR_PAD_LEFT)],
+                    [
+                        'first_name' => $fn,
+                        'last_name' => $ln,
+                        'parent_name' => 'Prind',
+                        'parent_phone' => '+38344' . rand(100000, 999999),
+                        'municipality' => 'Prishtinë',
+                        'class_id' => $classObj->id,
+                        'type' => 'Regular',
+                        'status' => 'Active',
+                        'user_id' => $studentUser->id
+                    ]
+                );
+
+                $createdStudents[] = $student;
+                $studentCounter++;
+            }
+        }
+        // 8. SHTIMI I ATTENDANCE RECORDS (Save by Exception — Për çdo klasë)
+        $statuses = ['Absent', 'Late', 'Excused'];
+        $recordedByUser = array_values($teachersUsers)[0];
+
+        // A) Mungesa historike për 30 ditët e kaluara (E shpërndarë në të gjitha klasat)
+        for ($d = 30; $d >= 1; $d--) {
+            $date = Carbon::today()->subDays($d);
+
+            if ($date->isWeekend()) {
+                continue;
+            }
+
+            foreach ($createdStudents as $student) {
+                // ~12% chance për çdo nxënës
+                if (rand(1, 100) <= 12) {
+                    $status = $statuses[array_rand($statuses)];
+
+                    AttendanceRecord::updateOrCreate(
+                        [
+                            'class_id' => $student->class_id,
+                            'student_id' => $student->id,
+                            'date' => $date->toDateString(),
+                        ],
+                        [
+                            'status' => $status,
+                            'note' => $status === 'Excused' ? 'Me leje nga prindi' : null,
+                            'recorded_by_user_id' => $recordedByUser->id,
+                        ]
+                    );
+                }
+            }
+        }
+
+        // B) GUARANTEE PËR ÇDO KLASË SOT: Zgjedhim nga 2-3 nxënës për Secilën Klasë
+        $todayStr = Carbon::today()->toDateString();
+
+        foreach ($classes as $cName => $classObj) {
+            // Marrim nxënësit që i përkasin kësaj klase specifike
+            $classStudents = array_filter($createdStudents, function ($st) use ($classObj) {
+                return $st->class_id === $classObj->id;
+            });
+
+            if (count($classStudents) > 0) {
+                // Zgjedhim 2 ose 3 nxënës nga kjo klasë me mungesë/vonesë sot
+                $randomClassStudents = collect($classStudents)->random(min(3, count($classStudents)));
+
+                foreach ($randomClassStudents as $index => $student) {
+                    $status = $statuses[$index % 3]; // Ciklon mes Absent, Late, Excused
+
+                    AttendanceRecord::updateOrCreate(
+                        [
+                            'class_id' => $classObj->id,
+                            'student_id' => $student->id,
+                            'date' => $todayStr,
+                        ],
+                        [
+                            'status' => $status,
+                            'note' => $status === 'Excused' ? 'Njoftim nga prindi' : null,
+                            'recorded_by_user_id' => $recordedByUser->id,
+                        ]
+                    );
+                }
+            }
         }
     }
 }

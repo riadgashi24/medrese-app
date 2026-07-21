@@ -2,187 +2,169 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RecordAttendanceRequest;
 use App\Models\AttendanceRecord;
-use App\Models\AttendanceAudit;
-use App\Models\StudyHour;
+use App\Models\ClassModel;
+use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
-    public function store(RecordAttendanceRequest $request): JsonResponse
-    {
-        $records = [];
-        foreach ($request->records as $record) {
-            $records[] = AttendanceRecord::create([
-                'class_id' => $request->class_id,
-                'date' => $request->date,
-                'kind' => $request->get('kind', 'Regular'),
-                'student_id' => $record['student_id'],
-                'status' => $record['status'],
-                'recorded_by_user_id' => $request->user()->id,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $records,
-        ], 201);
-    }
-
-    public function index(Request $request): JsonResponse
-    {
-        $query = AttendanceRecord::with(['student', 'class', 'recordedBy']);
-
-        if ($request->filled('class_id')) {
-            $query->where('class_id', $request->class_id);
-        }
-
-        if ($request->filled('from')) {
-            $query->where('date', '>=', $request->from);
-        }
-
-        if ($request->filled('to')) {
-            $query->where('date', '<=', $request->to);
-        }
-
-        if ($request->filled('kind')) {
-            $query->where('kind', $request->kind);
-        }
-
-        if ($request->filled('student_id')) {
-            $query->where('student_id', $request->student_id);
-        }
-
-        $records = $query->latest('date')->paginate($request->get('per_page', 50));
-
-        return response()->json([
-            'success' => true,
-            'data' => $records->items(),
-            'meta' => [
-                'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'per_page' => $records->perPage(),
-                'total' => $records->total(),
-            ],
-        ]);
-    }
-
-    public function storeFajr(Request $request): JsonResponse
+    /**
+     * Ruajmë VETËM mungesat/vonesat për të mos ngarkuar DB-në.
+     */
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'class_id' => ['required', 'exists:classes,id'],
             'date' => ['required', 'date'],
-            'records' => ['required', 'array'],
+            'records' => ['present', 'array'], // dërgohen vetëm nxënësit që MUNOJNË ose VONOJNË
             'records.*.student_id' => ['required', 'exists:students,id'],
-            'records.*.status' => ['required', 'in:Present,Absent,Excused'],
+            'records.*.status' => ['required', 'in:Absent,Late,Excused'],
+            'records.*.note' => ['nullable', 'string'],
         ]);
 
-        $records = [];
-        foreach ($request->records as $record) {
-            $records[] = AttendanceRecord::create([
-                'class_id' => $request->class_id,
-                'date' => $request->date,
-                'kind' => 'Fajr',
-                'student_id' => $record['student_id'],
-                'status' => $record['status'],
-                'recorded_by_user_id' => $request->user()->id,
-            ]);
-        }
+        DB::transaction(function () use ($request) {
+            // Fshijmë regjistrimet e mëparshme jo-prezent për këtë ditë/klasë që të bëjmë overwrite të pastër
+            AttendanceRecord::where('class_id', $request->class_id)
+                ->where('date', $request->date)
+                ->delete();
 
-        return response()->json([
-            'success' => true,
-            'data' => $records,
-        ], 201);
-    }
-
-    public function storeStudyHours(Request $request): JsonResponse
-    {
-        $request->validate([
-            'student_id' => ['required', 'exists:students,id'],
-            'date' => ['required', 'date'],
-            'hours' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $studyHour = StudyHour::create([
-            'student_id' => $request->student_id,
-            'date' => $request->date,
-            'hours' => $request->hours,
-            'recorded_by_user_id' => $request->user()->id,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data' => $studyHour,
-        ], 201);
-    }
-
-    public function reports(Request $request): JsonResponse
-    {
-        $query = AttendanceRecord::with(['student', 'class']);
-
-        if ($request->scope === 'my') {
-            $user = $request->user();
-            $student = $user->student;
-            if ($student) {
-                $query->where('student_id', $student->id);
+            foreach ($request->records as $record) {
+                AttendanceRecord::create([
+                    'class_id' => $request->class_id,
+                    'date' => $request->date,
+                    'student_id' => $record['student_id'],
+                    'status' => $record['status'],
+                    'note' => $record['note'] ?? null,
+                    'recorded_by_user_id' => $request->user()->id,
+                ]);
             }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Prezenca u ruajt me sukses!'], 201);
+    }
+
+    /**
+     * Dashboard Overview API - Kalkulon gjithçka dinamikisht sipas përjashtimeve (Absences)
+     */
+    public function overview(Request $request): JsonResponse
+    {
+        $classId = $request->get('class_id');
+        $class = ClassModel::withCount('students')->with('homeroomTeacher')->find($classId);
+
+        if (!$class) {
+            return response()->json(['success' => false, 'message' => 'Klasa nuk u gjet.'], 404);
         }
 
-        if ($request->filled('class_id')) {
-            $query->where('class_id', $request->class_id);
+        $totalStudents = $class->students_count;
+        if ($totalStudents === 0) {
+            return response()->json(['success' => true, 'data' => null]);
         }
 
-        if ($request->filled('from')) {
-            $query->where('date', '>=', $request->from);
-        }
+        $today = Carbon::today()->toDateString();
 
-        if ($request->filled('to')) {
-            $query->where('date', '<=', $request->to);
-        }
+        // 1. Statistikat e Sotme
+        $todayExceptions = AttendanceRecord::where('class_id', $classId)
+            ->where('date', $today)
+            ->get();
 
-        if ($request->filled('kind')) {
-            $query->where('kind', $request->kind);
-        }
+        $absentToday = $todayExceptions->where('status', 'Absent')->count();
+        $lateToday = $todayExceptions->where('status', 'Late')->count();
+        $excusedToday = $todayExceptions->where('status', 'Excused')->count();
+        $presentToday = max(0, $totalStudents - ($absentToday + $lateToday + $excusedToday));
 
-        $records = $query->latest('date')->paginate($request->get('per_page', 50));
+        // 2. Tërheqim të gjithë nxënësit dhe regjistrimet në 2 query (Eliminimi i N+1 Problem)
+        $students = Student::where('class_id', $classId)->get();
+
+        // Merrim të gjitha rekordet e kësaj klase në një query të vetme
+        $allRecords = AttendanceRecord::where('class_id', $classId)
+            ->get()
+            ->groupBy('student_id');
+
+        // Përcaktojmë numrin e ditëve mësimore të regjistruara deri sot
+        $totalSchoolDays = AttendanceRecord::where('class_id', $classId)
+            ->distinct('date')
+            ->count('date') ?: 1;
+
+        $studentStats = $students->map(function ($student) use ($allRecords, $totalSchoolDays) {
+            $records = $allRecords->get($student->id, collect());
+
+            $absent = $records->where('status', 'Absent')->count();
+            $late = $records->where('status', 'Late')->count();
+            $excused = $records->where('status', 'Excused')->count();
+            $present = max(0, $totalSchoolDays - ($absent + $late + $excused));
+
+            $attendanceRate = round(($present / $totalSchoolDays) * 100, 1);
+            $lastRecord = $records->sortByDesc('date')->first();
+
+            // 💡 Ndërtimi i emrit (fallback në rast se fusha nuk quhet thjesht 'name')
+            $fullName = $student->name
+                ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? ''))
+                ?: ($student->user->name ?? 'Nxënës ' . $student->id);
+
+            return [
+                'id' => $student->id,
+                'rollNumber' => $student->roll_number ?? (string) $student->id,
+                'name' => $fullName,
+                'present' => $present,
+                'absent' => $absent,
+                'late' => $late,
+                'excused' => $excused,
+                'rate' => $attendanceRate,
+                'lastDate' => $lastRecord ? $lastRecord->date : '-',
+            ];
+        });
+
+        // 3. Students Requiring Attention (Nën 80% ose mungesa të shpeshta)
+        $requiringAttention = $studentStats->filter(fn($s) => $s['rate'] < 80 || $s['absent'] >= 5)->values();
+
+        // 4. Trendi i 30 ditëve të fundit
+        $thirtyDaysAgo = Carbon::today()->subDays(30);
+        $trendRecords = AttendanceRecord::where('class_id', $classId)
+            ->where('date', '>=', $thirtyDaysAgo)
+            ->select('date', DB::raw('count(*) as total_exceptions'))
+            ->groupBy('date')
+            ->pluck('total_exceptions', 'date');
+
+        $trend = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $d = Carbon::today()->subDays($i)->format('Y-m-d');
+            $exceptions = $trendRecords[$d] ?? 0;
+            $presentCount = max(0, $totalStudents - $exceptions);
+            $rate = round(($presentCount / $totalStudents) * 100, 1);
+
+            $trend[] = [
+                'date' => Carbon::parse($d)->format('d M'),
+                'rate' => $rate,
+            ];
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $records->items(),
-            'meta' => [
-                'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'total' => $records->total(),
-            ],
+            'data' => [
+                'header' => [
+                    'className' => $class->name,
+                    'academicYear' => $class->academic_year ?? '2025/2026',
+                    'homeroomTeacher' => $class->homeroomStaff->full_name ?? 'N/A',
+                    'totalStudents' => $totalStudents,
+                    'attendancePercentage' => round($studentStats->avg('rate'), 1),
+                ],
+                'stats' => [
+                    'total' => $totalStudents,
+                    'presentToday' => $presentToday,
+                    'absentToday' => $absentToday,
+                    'lateToday' => $lateToday,
+                    'excusedToday' => $excusedToday,
+                    'rateToday' => round(($presentToday / $totalStudents) * 100, 1),
+                ],
+                'trend' => $trend,
+                'students' => $studentStats,
+                'requiringAttention' => $requiringAttention,
+                'totalSchoolDays' => $totalSchoolDays,
+            ]
         ]);
-    }
-
-    public function update(Request $request, AttendanceRecord $attendance): JsonResponse
-    {
-        $request->validate([
-            'status' => ['required', 'in:Present,Absent,Late,Excused'],
-            'note' => ['nullable', 'string'],
-        ]);
-
-        $old = $attendance->status;
-
-        $attendance->status = $request->status;
-        if ($request->filled('note')) {
-            $attendance->note = $request->note;
-        }
-        $attendance->save();
-
-        // create audit record
-        AttendanceAudit::create([
-            'attendance_record_id' => $attendance->id,
-            'changed_by_user_id' => $request->user()->id ?? null,
-            'old_status' => $old,
-            'new_status' => $attendance->status,
-            'note' => $request->get('note'),
-        ]);
-
-        return response()->json(['success' => true, 'data' => $attendance]);
     }
 }

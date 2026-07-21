@@ -22,7 +22,7 @@ class ClassController extends Controller
             ->orderBy('name')
             ->orderBy('section')
             ->paginate(
-                $request->integer('per_page', 15)
+                $request->integer('per_page', 35)
             );
 
         // Transformimi i saktë në PHP

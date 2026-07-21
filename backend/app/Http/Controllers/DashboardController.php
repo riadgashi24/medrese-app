@@ -66,94 +66,93 @@ class DashboardController extends Controller
 
     public function principal()
     {
+        $totalStudents = Student::count();
+
         $stats = [
-            'total_students' => Student::count(),
+            'total_students' => $totalStudents,
             'total_staff' => Staff::count(),
             'boarding' => Student::where('type', 'Boarding')->count(),
-            'approvals' => Approval::where('status', 'Pending')->count(),
+            'approvals' => class_exists(Approval::class) ? Approval::where('status', 'Pending')->count() : 0,
         ];
 
-        $attendance = AttendanceRecord::select(
+        // 1. Frekuentimi gjatë 7 ditëve të fundit (Save by Exception)
+        $exceptions = AttendanceRecord::select(
             'date',
-            DB::raw("COUNT(*) as total"),
-            DB::raw("SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) as present")
+            DB::raw("COUNT(*) as total_exceptions")
         )
             ->whereDate('date', '>=', now()->subDays(6))
             ->groupBy('date')
             ->get()
             ->keyBy(function ($item) {
-                return $item->date;
+                // Sigurohemi që data është string YYYY-MM-DD
+                return Carbon::parse($item->date)->toDateString();
             });
 
         $attendanceOverview = collect();
 
         for ($i = 6; $i >= 0; $i--) {
-
             $date = now()->subDays($i)->toDateString();
+            $dayName = now()->subDays($i)->format('D'); // e.g. Mon, Tue
 
-            $row = $attendance->get($date);
+            $row = $exceptions->get($date);
+            $totalExceptions = $row ? $row->total_exceptions : 0;
+
+            // Nëse nuk ka nxënës në shkollë, vendosim 100% ose 0% sipas rastit
+            if ($totalStudents === 0) {
+                $presentPercentage = 100;
+            } else {
+                $presentStudents = max(0, $totalStudents - $totalExceptions);
+                $presentPercentage = round(($presentStudents / $totalStudents) * 100);
+            }
 
             $attendanceOverview->push([
-
-                'day' => now()->subDays($i)->format('D'),
-
-                'present' => $row
-                    ? round(($row->present / $row->total) * 100)
-                    : 0,
-
+                'day' => $dayName,
+                'present' => $presentPercentage,
             ]);
         }
 
-        $todayAttendance = AttendanceRecord::select(
-
-            'status',
-
-            DB::raw('COUNT(*) as total')
-
-        )
-            ->whereDate('date', today())
+        // 2. Frekuentimi i sotëm për PieChart (Save by Exception)
+        $todayExceptions = AttendanceRecord::whereDate('date', today())
+            ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $todayAttendanceChart = collect([
-            [
-                'name' => 'Present',
-                'value' => (int) ($todayAttendance['Present'] ?? 0),
-            ],
-            [
-                'name' => 'Absent',
-                'value' => (int) ($todayAttendance['Absent'] ?? 0),
-            ],
-            [
-                'name' => 'Excused',
-                'value' => (int) ($todayAttendance['Excused'] ?? 0),
-            ],
-        ]);
+        $absentCount = (int) ($todayExceptions['Absent'] ?? 0);
+        $lateCount = (int) ($todayExceptions['Late'] ?? 0);
+        $excusedCount = (int) ($todayExceptions['Excused'] ?? 0);
 
-        $announcements = Announcement::with('author:id,name')
+        $totalTodayExceptions = $absentCount + $lateCount + $excusedCount;
+        $presentTodayCount = max(0, $totalStudents - $totalTodayExceptions);
+
+        $todayAttendanceChart = [
+            ['name' => 'Pranishëm', 'value' => $presentTodayCount],
+            ['name' => 'Mungesë', 'value' => $absentCount + $lateCount],
+            ['name' => 'Me leje', 'value' => $excusedCount],
+        ];
+
+        // 3. Aktiviteti i fundit (Njoftimet)
+        $recentActivity = Announcement::with('author:id,name')
             ->whereNotNull('published_at')
             ->orderByDesc('published_at')
-            ->take(4)
+            ->take(5)
             ->get()
             ->map(function ($announcement) {
                 return [
                     'id' => $announcement->id,
                     'title' => $announcement->title,
-                    'date' => $announcement->published_at?->format('d M Y'),
-                    'author' => $announcement->author?->name ?? 'System',
-                    'priority' => $announcement->priority,
+                    'time' => $announcement->published_at?->diffForHumans() ?? 'Së fundmi',
+                    'user' => $announcement->author?->name ?? 'Sistemi',
+                    'type' => 'announcement',
                 ];
             });
 
         return response()->json([
             'stats' => $stats,
-
             'charts' => [
                 'attendance_overview' => $attendanceOverview,
                 'today_attendance' => $todayAttendanceChart,
             ],
-
-            'announcements' => $announcements,
+            'recent_activity' => $recentActivity,
         ]);
     }
 }

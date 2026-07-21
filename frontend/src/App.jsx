@@ -19,11 +19,10 @@ import {
   InvoicesPage,
 } from '@/pages/finance/FinancePages'
 import {
-  AttendancePage,
   FajrAttendancePage,
   StudyHoursPage,
   AttendanceReportsPage,
-} from '@/pages/AttendancePages'
+} from '@/pages/modules/AcademicModules/Attendance/AttendancePages'
 import {
   DormitoryPage,
   RoomsPage,
@@ -49,9 +48,10 @@ import { SubjectDetailPage } from './pages/modules/AcademicModules/Subject/Subje
 import { ClassSubjectReportPage } from './pages/modules/AcademicModules/Subject/ClassSubjectReportPage'
 import { StudentFormPage } from './pages/students/StudentFormPage'
 import { StudentDetailPage } from './pages/students/StudentDetailPage'
-import { AllStudentsPage } from './pages/students/AllStudentsPAge'
+import { AllStudentsPage } from './pages/students/AllStudentsPage'
 import { ClassStudentsPage } from './pages/students/ClassStudentsPage'
 import ClassFormPage from './pages/modules/AcademicModules/classes/ClassFormPage'
+import { AttendancePage } from './pages/modules/AcademicModules/Attendance/AttendancePage'
 
 const queryClient = new QueryClient()
 

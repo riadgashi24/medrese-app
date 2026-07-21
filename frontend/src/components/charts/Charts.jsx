@@ -63,7 +63,7 @@ export function TrendLineChart({ data, dataKey = 'rate', xKey = 'week', color = 
   )
 }
 
-const PIE_COLORS = ['#22c55e', '#ef4444', '#f6be3b']
+const PIE_COLORS = ['#22c55e', '#ef4444', '#f6be3b', "#c7f63b"]
 
 export function FeePieChart({ data }) {
 
@@ -81,8 +81,8 @@ export function FeePieChart({ data }) {
     <>
       <div className="mb-3 space-y-1">
         <p className="text-sm" style={{ color: "#22c55e" }}>● Prezent</p>
+        <p className="text-sm" style={{ color: "#f6be3b" }}>● Me arsyje</p>
         <p className="text-sm" style={{ color: "#ef4444" }}>● Mungesë</p>
-        <p className="text-sm" style={{ color: "#f6be3b" }}>● Të arsyetuara</p>
       </div>
 
       <ResponsiveContainer width="100%" height={160}>

@@ -162,6 +162,7 @@ export const api = {
     storeFajr: (payload) => request('/attendance/fajr', { method: 'POST', body: payload }),
     update: (id, payload) => request(`/attendance/${id}`, { method: 'PUT', body: payload }),
     reports: (params) => request('/attendance/reports', { method: 'GET', query: params }),
+    overview: (params) => request('/attendance/overview', { method: 'GET', query: params }),
   },
 
   dormitory: {
