@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { api } from '@/lib/api'
-import { t } from '@/i18n'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import UsersManagementPage from '@/pages/users/UsersManagement'
@@ -38,9 +37,9 @@ import {
   ProfilePage,
 } from '@/pages/modules/ModulePages'
 import {
-  TimetablePage,
   GradesPage
 } from '@/pages/modules/AcademicModules/AcademicModules'
+import TimetablePage from '@/pages/modules/AcademicModules/Timetable'
 import ClassesPage from '@/pages/modules/AcademicModules/classes/ClassesPage'
 import ClassDetailPage from '@/pages/modules/AcademicModules/classes/ClassDetail'
 import { SubjectsPage } from './pages/modules/AcademicModules/Subject/SubjectsPage'

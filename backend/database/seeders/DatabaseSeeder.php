@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\ClassModel;
+use App\Models\DaySupervisor;
 use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Subject;
@@ -19,10 +20,25 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Përdoruesit bazë të sistemit
-        $director = User::updateOrCreate(['email' => 'director@medrese.edu'], ['name' => 'Drejtor', 'password' => Hash::make('demo123'), 'role' => 'director']);
-        $secretary = User::updateOrCreate(['email' => 'secretary@medrese.edu'], ['name' => 'Sekretar', 'password' => Hash::make('demo123'), 'role' => 'secretary']);
-        $cashier = User::updateOrCreate(['email' => 'cashier@medrese.edu'], ['name' => 'Arkatar', 'password' => Hash::make('demo123'), 'role' => 'cashier']);
-        $educator = User::updateOrCreate(['email' => 'educator@medrese.edu'], ['name' => 'Edukator', 'password' => Hash::make('demo123'), 'role' => 'educator']);
+        $director = User::updateOrCreate(
+            ['email' => 'director@medrese.edu'],
+            ['name' => 'Ekrem Maqedonci', 'password' => Hash::make('demo123'), 'role' => 'director']
+        );
+
+        $secretary = User::updateOrCreate(
+            ['email' => 'secretary@medrese.edu'],
+            ['name' => 'Vahid Sadiku', 'password' => Hash::make('demo123'), 'role' => 'secretary']
+        );
+
+        $cashier = User::updateOrCreate(
+            ['email' => 'cashier@medrese.edu'],
+            ['name' => 'Arkatar', 'password' => Hash::make('demo123'), 'role' => 'cashier']
+        );
+
+        $educator = User::updateOrCreate(
+            ['email' => 'educator@medrese.edu'],
+            ['name' => 'Edukator', 'password' => Hash::make('demo123'), 'role' => 'educator']
+        );
 
         // 2. Viti Akademik
         $academicYear = AcademicYear::updateOrCreate(
@@ -30,39 +46,76 @@ class DatabaseSeeder extends Seeder
             ['is_active' => true]
         );
 
-        // 3. Krijimi i Profesorëve
+        // 3. Kujdestarët e Ditës
+        $supervisorsData = [
+            'E hënë' => 'B JAHA / VIOLINA & ERBLINA',
+            'E martë' => 'Dëfrim BRAJSHORI / Shaha M.',
+            'E mërkurë' => 'I SEJDIU / SHAHA & GRANITA',
+            'E enjte' => 'M. Stublla / Valbona A.',
+            'E premte' => 'Kujtim J. / Hatixhe J.',
+        ];
+
+        foreach ($supervisorsData as $day => $names) {
+            DaySupervisor::updateOrCreate(
+                ['academic_year_id' => $academicYear->id, 'day' => $day],
+                ['supervisor_names' => $names]
+            );
+        }
+
+        // 4. Lista e Profesorëve (Muhamed Stublla në vend të Ekremit)
         $teachersData = [
-            ['name' => 'Jakup Çunaku', 'email' => 'jakup.cunaku@medrese.edu', 'dept' => 'Kuran/Tefsir'],
-            ['name' => 'Shemsi Rrahimi', 'email' => 'shemsi.rrahimi@medrese.edu', 'dept' => 'Gj.turke/Hist.'],
-            ['name' => 'Xh Rusinovci', 'email' => 'xh.rusinovci@medrese.edu', 'dept' => 'Gj.angleze'],
-            ['name' => 'M Tërnava', 'email' => 'm.ternava@medrese.edu', 'dept' => 'Akaid'],
-            ['name' => 'Samir Ahmeti', 'email' => 'samir.ahmeti@medrese.edu', 'dept' => 'Histori'],
-            ['name' => 'Rrahim Aliu', 'email' => 'rrahim.aliu@medrese.edu', 'dept' => 'Hadith/Akaid'],
-            ['name' => 'Adnan Simnica', 'email' => 'adnan.simnica@medrese.edu', 'dept' => 'Tefsir/Shk. Kuranit'],
-            ['name' => 'Driton Arifi', 'email' => 'driton.arifi@medrese.edu', 'dept' => 'Fikh/Kuran/Dave'],
-            ['name' => 'Ekrem Maqedonci', 'email' => 'ekrem.maqedonci@medrese.edu', 'dept' => 'Kuran/Fikh/Usul'],
-            ['name' => 'Hysni Beka', 'email' => 'hysni.beka@medrese.edu', 'dept' => 'Gj. arabe'],
-            ['name' => 'Shkelzen Hoxha', 'email' => 'shkelzen.hoxha@medrese.edu', 'dept' => 'Gj. arabe'],
-            ['name' => 'Kujtim Jashanica', 'email' => 'kujtim.jashanica@medrese.edu', 'dept' => 'Gj. arabe'],
-            ['name' => 'Besnik Jaha', 'email' => 'besnik.jaha@medrese.edu', 'dept' => 'Gj.shqipe'],
-            ['name' => 'Xhevdet Podrimja', 'email' => 'xhevdet.podrimja@medrese.edu', 'dept' => 'Fizikë'],
+            ['id' => 1, 'name' => 'Jakup Çunaku', 'dept' => 'Kuran/Tefsir'],
+            ['id' => 2, 'name' => 'Shemsi Rrahimi', 'dept' => 'Gj.turke/Hist.'],
+            ['id' => 3, 'name' => 'Xh Rusinovci', 'dept' => 'Gj.angleze'],
+            ['id' => 4, 'name' => 'M Tërnava', 'dept' => 'Akaid'],
+            ['id' => 5, 'name' => 'Samir Ahmeti', 'dept' => 'Histori'],
+            ['id' => 6, 'name' => 'Rrahim Aliu', 'dept' => 'Hadith/Akaid'],
+            ['id' => 7, 'name' => 'Adnan Simnica', 'dept' => 'Tefsir/Shk. Kuranit'],
+            ['id' => 8, 'name' => 'Driton Arifi', 'dept' => 'Fikh/Kuran/Dave'],
+            ['id' => 9, 'name' => 'Muhamed Stublla', 'dept' => 'Kuran/Fikh/Usul'],
+            ['id' => 10, 'name' => 'Hysni Beka', 'dept' => 'Gj. arabe'],
+            ['id' => 11, 'name' => 'Shkelzen Hoxha', 'dept' => 'Gj. arabe'],
+            ['id' => 12, 'name' => 'Kujtim Jashanica', 'dept' => 'Gj. arabe'],
+            ['id' => 13, 'name' => 'Besnik Jaha', 'dept' => 'Gj.shqipe'],
+            ['id' => 14, 'name' => 'Xhevdet Podrimja', 'dept' => 'Fizikë'],
+            ['id' => 15, 'name' => 'Safet Avdiu', 'dept' => 'Gjeografi'],
+            ['id' => 16, 'name' => 'Nexhat Berisha', 'dept' => 'Biologji'],
+            ['id' => 17, 'name' => 'Dëfrim Brajshori', 'dept' => 'Matematikë'],
+            ['id' => 18, 'name' => 'Islam Sejdiu', 'dept' => 'TIK'],
+            ['id' => 19, 'name' => 'Adem Sahiti', 'dept' => 'Psikologji/Sociologji'],
+            ['id' => 20, 'name' => 'Armend Qafleshi', 'dept' => 'Kimi'],
+            ['id' => 21, 'name' => 'Valon Brajshori', 'dept' => 'Ed fizike'],
+            ['id' => 22, 'name' => 'Hatixhe Sadriu', 'dept' => 'Kuran/Ahlak'],
+            ['id' => 23, 'name' => 'Valbona Asllani', 'dept' => 'Kuran/Ahlak'],
+            ['id' => 24, 'name' => 'Shaha Memishi', 'dept' => 'Gj.shqipe'],
+            ['id' => 25, 'name' => 'Violina Asllani', 'dept' => 'Matematikë'],
+            ['id' => 26, 'name' => 'Liriana Gërvalla', 'dept' => 'Psikologji/Sociologji'],
+            ['id' => 27, 'name' => 'Granita Zenuni', 'dept' => 'Fizikë'],
+            ['id' => 28, 'name' => 'Erblina Krasniqi', 'dept' => 'TIK'],
+            ['id' => 29, 'name' => 'Shkurte Gashi', 'dept' => 'Biologji'],
+            ['id' => 30, 'name' => 'Nita Pireva', 'dept' => 'Gj. Angleze'],
+            ['id' => 31, 'name' => 'Zejnepe Abdyli', 'dept' => 'Gjeografi'],
+            ['id' => 32, 'name' => 'Florina Sefa', 'dept' => 'Matematikë'],
+            ['id' => 33, 'name' => 'Kosovare Jashari', 'dept' => 'Kimi'],
         ];
 
         $teachersUsers = [];
         $teachersStaff = [];
 
         foreach ($teachersData as $t) {
+            $emailName = strtolower(str_replace([' ', '.'], ['', ''], $t['name']));
+
             $user = User::updateOrCreate(
-                ['email' => $t['email']],
+                ['email' => "{$emailName}@medrese.edu"],
                 ['name' => $t['name'], 'password' => Hash::make('demo123'), 'role' => 'teacher']
             );
 
+            $parts = explode(' ', $t['name']);
             $staff = Staff::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'first_name' => explode(' ', $t['name'])[0],
-                    'last_name' => explode(' ', $t['name'])[1] ?? '',
-                    'email' => $user->email,
+                    'first_name' => $parts[0],
+                    'last_name' => $parts[1] ?? '',
                     'position' => 'Profesor',
                     'department' => $t['dept'],
                     'gender' => 'Male',
@@ -75,10 +128,10 @@ class DatabaseSeeder extends Seeder
             $teachersStaff[$t['name']] = $staff;
         }
 
-        // 4. Krijimi i Klasave
-        $classesData = ['12/1', '12/2', '12/3', '12/4', '11/1', '11/2', '11/3', '11/4', '11/5', '10/1', '10/2', '10/3', '10/4'];
+        // 5. Krijimi i Klasave
+        $classesNames = ['12/1', '12/2', '12/3', '12/4', '11/1', '11/2', '11/3', '11/4', '11/5', '10/1', '10/2', '10/3', '10/4'];
         $classes = [];
-        foreach ($classesData as $index => $cName) {
+        foreach ($classesNames as $index => $cName) {
             $assignedStaff = array_values($teachersStaff)[$index % count($teachersStaff)];
 
             $classes[$cName] = ClassModel::updateOrCreate(
@@ -90,7 +143,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 5. Definitat e Lëndëve
+        // 6. Përkufizimet e Lëndëve sipas Niveleve (10, 11, 12)
         $subjects_10 = [
             ['name' => 'Gjuhë amtare', 'category' => 'Gjuhët dhe komunikimi', 'level' => 10],
             ['name' => 'Gjuhë angleze', 'category' => 'Gjuhët dhe komunikimi', 'level' => 10],
@@ -155,17 +208,12 @@ class DatabaseSeeder extends Seeder
             $createdSubjects[$s['name'] . '_' . $s['level']] = $subjectObj;
         }
 
-        $days = ['E hënë', 'E martë', 'E mërkurë', 'E enjte', 'E premte'];
-        $teacherSchedules = [];
-        $classSchedules = [];
-
-        // 6. LIDHJA E KLASAVE ME LËNDËT DHE ORARIN
+        // 7. Lidhja e Klasave me Lëndët dhe Orari
         foreach ($classes as $cName => $classObj) {
             $level = str_starts_with($cName, '10') ? 10 : (str_starts_with($cName, '11') ? 11 : 12);
 
             foreach ($createdSubjects as $key => $subObj) {
                 if ($subObj->level == $level) {
-
                     $teacherUser = $teachersUsers['Jakup Çunaku'];
                     if (str_contains($subObj->name, 'Kuran') || str_contains($subObj->name, 'Komentimi')) {
                         $teacherUser = $teachersUsers['Jakup Çunaku'];
@@ -185,35 +233,102 @@ class DatabaseSeeder extends Seeder
                             'weekly_hours' => ($subObj->name === 'Kuran' || $subObj->name === 'Matematikë') ? 4 : 2
                         ]
                     ]);
-
-                    // Timetable slots
-                    foreach ($days as $day) {
-                        for ($slotNumber = 1; $slotNumber <= 6; $slotNumber++) {
-                            $tKey = "{$teacherUser->id}-{$day}-{$slotNumber}";
-                            $cKey = "{$classObj->id}-{$day}-{$slotNumber}";
-
-                            if (!isset($teacherSchedules[$tKey]) && !isset($classSchedules[$cKey])) {
-                                $teacherSchedules[$tKey] = true;
-                                $classSchedules[$cKey] = true;
-
-                                TimetableSlot::create([
-                                    'day' => $day,
-                                    'slot_number' => $slotNumber,
-                                    'class_id' => $classObj->id,
-                                    'subject_id' => $subObj->id,
-                                    'teacher_user_id' => $teacherUser->id,
-                                    'academic_year_id' => $academicYear->id,
-                                ]);
-
-                                break 2;
-                            }
-                        }
-                    }
                 }
             }
         }
 
-        // 7. GJENERIMI I RREGULLT I NXËNËSVE (Rreth 15 nxënës për secilën klasë)
+        // Slot-et e Orarit
+        $scheduleGrid = [
+            ['Jakup Çunaku', 'E hënë', 1, '12/2'],
+            ['Jakup Çunaku', 'E hënë', 2, '11/2'],
+            ['Jakup Çunaku', 'E hënë', 3, '12/2'],
+            ['Jakup Çunaku', 'E hënë', 4, '12/1'],
+            ['Jakup Çunaku', 'E martë', 1, '11/2'],
+            ['Jakup Çunaku', 'E martë', 2, '12/2'],
+            ['Jakup Çunaku', 'E martë', 3, '12/4'],
+            ['Jakup Çunaku', 'E mërkurë', 1, '12/2'],
+            ['Jakup Çunaku', 'E mërkurë', 2, '11/2'],
+            ['Jakup Çunaku', 'E mërkurë', 3, '12/2'],
+            ['Jakup Çunaku', 'E mërkurë', 4, '12/4'],
+            ['Jakup Çunaku', 'E mërkurë', 5, '12/1'],
+            ['Jakup Çunaku', 'E mërkurë', 6, '12/3'],
+            ['Jakup Çunaku', 'E enjte', 1, '11/2'],
+            ['Jakup Çunaku', 'E enjte', 2, '12/2'],
+            ['Jakup Çunaku', 'E enjte', 3, '12/3'],
+            ['Jakup Çunaku', 'E enjte', 4, '12/1'],
+            ['Jakup Çunaku', 'E premte', 1, '11/2'],
+            ['Jakup Çunaku', 'E premte', 2, '12/2'],
+            ['Jakup Çunaku', 'E premte', 3, '12/1'],
+
+            ['Shemsi Rrahimi', 'E hënë', 1, '10/2'],
+            ['Shemsi Rrahimi', 'E hënë', 2, '10/3'],
+            ['Shemsi Rrahimi', 'E hënë', 3, '10/1'],
+            ['Shemsi Rrahimi', 'E hënë', 4, '10/4'],
+            ['Shemsi Rrahimi', 'E martë', 1, '10/1'],
+            ['Shemsi Rrahimi', 'E martë', 2, '10/1'],
+            ['Shemsi Rrahimi', 'E enjte', 1, '10/3'],
+            ['Shemsi Rrahimi', 'E enjte', 2, '10/4'],
+            ['Shemsi Rrahimi', 'E enjte', 3, '10/2'],
+            ['Shemsi Rrahimi', 'E enjte', 4, '10/1'],
+
+            ['M Tërnava', 'E hënë', 1, '11/3'],
+            ['M Tërnava', 'E hënë', 2, '12/3'],
+            ['M Tërnava', 'E hënë', 3, '12/4'],
+            ['M Tërnava', 'E hënë', 4, '11/1'],
+            ['M Tërnava', 'E hënë', 5, '12/1'],
+            ['M Tërnava', 'E martë', 1, '10/2'],
+            ['M Tërnava', 'E martë', 2, '11/4'],
+            ['M Tërnava', 'E martë', 3, '11/5'],
+            ['M Tërnava', 'E mërkurë', 1, '12/3'],
+            ['M Tërnava', 'E mërkurë', 2, '12/2'],
+            ['M Tërnava', 'E mërkurë', 3, '11/1'],
+            ['M Tërnava', 'E mërkurë', 4, '10/2'],
+            ['M Tërnava', 'E mërkurë', 5, '12/3'],
+            ['M Tërnava', 'E mërkurë', 6, '10/2'],
+            ['M Tërnava', 'E enjte', 1, '11/3'],
+            ['M Tërnava', 'E enjte', 2, '11/5'],
+            ['M Tërnava', 'E enjte', 3, '11/4'],
+            ['M Tërnava', 'E enjte', 4, '11/2'],
+            ['M Tërnava', 'E enjte', 5, '12/4'],
+            ['M Tërnava', 'E premte', 1, '12/4'],
+            ['M Tërnava', 'E premte', 2, '12/1'],
+            ['M Tërnava', 'E premte', 3, '12/1'],
+            ['M Tërnava', 'E premte', 4, '12/1'],
+            ['M Tërnava', 'E premte', 5, '12/2'],
+            ['M Tërnava', 'E premte', 6, '12/2'],
+            ['M Tërnava', 'E premte', 7, '10/3'],
+        ];
+
+        foreach ($scheduleGrid as $item) {
+            $tName = $item[0];
+            $day = $item[1];
+            $slotNum = $item[2];
+            $cName = $item[3];
+
+            if (isset($teachersUsers[$tName]) && isset($classes[$cName])) {
+                $user = $teachersUsers[$tName];
+                $cObj = $classes[$cName];
+                $level = str_starts_with($cName, '10') ? 10 : (str_starts_with($cName, '11') ? 11 : 12);
+
+                // Marrim një lëndë të nivelit përkatës për slotin
+                $subObj = collect($createdSubjects)->first(fn($s) => $s->level == $level) ?? reset($createdSubjects);
+
+                TimetableSlot::updateOrCreate(
+                    [
+                        'day' => $day,
+                        'slot_number' => $slotNum,
+                        'class_id' => $cObj->id,
+                        'academic_year_id' => $academicYear->id,
+                    ],
+                    [
+                        'subject_id' => $subObj->id,
+                        'teacher_user_id' => $user->id,
+                    ]
+                );
+            }
+        }
+
+        // 8. Gjenerimi i Nxënësve (15 nxënës për secilën klasë)
         $firstNames = ['Ahmed', 'Fatmir', 'Yll', 'Blerim', 'Dren', 'Arian', 'Fisnik', 'Valon', 'Alban', 'Eris', 'Blendi', 'Leart', 'Endrit', 'Lirim', 'Genc'];
         $lastNames = ['Hoxha', 'Krasniqi', 'Berisha', 'Gashi', 'Morina', 'Kastrati', 'Kelmendi', 'Shala', 'Bytyqi', 'Gecaj', 'Rama', 'Zyba', 'Lushi', 'Tahiri'];
 
@@ -254,11 +369,12 @@ class DatabaseSeeder extends Seeder
                 $studentCounter++;
             }
         }
-        // 8. SHTIMI I ATTENDANCE RECORDS (Save by Exception — Për çdo klasë)
+
+        // 9. Regjistrimi i Mungesave (Attendance Records)
         $statuses = ['Absent', 'Late', 'Excused'];
         $recordedByUser = array_values($teachersUsers)[0];
 
-        // A) Mungesa historike për 30 ditët e kaluara (E shpërndarë në të gjitha klasat)
+        // Mungesat historike për 30 ditët e kaluara
         for ($d = 30; $d >= 1; $d--) {
             $date = Carbon::today()->subDays($d);
 
@@ -267,7 +383,6 @@ class DatabaseSeeder extends Seeder
             }
 
             foreach ($createdStudents as $student) {
-                // ~12% chance për çdo nxënës
                 if (rand(1, 100) <= 12) {
                     $status = $statuses[array_rand($statuses)];
 
@@ -287,21 +402,19 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // B) GUARANTEE PËR ÇDO KLASË SOT: Zgjedhim nga 2-3 nxënës për Secilën Klasë
+        // Mungesat e sotme
         $todayStr = Carbon::today()->toDateString();
 
         foreach ($classes as $cName => $classObj) {
-            // Marrim nxënësit që i përkasin kësaj klase specifike
             $classStudents = array_filter($createdStudents, function ($st) use ($classObj) {
                 return $st->class_id === $classObj->id;
             });
 
             if (count($classStudents) > 0) {
-                // Zgjedhim 2 ose 3 nxënës nga kjo klasë me mungesë/vonesë sot
                 $randomClassStudents = collect($classStudents)->random(min(3, count($classStudents)));
 
                 foreach ($randomClassStudents as $index => $student) {
-                    $status = $statuses[$index % 3]; // Ciklon mes Absent, Late, Excused
+                    $status = $statuses[$index % 3];
 
                     AttendanceRecord::updateOrCreate(
                         [

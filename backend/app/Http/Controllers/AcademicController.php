@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\ClassModel;
+use App\Models\DaySupervisor;
 use App\Models\Subject;
 use App\Models\TimetableSlot;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -163,36 +165,138 @@ class AcademicController extends Controller
     }
     public function timetable(Request $request): JsonResponse
     {
-        // Ndryshuam 'teacher' në 'teacher_user' që të përshtatet me Modelin dhe React-in
-        $query = TimetableSlot::with(['class', 'subject', 'teacher_user', 'academicYear']);
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        $academicYearId = $request->input('academic_year_id', $activeYear?->id);
 
-        if ($request->filled('class_id')) {
-            $query->where('class_id', $request->class_id);
-        }
+        // 1. Slots
+        $slots = TimetableSlot::with(['class', 'subject', 'teacher_user'])
+            ->when($academicYearId, fn($q) => $q->where('academic_year_id', $academicYearId))
+            ->get();
 
-        if ($request->filled('day')) {
-            $query->where('day', $request->day);
-        }
+        // 2. Day Supervisors (Kujdestarët e Ditës)
+        $supervisors = DaySupervisor::when($academicYearId, fn($q) => $q->where('academic_year_id', $academicYearId))
+            ->get()
+            ->pluck('supervisor_names', 'day');
 
-        // Nëse vjen 'academic_year_id' nga fronti e filtrojmë sipas tij, 
-        // përndryshe, automatikisht shfaqim vetëm orarin e vitit akademik që është aktiv
-        if ($request->filled('academic_year_id')) {
-            $query->where('academic_year_id', $request->academic_year_id);
-        } else {
-            $activeYear = AcademicYear::where('is_active', true)->first();
-            if ($activeYear) {
-                $query->where('academic_year_id', $activeYear->id);
+        // 3. Teacher Stats & Assignments
+        $teacherAssignments = DB::table('class_subject')
+            ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
+            ->join('classes', 'class_subject.class_model_id', '=', 'classes.id')
+            ->select(
+                'class_subject.teacher_user_id',
+                'class_subject.subject_id',
+                'subjects.name as subject_name',
+                'class_subject.class_model_id as class_id',
+                'classes.name as class_name',
+                'class_subject.weekly_hours'
+            )
+            ->get();
+
+        $teacherStats = [];
+        foreach ($teacherAssignments as $a) {
+            $tId = $a->teacher_user_id;
+            if (!$tId)
+                continue;
+            if (!isset($teacherStats[$tId])) {
+                $teacherStats[$tId] = ['total_weekly_hours' => 0, 'assignments' => []];
             }
+            $teacherStats[$tId]['total_weekly_hours'] += (int) $a->weekly_hours;
+            $teacherStats[$tId]['assignments'][] = [
+                'subject_id' => $a->subject_id,
+                'subject_name' => $a->subject_name,
+                'class_id' => $a->class_id,
+                'class_name' => $a->class_name,
+            ];
         }
 
-        $slots = $query->get();
-
-        // Kthejmë strukturen e saktë që React priste me success dhe data array
         return response()->json([
             'success' => true,
-            'data' => $slots,
+            'data' => [
+                'slots' => $slots,
+                'supervisors' => $supervisors,
+                'teacher_stats' => $teacherStats,
+                'active_academic_year_id' => $academicYearId
+            ]
         ]);
     }
+
+    // Ruajtja/Përditësimi i Kujdestarit të Ditës
+    public function updateDaySupervisor(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'day' => 'required|string',
+            'supervisor_names' => 'required|string',
+            'academic_year_id' => 'required|exists:academic_years,id',
+        ]);
+
+        $supervisor = DaySupervisor::updateOrCreate(
+            [
+                'academic_year_id' => $validated['academic_year_id'],
+                'day' => $validated['day'],
+            ],
+            [
+                'supervisor_names' => $validated['supervisor_names'],
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $supervisor,
+            'message' => 'Kujdestarët e ditës u përditësuan me sukses.'
+        ]);
+    }
+
+    /**
+     * Ruaj ose përditëso një slot orari (Nga modal-i i modifikimit)
+     */
+    public function saveTimetableSlot(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'teacher_user_id' => 'required|exists:users,id',
+            'day' => 'required|string',
+            'slot_number' => 'required|integer|min:1|max:7',
+            'class_id' => 'required|exists:classes,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+        ]);
+
+        // Përdorim updateOrCreate për të zëvendësuar ose krijuar slot-in e këtij profesori në këtë ditë/orë
+        $slot = TimetableSlot::updateOrCreate(
+            [
+                'day' => $validated['day'],
+                'slot_number' => $validated['slot_number'],
+                'teacher_user_id' => $validated['teacher_user_id'],
+                'academic_year_id' => $validated['academic_year_id'],
+            ],
+            [
+                'class_id' => $validated['class_id'],
+                'subject_id' => $validated['subject_id'],
+            ]
+        );
+
+        $slot->load(['class', 'subject', 'teacher_user']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $slot,
+            'message' => 'Orari u përditësua me sukses.'
+        ]);
+    }
+
+    /**
+     * Fshij një slot nga orari (Kliro qelizën)
+     */
+    public function deleteTimetableSlot($id): JsonResponse
+    {
+        $slot = TimetableSlot::findOrFail($id);
+        $slot->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Orari u fshi nga kjo qelizë.'
+        ]);
+    }
+
 
     public function academicYears(): JsonResponse
     {
