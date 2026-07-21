@@ -13,10 +13,8 @@ import {
     Search,
     ArrowUpDown,
     Calendar as CalendarIcon,
-    Award,
     ChevronLeft,
     ChevronRight,
-    History,
     Loader2,
 } from 'lucide-react'
 import {
@@ -33,13 +31,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 
-
 const tooltipStyle = {
     backgroundColor: 'rgba(15, 23, 42, 0.95)',
     border: '1px solid rgba(148, 163, 184, 0.1)',
     borderRadius: 8,
     color: '#e2e8f0',
     fontSize: 12,
+}
+
+// Funksion ndihmës për formatimin e datës ISO (p.sh. 2026-07-06T00:00:00.000000Z -> 06.07.2026)
+const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    try {
+        const date = new Date(dateString)
+        if (isNaN(date.getTime())) return dateString
+        return new Intl.DateTimeFormat('sq-AL', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).format(date)
+    } catch {
+        return dateString
+    }
 }
 
 export function AttendancePage({ classId = 1 }) {
@@ -60,11 +73,9 @@ export function AttendancePage({ classId = 1 }) {
 
         api.attendance.overview({ class_id: classId })
             .then((resData) => {
-                // Nëse api kthen direkt { success: true, data: [...] } ose strukturën tuaj standarde
                 if (isMounted && resData?.success) {
                     setData(resData.data);
                 } else if (isMounted && !resData?.success) {
-                    // Nëse request() juaj e kthen vetë payload-in e të dhënave pa wrapper-in success
                     setData(resData);
                 }
             })
@@ -120,6 +131,42 @@ export function AttendancePage({ classId = 1 }) {
         }))
     }
 
+    // --- FUNKSIONET E QUICK ACTIONS ---
+
+    // 1. Printimi dhe Save as PDF
+    const handlePrintOrPDF = () => {
+        window.print()
+    }
+
+    // 2. Eksportimi në Excel (CSV format që hapet natyralisht në Excel)
+    const handleExportExcel = () => {
+        if (!filteredStudents.length) return
+
+        const headers = ['Roll Number', 'Nxenesi', 'Prezent (Dite)', 'Mungese', 'Vonese', 'Arsyetuar', 'Prezenca %', 'Regjistrimi i Fundit']
+
+        const rows = filteredStudents.map(student => [
+            `"${student.rollNumber}"`,
+            `"${student.name}"`,
+            student.present,
+            student.absent,
+            student.late,
+            student.excused,
+            `"${student.rate}%"`,
+            `"${formatDate(student.lastDate)}"`
+        ])
+
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+
+        const link = document.createElement('a')
+        link.setAttribute('href', url)
+        link.setAttribute('download', `Prezenca_${data?.header?.className || 'Klasa'}_${new Date().toISOString().slice(0, 10)}.csv`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     // 1. LOADING STATE
     if (loading) {
         return (
@@ -145,7 +192,7 @@ export function AttendancePage({ classId = 1 }) {
         )
     }
 
-    const { header, stats, trend, requiringAttention, totalSchoolDays } = data
+    const { header, stats, trend, requiringAttention } = data
 
     return (
         <div className="space-y-6 p-4 md:p-6 text-surface-100">
@@ -165,14 +212,14 @@ export function AttendancePage({ classId = 1 }) {
                 </div>
 
                 {/* QUICK ACTIONS */}
-                <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2 print:hidden">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handlePrintOrPDF}>
                         <Download className="h-4 w-4" /> Export PDF
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handleExportExcel}>
                         <FileSpreadsheet className="h-4 w-4" /> Export Excel
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 text-xs">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handlePrintOrPDF}>
                         <Printer className="h-4 w-4" /> Print
                     </Button>
                 </div>
@@ -294,7 +341,7 @@ export function AttendancePage({ classId = 1 }) {
                 <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <CardTitle className="text-base font-semibold">Tabela e Prezencës së Nxënësve</CardTitle>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3 print:hidden">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-surface-400" />
                             <input
@@ -325,17 +372,17 @@ export function AttendancePage({ classId = 1 }) {
                             <thead className="border-b border-surface-800 text-xs font-semibold text-surface-400 bg-surface-950/40">
                                 <tr>
                                     <th className="py-3 px-4 cursor-pointer" onClick={() => handleSort('rollNumber')}>
-                                        <div className="flex items-center gap-1"># <ArrowUpDown className="h-3 w-3" /></div>
+                                        <div className="flex items-center gap-1"># <ArrowUpDown className="h-3 w-3 print:hidden" /></div>
                                     </th>
                                     <th className="py-3 px-4 cursor-pointer" onClick={() => handleSort('name')}>
-                                        <div className="flex items-center gap-1">Nxënësi <ArrowUpDown className="h-3 w-3" /></div>
+                                        <div className="flex items-center gap-1">Nxënësi <ArrowUpDown className="h-3 w-3 print:hidden" /></div>
                                     </th>
                                     <th className="py-3 px-4 text-center">Prezent (Ditë)</th>
                                     <th className="py-3 px-4 text-center">Mungesë</th>
                                     <th className="py-3 px-4 text-center">Vonesë</th>
                                     <th className="py-3 px-4 text-center">Arsyetuar</th>
                                     <th className="py-3 px-4 cursor-pointer" onClick={() => handleSort('rate')}>
-                                        <div className="flex items-center gap-1 justify-center">Prezenca % <ArrowUpDown className="h-3 w-3" /></div>
+                                        <div className="flex items-center gap-1 justify-center">Prezenca % <ArrowUpDown className="h-3 w-3 print:hidden" /></div>
                                     </th>
                                     <th className="py-3 px-4 text-right">Regjistrimi i Fundit</th>
                                 </tr>
@@ -354,7 +401,7 @@ export function AttendancePage({ classId = 1 }) {
                                                 <span className={`font-bold text-xs ${student.rate < 80 ? 'text-red-400' : 'text-emerald-400'}`}>
                                                     {student.rate}%
                                                 </span>
-                                                <div className="w-16 bg-surface-800 h-1.5 rounded-full overflow-hidden">
+                                                <div className="w-16 bg-surface-800 h-1.5 rounded-full overflow-hidden print:hidden">
                                                     <div
                                                         className={`h-full ${student.rate < 80 ? 'bg-red-500' : 'bg-emerald-500'}`}
                                                         style={{ width: `${student.rate}%` }}
@@ -362,7 +409,9 @@ export function AttendancePage({ classId = 1 }) {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-3 px-4 text-right text-xs text-surface-400">{student.lastDate}</td>
+                                        <td className="py-3 px-4 text-right text-xs text-surface-400">
+                                            {formatDate(student.lastDate)}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -370,7 +419,7 @@ export function AttendancePage({ classId = 1 }) {
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-between pt-4 border-t border-surface-800 text-xs text-surface-400">
+                    <div className="flex items-center justify-between pt-4 border-t border-surface-800 text-xs text-surface-400 print:hidden">
                         <span>Po shfaqen {paginatedStudents.length} nga {filteredStudents.length} nxënës</span>
                         <div className="flex items-center gap-2">
                             <Button
