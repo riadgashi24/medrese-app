@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TimetableSlot extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'day',
-        'slot_number', // U shtua kjo fushë për numrin e orës (1-7)
+        'slot_number',
         'start_time',
         'end_time',
         'class_id',
@@ -17,6 +20,25 @@ class TimetableSlot extends Model
         'teacher_user_id',
         'academic_year_id',
     ];
+
+    /**
+     * Konvertimi automatik i tipave të të dhënave
+     */
+    protected $casts = [
+        'slot_number' => 'integer',
+        'class_id' => 'integer',
+        'subject_id' => 'integer',
+        'teacher_user_id' => 'integer',
+        'academic_year_id' => 'integer',
+    ];
+
+    /**
+     * Relacionet që ngarkohen automatikisht kur kërkohet modeli (Opsionale, por e dobishme për React)
+     * Heq nevojën për ->with() në Controller çdo herë.
+     */
+    protected $with = ['subject', 'class', 'teacherUser'];
+
+    // --- RELACIONET ---
 
     public function class(): BelongsTo
     {
@@ -28,8 +50,11 @@ class TimetableSlot extends Model
         return $this->belongsTo(Subject::class);
     }
 
-    // E emërojmë teacher_user që të përshtatet ekzaktësisht me `slot.teacher_user` në React
-    public function teacher_user(): BelongsTo
+    /**
+     * Përdorim camelCase sipas standardit të Laravel.
+     * Në React kjo do të jetë automatikisht e qasshme si `slot.teacher_user` ose `slot.teacherUser`
+     */
+    public function teacherUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');
     }

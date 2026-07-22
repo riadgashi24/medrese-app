@@ -165,23 +165,40 @@ class AcademicController extends Controller
     }
     public function timetable(Request $request): JsonResponse
     {
-        $activeYear = AcademicYear::where('is_active', true)->first();
-        $academicYearId = $request->input('academic_year_id', $activeYear?->id);
+        // 1. Përcaktimi i vitit aktiv akademik (Merr vetëm ID-në)
+        $academicYearId = $request->input(
+            'academic_year_id',
+            fn() => AcademicYear::where('is_active', true)->value('id')
+        );
 
-        // 1. Slots
-        $slots = TimetableSlot::with(['class', 'subject', 'teacher_user'])
-            ->when($academicYearId, fn($q) => $q->where('academic_year_id', $academicYearId))
+        if (!$academicYearId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nuk u gjet asnjë vit akademik aktiv.'
+            ], 404);
+        }
+
+        // 2. Marrja e KREJT orarit për të gjithë shkollën (Pa pagination)
+        // Marrëveshja: Selektojmë vetëm fushat e nevojshme te relacioni për të kursyer RAM me mijëra rreshta
+        $slots = TimetableSlot::with([
+            'class:id,name',
+            'subject:id,name',
+            'teacherUser:id,name'
+        ])
+            ->where('academic_year_id', $academicYearId)
+            ->orderBy('day_of_week')
+            ->orderBy('slot_number')
             ->get();
 
-        // 2. Day Supervisors (Kujdestarët e Ditës)
-        $supervisors = DaySupervisor::when($academicYearId, fn($q) => $q->where('academic_year_id', $academicYearId))
-            ->get()
+        // 3. Kujdestarët e Ditës
+        $supervisors = DaySupervisor::where('academic_year_id', $academicYearId)
             ->pluck('supervisor_names', 'day');
 
-        // 3. Teacher Stats & Assignments
+        // 4. Statistikat e Profesorëve (All-in-one me Laravel Collection)
         $teacherAssignments = DB::table('class_subject')
             ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
             ->join('classes', 'class_subject.class_model_id', '=', 'classes.id')
+            ->whereNotNull('class_subject.teacher_user_id')
             ->select(
                 'class_subject.teacher_user_id',
                 'class_subject.subject_id',
@@ -192,22 +209,18 @@ class AcademicController extends Controller
             )
             ->get();
 
-        $teacherStats = [];
-        foreach ($teacherAssignments as $a) {
-            $tId = $a->teacher_user_id;
-            if (!$tId)
-                continue;
-            if (!isset($teacherStats[$tId])) {
-                $teacherStats[$tId] = ['total_weekly_hours' => 0, 'assignments' => []];
-            }
-            $teacherStats[$tId]['total_weekly_hours'] += (int) $a->weekly_hours;
-            $teacherStats[$tId]['assignments'][] = [
-                'subject_id' => $a->subject_id,
-                'subject_name' => $a->subject_name,
-                'class_id' => $a->class_id,
-                'class_name' => $a->class_name,
-            ];
-        }
+        // Grupimi për çdo profesor
+        $teacherStats = $teacherAssignments
+            ->groupBy('teacher_user_id')
+            ->map(fn($assignments) => [
+                'total_weekly_hours' => $assignments->sum(fn($a) => (int) $a->weekly_hours),
+                'assignments' => $assignments->map(fn($a) => [
+                    'subject_id' => $a->subject_id,
+                    'subject_name' => $a->subject_name,
+                    'class_id' => $a->class_id,
+                    'class_name' => $a->class_name,
+                ])->values()
+            ]);
 
         return response()->json([
             'success' => true,
