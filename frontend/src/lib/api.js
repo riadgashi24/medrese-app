@@ -118,6 +118,8 @@ export const api = {
       request(`/classes/${id}`, { method: 'DELETE' }),
     assignHomeroom: (id, staffId) => request(`/classes/${id}/assign-homeroom`, { method: 'POST', body: { staff_id: staffId } }),
     assignStudents: (id, studentIds) => request(`/classes/${id}/assign-students`, { method: 'POST', body: { student_ids: studentIds } }),
+    grades: (classId) => request(`/classes/${classId}/grades`, { method: 'GET' }),
+    updateGrade: (classId, payload) => request(`/classes/${classId}/grades`, { method: 'PUT', body: payload }),
   },
 
   staff: {
@@ -128,8 +130,6 @@ export const api = {
     subjects: () => request('/academic/subjects', { method: 'GET' }),
     timetable: (params) => request('/academic/timetable', { method: 'GET', query: params }),
     academicYears: () => request('/academic-years', { method: 'GET' }),
-
-    // METODAT E REJA TË SHTUARA:
     storeSubject: (payload) => request('/academic/subjects', { method: 'POST', body: payload }),
     updateSubject: (id, payload) => request(`/academic/subjects/${id}`, { method: 'PUT', body: payload }),
     destroySubject: (id) => request(`/academic/subjects/${id}`, { method: 'DELETE' }),

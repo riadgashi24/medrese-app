@@ -13,6 +13,7 @@ use App\Http\Controllers\DocumentsController;
 use App\Http\Controllers\DormitoryController;
 use App\Http\Controllers\ExtracurricularController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\GradeController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentsController;
@@ -117,6 +118,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/fajr', [AttendanceController::class, 'storeFajr'])->middleware('role:educator');
     Route::post('/attendance/study-hours', [AttendanceController::class, 'storeStudyHours'])->middleware('role:educator');
     Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->middleware('role:teacher,educator,director,secretary');
+
+    Route::get('/classes/{classId}/grades', [GradeController::class, 'getClassGrades']);
+    Route::put('/classes/{classId}/grades', [GradeController::class, 'updateGrade']);
 
     // Dormitory
     Route::middleware('role:director,educator,secretary')->group(function () {

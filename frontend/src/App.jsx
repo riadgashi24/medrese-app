@@ -36,9 +36,7 @@ import {
   SettingsPage,
   ProfilePage,
 } from '@/pages/modules/ModulePages'
-import {
-  GradesPage
-} from '@/pages/modules/AcademicModules/GradesPage'
+import GradesPage from '@/pages/modules/AcademicModules/GradesPage'
 import TimetablePage from '@/pages/modules/AcademicModules/Timetable'
 import ClassesPage from '@/pages/modules/AcademicModules/classes/ClassesPage'
 import ClassDetailPage from '@/pages/modules/AcademicModules/classes/ClassDetail'
