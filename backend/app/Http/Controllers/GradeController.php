@@ -94,6 +94,35 @@ class GradeController extends Controller
     }
 
     /**
+     * Student's own grades (read-only)
+     */
+    public function studentGrades(Request $request)
+    {
+        $user = $request->user();
+        $student = $user->student;
+
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'No student profile.'], 404);
+        }
+
+        $grades = Grade::with('subject')
+            ->where('student_id', $student->id)
+            ->get()
+            ->map(fn($g) => [
+                'id' => $g->id,
+                'subject' => $g->subject?->name,
+                'term_1' => $g->term_1_grade,
+                'term_2' => $g->term_2_grade,
+                'final' => $g->final_grade,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $grades,
+        ]);
+    }
+
+    /**
      * Përditëso ose mbishkruaj notat (Për Mësuesin & Drejtorin)
      */
     public function updateGrade(Request $request, $classId)

@@ -87,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/academic-years', [AcademicController::class, 'academicYears']);
     Route::get('/academic-years/{id}', [AcademicController::class, 'academicYear']);
+    Route::post('/academic-years', [AcademicController::class, 'storeAcademicYear'])->middleware('role:director,secretary');
+    Route::put('/academic-years/{id}/activate', [AcademicController::class, 'activateAcademicYear'])->middleware('role:director,secretary');
 
     // Dashboard
     Route::middleware('role:secretary')->get('/dashboard/secretary', [DashboardController::class, 'secretary']);
@@ -119,17 +121,38 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/study-hours', [AttendanceController::class, 'storeStudyHours'])->middleware('role:educator');
     Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->middleware('role:teacher,educator,director,secretary');
 
+    // Attendance review (homeroom teacher)
+    Route::post('/attendance/review', [AttendanceController::class, 'reviewAbsence'])->middleware('role:teacher,educator,director,secretary');
+    Route::post('/attendance/review-batch', [AttendanceController::class, 'batchReviewAbsences'])->middleware('role:teacher,educator,director,secretary');
+    Route::get('/attendance/pending-review', [AttendanceController::class, 'pendingReview']);
+
     Route::get('/classes/{classId}/grades', [GradeController::class, 'getClassGrades']);
     Route::put('/classes/{classId}/grades', [GradeController::class, 'updateGrade']);
+
+    // Teacher dashboard - weekly schedule & lesson cards
+    Route::get('/teacher/schedule', [DashboardController::class, 'teacherSchedule']);
+    Route::get('/teacher/today', [DashboardController::class, 'teacherToday']);
 
     // Dormitory
     Route::middleware('role:director,educator,secretary')->group(function () {
         Route::get('/dormitory', [DormitoryController::class, 'overview']);
         Route::get('/dormitory/rooms', [DormitoryController::class, 'rooms']);
         Route::get('/dormitory/inspections', [DormitoryController::class, 'inspections']);
+        Route::post('/dormitory/assign-room', [DormitoryController::class, 'assignRoom']);
+        Route::post('/dormitory/unassign-room/{assignment}', [DormitoryController::class, 'unassignRoom']);
+        Route::post('/dormitory/archive-year', [DormitoryController::class, 'archiveYear']);
     });
     Route::post('/dormitory/inspections', [DormitoryController::class, 'storeInspection'])->middleware('role:educator');
+    Route::get('/dormitory/inspections/{id}', [DormitoryController::class, 'inspections'])->middleware('role:educator');
+    Route::put('/dormitory/inspections/{id}', [DormitoryController::class, 'updateInspection'])->middleware('role:educator');
+    Route::delete('/dormitory/inspections/{id}', [DormitoryController::class, 'destroyInspection'])->middleware('role:educator,director');
+    Route::get('/dormitory/leaderboard', [DormitoryController::class, 'leaderboard']);
     Route::get('/dormitory/my-room', [DormitoryController::class, 'myRoom'])->middleware('role:student,boarding,educator');
+
+    // Student portal - financial data
+    Route::get('/student/finance', [FinanceController::class, 'studentFinance'])->middleware('role:student,boarding');
+    Route::get('/student/grades', [GradeController::class, 'studentGrades'])->middleware('role:student,boarding');
+    Route::get('/student/attendance', [AttendanceController::class, 'studentAttendance'])->middleware('role:student,boarding');
 
     // Discipline
     Route::middleware('role:teacher,educator,director')->group(function () {

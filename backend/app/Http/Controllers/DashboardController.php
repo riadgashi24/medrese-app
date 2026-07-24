@@ -10,6 +10,7 @@ use App\Models\Staff;
 use App\Models\Student;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -61,6 +62,68 @@ class DashboardController extends Controller
             ],
 
             'announcements' => $announcements,
+        ]);
+    }
+
+    public function teacherSchedule(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $academicYearId = \App\Models\AcademicYear::where('is_active', true)->value('id');
+
+        if (!$academicYearId) {
+            return response()->json(['success' => false, 'message' => 'No active academic year.'], 404);
+        }
+
+        $slots = \App\Models\TimetableSlot::with(['class:id,name', 'subject:id,name'])
+            ->where('teacher_user_id', $user->id)
+            ->where('academic_year_id', $academicYearId)
+            ->orderBy('day')
+            ->orderBy('slot_number')
+            ->get();
+
+        $grouped = $slots->groupBy('day')->map(fn($daySlots) => [
+            'day' => $daySlots->first()->day,
+            'slots' => $daySlots->map(fn($slot) => [
+                'id' => $slot->id,
+                'slot_number' => $slot->slot_number,
+                'start_time' => $slot->start_time,
+                'end_time' => $slot->end_time,
+                'class_name' => $slot->class?->name,
+                'subject_name' => $slot->subject?->name,
+            ]),
+        ])->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $grouped,
+        ]);
+    }
+
+    public function teacherToday(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $today = now()->format('l');
+        $academicYearId = \App\Models\AcademicYear::where('is_active', true)->value('id');
+
+        $slots = \App\Models\TimetableSlot::with(['class:id,name', 'subject:id,name'])
+            ->where('teacher_user_id', $user->id)
+            ->where('day', $today)
+            ->where('academic_year_id', $academicYearId)
+            ->orderBy('slot_number')
+            ->get()
+            ->map(fn($slot) => [
+                'id' => $slot->id,
+                'slot_number' => $slot->slot_number,
+                'start_time' => $slot->start_time,
+                'end_time' => $slot->end_time,
+                'class_name' => $slot->class?->name,
+                'class_id' => $slot->class_id,
+                'subject_name' => $slot->subject?->name,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $slots,
         ]);
     }
 

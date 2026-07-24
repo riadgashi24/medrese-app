@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePaymentRequest;
-use App\Http\Requests\CreateFeeStructureRequest;
 use App\Http\Resources\FeeStructureResource;
 use App\Http\Resources\FeeStructuresResource;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\PaymentsResource;
-use App\Models\Student;
 use App\Services\FeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -181,6 +179,45 @@ class FinanceController extends Controller
         return response()->json([
             'success' => true,
             'data' => $reports,
+        ]);
+    }
+
+    /**
+     * Student's own financial view (read-only)
+     */
+    public function studentFinance(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $student = $user->student;
+
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'No student profile.'], 404);
+        }
+
+        $payments = \App\Models\Payment::with('feeType')
+            ->where('student_id', $student->id)
+            ->latest('paid_at')
+            ->get()
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'amount' => $p->amount,
+                'type' => $p->feeType?->name,
+                'method' => $p->method,
+                'status' => $p->status,
+                'date' => $p->paid_at?->toDateString(),
+            ]);
+
+        $invoices = \App\Models\Invoice::where('student_id', $student->id)
+            ->latest('issued_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'balance' => $student->balance,
+                'payments' => $payments,
+                'invoices' => $invoices,
+            ],
         ]);
     }
 }

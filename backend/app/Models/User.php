@@ -40,6 +40,11 @@ class User extends Authenticatable
         return $this->hasOne(Student::class);
     }
 
+    public function staff(): HasOne
+    {
+        return $this->hasOne(Staff::class);
+    }
+
     public function createdPayments(): HasMany
     {
         return $this->hasMany(Payment::class, 'created_by_user_id');

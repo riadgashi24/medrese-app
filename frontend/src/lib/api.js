@@ -130,6 +130,8 @@ export const api = {
     subjects: () => request('/academic/subjects', { method: 'GET' }),
     timetable: (params) => request('/academic/timetable', { method: 'GET', query: params }),
     academicYears: () => request('/academic-years', { method: 'GET' }),
+    storeAcademicYear: (payload) => request('/academic-years', { method: 'POST', body: payload }),
+    activateAcademicYear: (id) => request(`/academic-years/${id}/activate`, { method: 'PUT' }),
     storeSubject: (payload) => request('/academic/subjects', { method: 'POST', body: payload }),
     updateSubject: (id, payload) => request(`/academic/subjects/${id}`, { method: 'PUT', body: payload }),
     destroySubject: (id) => request(`/academic/subjects/${id}`, { method: 'DELETE' }),
@@ -139,6 +141,17 @@ export const api = {
   dashboard: {
     secretary: () => request('/dashboard/secretary', { method: 'GET' }),
     principal: () => request('/dashboard/principal', { method: 'GET' }),
+  },
+
+  teacher: {
+    schedule: () => request('/teacher/schedule', { method: 'GET' }),
+    today: () => request('/teacher/today', { method: 'GET' }),
+  },
+
+  studentPortal: {
+    finance: () => request('/student/finance', { method: 'GET' }),
+    grades: () => request('/student/grades', { method: 'GET' }),
+    attendance: () => request('/student/attendance', { method: 'GET' }),
   },
 
 
@@ -163,13 +176,28 @@ export const api = {
     update: (id, payload) => request(`/attendance/${id}`, { method: 'PUT', body: payload }),
     reports: (params) => request('/attendance/reports', { method: 'GET', query: params }),
     overview: (params) => request('/attendance/overview', { method: 'GET', query: params }),
+    reviewAbsence: (payload) => request('/attendance/review', { method: 'POST', body: payload }),
+    reviewBatch: (payload) => request('/attendance/review-batch', { method: 'POST', body: payload }),
+    pendingReview: () => request('/attendance/pending-review', { method: 'GET' }),
   },
 
   dormitory: {
     overview: () => request('/dormitory', { method: 'GET' }),
-    rooms: () => request('/dormitory/rooms', { method: 'GET' }),
-    inspections: () => request('/dormitory/inspections', { method: 'GET' }),
+    rooms: (params) => request('/dormitory/rooms', { method: 'GET', query: params }),
+    inspections: (params) => request('/dormitory/inspections', { method: 'GET', query: params }),
+    showInspection: (id) => request(`/dormitory/inspections/${id}`, { method: 'GET' }),
     myRoom: () => request('/dormitory/my-room', { method: 'GET' }),
+    storeInspection: (payload) => request('/dormitory/inspections', { method: 'POST', body: payload }),
+    updateInspection: (id, payload) => request(`/dormitory/inspections/${id}`, { method: 'PUT', body: payload }),
+    deleteInspection: (id) => request(`/dormitory/inspections/${id}`, { method: 'DELETE' }),
+    leaderboard: () => request('/dormitory/leaderboard', { method: 'GET' }),
+    assignRoom: (payload) => request('/dormitory/assign-room', { method: 'POST', body: payload }),
+    unassignRoom: (id) => request(`/dormitory/unassign-room/${id}`, { method: 'POST' }),
+    archiveYear: () => request('/dormitory/archive-year', { method: 'POST' }),
+  },
+
+  approvals: {
+    index: (params) => request('/approval', { method: 'GET', query: params }),
   },
 
   discipline: {

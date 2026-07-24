@@ -313,7 +313,7 @@ class AcademicController extends Controller
 
     public function academicYears(): JsonResponse
     {
-        $years = AcademicYear::all();
+        $years = AcademicYear::withCount(['classes', 'feeStructures'])->get();
 
         return response()->json([
             'success' => true,
@@ -329,6 +329,41 @@ class AcademicController extends Controller
         return response()->json([
             'success' => true,
             'data' => $year,
+        ]);
+    }
+
+    public function storeAcademicYear(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'label' => 'required|string|max:255|unique:academic_years,label',
+        ]);
+
+        $year = AcademicYear::create([
+            'label' => $validated['label'],
+            'is_active' => !AcademicYear::where('is_active', true)->exists(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $year,
+        ], 201);
+    }
+
+    public function activateAcademicYear(int $id): JsonResponse
+    {
+        $year = AcademicYear::findOrFail($id);
+
+        \DB::transaction(function () use ($year) {
+            AcademicYear::where('is_active', true)->update(['is_active' => false]);
+            $year->update(['is_active' => true]);
+        });
+
+        $year->loadCount(['classes', 'feeStructures']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $year,
+            'message' => "Viti {$year->label} u aktivizua.",
         ]);
     }
 }

@@ -26,7 +26,10 @@ import {
   DormitoryPage,
   RoomsPage,
   InspectionsPage,
+  InspectionFormPage,
   MyRoomPage,
+  LeaderboardPage,
+  AbsenceApprovalPage,
   DisciplinePage,
   DisciplineRecordPage,
   MyDisciplinePage,
@@ -146,9 +149,13 @@ function AppRoutes() {
         <Route path="/dormitory" element={<DormitoryPage />} />
         <Route path="/dormitory/rooms" element={<RoomsPage />} />
         <Route path="/dormitory/inspections" element={<InspectionsPage />} />
+        <Route path="/dormitory/inspections/new" element={<InspectionFormPage />} />
+        <Route path="/dormitory/inspections/:id/edit" element={<InspectionFormPage />} />
         <Route path="/dormitory/my-room" element={<MyRoomPage />} />
+        <Route path="/dormitory/leaderboard" element={<LeaderboardPage />} />
 
         {/* Attendance */}
+        <Route path="/attendance/approval" element={<AbsenceApprovalPage />} />
         <Route path="/classes/:id/attendance" element={<AttendancePage />} />
         <Route path="/classes/:id/attendance/take" element={<AttendancePage />} />
         <Route path="/classes/:id/attendance/fajr" element={<FajrAttendancePage />} />
