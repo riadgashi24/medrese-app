@@ -110,9 +110,20 @@ export default function ClassFormPage({ mode = 'create' }) {
 
             navigate(isEdit ? `/classes/${id}` : '/classes')
         } catch (err) {
-            if (err.response?.status === 422 || err.status === 422) {
-                setErrors(err.response?.data?.errors || {})
-            } else {
+            // api.js hedh gabime si new Error(JSON.stringify({status, message, code}))
+            // Për 422, përpiqemi të marrim errors nga message
+            let statusCode = 0
+            try {
+                const parsed = JSON.parse(err.message)
+                if (parsed.status === 422 && parsed.errors) {
+                    setErrors(parsed.errors)
+                } else {
+                    statusCode = parsed.status
+                }
+            } catch {
+                // Nëse nuk është JSON, vazhdo
+            }
+            if (!statusCode || statusCode !== 422) {
                 console.error('Gabim gjatë ruajtjes:', err)
             }
         } finally {

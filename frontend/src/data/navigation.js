@@ -85,7 +85,6 @@ export const NAV_BY_ROLE = {
       icon: Gavel,
       children: [
         { label: 'Rastet', path: '/discipline' },
-        { label: 'Masat Disiplinore', path: '/discipline/actions' },
       ],
     },
 
@@ -94,7 +93,6 @@ export const NAV_BY_ROLE = {
       icon: BookOpen,
       children: [
         { label: 'Aktivitetet', path: '/extracurricular' },
-        { label: 'Klubet', path: '/clubs' },
       ],
     },
 
@@ -102,10 +100,10 @@ export const NAV_BY_ROLE = {
       label: 'Raportet',
       icon: BarChart3,
       children: [
-        { label: 'Akademike', path: '/reports/academic' },
-        { label: 'Financiare', path: '/reports/finance' },
-        { label: 'Prezenca', path: '/reports/attendance' },
-        { label: 'Disiplina', path: '/reports/discipline' },
+        { label: 'Akademike', path: '/reports' },
+        { label: 'Financiare', path: '/reports' },
+        { label: 'Prezenca', path: '/reports' },
+        { label: 'Disiplina', path: '/reports' },
       ],
     },
 
@@ -129,10 +127,10 @@ export const NAV_BY_ROLE = {
       children: [
         { label: 'Te gjithe nxenesit', path: '/students' },
         { label: 'Caktimet ne klasa', path: '/classes' },
-        { label: 'Dokumentet', path: '/documents' },
+        { label: 'Dokumentet', path: '/documents/my-documents' },
       ],
     },
-    { label: 'Stafi', path: '/teachers', icon: Users },
+    { label: 'Stafi', path: '/staff', icon: Users },
     { label: 'Raportet financiare', path: '/finance/reports', icon: PieChart, badge: 'Vetem lexim' },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
     { label: 'Profili', path: '/profile', icon: Users },
@@ -155,17 +153,8 @@ export const NAV_BY_ROLE = {
   [ROLES.TEACHER]: [
     { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Klasat e mia', path: '/classes', icon: Calendar },
-    { label: 'Prezenca', path: '/attendance', icon: CheckSquare },
-    {
-      label: 'Notat',
-      icon: NotebookPen,
-      children: [
-        { label: 'Vendos nota', path: '/grades/entry' },
-        { label: 'Provimet', path: '/grades/exams' },
-        { label: 'Raportet', path: '/grades/reports' },
-      ],
-    },
-    { label: 'Detyrat', path: '/assignments', icon: Upload },
+    { label: 'Prezenca', path: '/classes', icon: CheckSquare },
+    { label: 'Notat', path: '/classes', icon: NotebookPen },
     { label: 'Nxenesit', path: '/students', icon: Users },
     { label: 'Mbikeqyrja', path: '/discipline', icon: Shield },
   ],
@@ -192,8 +181,8 @@ export const NAV_BY_ROLE = {
       label: 'Prezenca',
       icon: CheckSquare,
       children: [
-        { label: 'Oret e mesimit', path: '/attendance/study-hours' },
-        { label: 'Namazi i sabahut', path: '/attendance/fajr' },
+        { label: 'Oret e mesimit', path: '/dormitory/rooms' },
+        { label: 'Namazi i sabahut', path: '/dormitory/rooms' },
       ],
     },
     { label: 'Raporte', path: '/reports', icon: FileText },
@@ -201,29 +190,27 @@ export const NAV_BY_ROLE = {
   [ROLES.STUDENT]: [
     { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Orari', path: '/timetable', icon: Calendar },
-    { label: 'Notat e mia', path: '/grades/reports', icon: BarChart3 },
+    { label: 'Notat e mia', path: '/dashboard', icon: BarChart3 },
     { label: 'Prezenca ime', path: '/attendance/reports', icon: CheckSquare },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
     { label: 'Dokumentet', path: '/documents/my-documents', icon: Download },
     { label: 'Gjendja e pagesave', path: '/finance/pay', icon: CreditCard },
     { label: 'Disiplina', path: '/discipline/my-record', icon: Gavel },
-    { label: 'Detyrat', path: '/assignments', icon: BookOpen },
   ],
   [ROLES.BOARDING]: [
     { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Orari', path: '/timetable', icon: Calendar },
-    { label: 'Notat e mia', path: '/grades/reports', icon: BarChart3 },
+    { label: 'Notat e mia', path: '/dashboard', icon: BarChart3 },
     { label: 'Prezenca ime', path: '/attendance/reports', icon: CheckSquare },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
     { label: 'Dokumentet', path: '/documents/my-documents', icon: Download },
     { label: 'Gjendja e pagesave', path: '/finance/pay', icon: CreditCard },
     { label: 'Disiplina', path: '/discipline/my-record', icon: Gavel },
-    { label: 'Detyrat', path: '/assignments', icon: BookOpen },
     { label: 'Dhoma ime', path: '/dormitory/my-room', icon: Home },
     { label: 'Paguaj konviktin', path: '/finance/pay', icon: Wallet },
     { label: 'Raportet e pastertise', path: '/dormitory/inspections', icon: Sparkles },
-    { label: 'Oret e mesimit', path: '/attendance/study-hours', icon: BookOpen },
-    { label: 'Prezenca ne sabah', path: '/attendance/fajr', icon: Sun },
+    { label: 'Oret e mesimit', path: '/dormitory/rooms', icon: BookOpen },
+    { label: 'Prezenca ne sabah', path: '/dormitory/rooms', icon: Sun },
     { label: 'Verejtjet e edukatorit', path: '/discipline/my-record', icon: Gavel },
   ],
 }

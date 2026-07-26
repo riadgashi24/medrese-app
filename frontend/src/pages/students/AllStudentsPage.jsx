@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Search, UserPlus } from 'lucide-react'
 import { api } from '@/lib/api'
-import { t } from '@/i18n'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -20,14 +19,15 @@ export function AllStudentsPage() {
     const loadAllStudents = async () => {
       try {
         const res = await api.students.index({ per_page: 2000 })
+
         const rawData = Array.isArray(res) ? res : res?.data || []
-        
+
         const mapped = rawData.map((s) => ({
           id: s.id,
           studentId: s.student_id || '-',
           name: `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.name || '-',
           email: s.student_email || s.email || '-',
-          className: s.class?.name || '-',
+          className: s.class_name || '-',
           type: s.type,
           status: s.status,
         }))

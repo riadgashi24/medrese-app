@@ -168,7 +168,7 @@ export default function ClassDetailPage() {
                 </CardContent>
             </Card>
 
-            {/* Modulet e klasës */}
+            {/* Modulet e klasës — vetëm ato me route ekzistuese */}
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <ModuleCard
                     icon={Users}
@@ -186,30 +186,6 @@ export default function ClassDetailPage() {
                     icon={NotebookPen}
                     title="Notat"
                     onClick={() => navigate(`/classes/${id}/grades`)}
-                />
-
-                <ModuleCard
-                    icon={BookOpen}
-                    title="Lëndët"
-                    onClick={() => navigate(`/classes/${id}/subjects`)}
-                />
-
-                <ModuleCard
-                    icon={Clock3}
-                    title="Orari"
-                    onClick={() => navigate(`/classes/${id}/timetable`)}
-                />
-
-                <ModuleCard
-                    icon={DollarSign}
-                    title="Pagesat"
-                    onClick={() => navigate(`/classes/${id}/finance`)}
-                />
-
-                <ModuleCard
-                    icon={FileText}
-                    title="Dokumentet"
-                    onClick={() => navigate(`/classes/${id}/documents`)}
                 />
             </div>
         </div>

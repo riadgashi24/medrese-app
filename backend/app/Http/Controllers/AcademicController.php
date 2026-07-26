@@ -7,6 +7,7 @@ use App\Models\ClassModel;
 use App\Models\DaySupervisor;
 use App\Models\Subject;
 use App\Models\TimetableSlot;
+use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -338,14 +339,37 @@ class AcademicController extends Controller
             'label' => 'required|string|max:255|unique:academic_years,label',
         ]);
 
+        $hasActiveYear = AcademicYear::where('is_active', true)->exists();
+
         $year = AcademicYear::create([
             'label' => $validated['label'],
-            'is_active' => !AcademicYear::where('is_active', true)->exists(),
+            'is_active' => !$hasActiveYear,
         ]);
+
+        // Nëse ka një vit aktiv, promovo automatikisht
+        if ($hasActiveYear) {
+            $promoteRequest = new \Illuminate\Http\Request();
+            $promoteResponse = $this->promoteAcademicYear($promoteRequest, $year->id);
+
+            if (!$promoteResponse->getData()->success) {
+                // Nëse promovimi dështon, fshij vitin e krijuar
+                $year->delete();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $promoteResponse->getData()->message ?? 'Promovimi dështoi.',
+                ], 500);
+            }
+        }
+
+        $year->loadCount(['classes', 'feeStructures']);
 
         return response()->json([
             'success' => true,
             'data' => $year,
+            'message' => $hasActiveYear
+                ? "Viti {$year->label} u krijua dhe u promovua automatikisht."
+                : "Viti {$year->label} u krijua.",
         ], 201);
     }
 
@@ -353,7 +377,7 @@ class AcademicController extends Controller
     {
         $year = AcademicYear::findOrFail($id);
 
-        \DB::transaction(function () use ($year) {
+        DB::transaction(function () use ($year) {
             AcademicYear::where('is_active', true)->update(['is_active' => false]);
             $year->update(['is_active' => true]);
         });
@@ -365,5 +389,163 @@ class AcademicController extends Controller
             'data' => $year,
             'message' => "Viti {$year->label} u aktivizua.",
         ]);
+    }
+
+    /**
+     * Përditëso etiketën e një viti akademik.
+     */
+    public function updateAcademicYear(Request $request, int $id): JsonResponse
+    {
+        $year = AcademicYear::findOrFail($id);
+
+        $validated = $request->validate([
+            'label' => 'required|string|max:255|unique:academic_years,label,' . $id,
+        ]);
+
+        $year->update(['label' => $validated['label']]);
+        $year->loadCount(['classes', 'feeStructures']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $year,
+            'message' => "Viti {$year->label} u përditësua me sukses.",
+        ]);
+    }
+
+    /**
+     * Promovo nxënësit dhe klasat për vitin e ri akademik.
+     *
+     * - Klasat 10/X bëhen 11/X (nxënësit + kujdestari)
+     * - Klasat 11/X bëhen 12/X (nxënësit + kujdestari)
+     * - Nxënësit e klasës 12/X marrin status 'Graduated'
+     * - Hapen klasat e reja 10/X me kujdestarët e ish-klaseve 12/X
+     */
+    public function promoteAcademicYear(Request $request, int $newAcademicYearId): JsonResponse
+    {
+        $newYear = AcademicYear::findOrFail($newAcademicYearId);
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        if (!$activeYear) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nuk ka asnjë vit aktiv për të kryer promovimin.',
+            ], 400);
+        }
+
+        if ($activeYear->id === $newYear->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Viti i ri nuk mund të jetë i njëjtë me vitin aktiv.',
+            ], 400);
+        }
+
+        // Parandalon promovimin e dyfishtë nëse viti ka tashmë klasa
+        if (ClassModel::where('academic_year_id', $newAcademicYearId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ky vit akademik tashmë ka klasa. Promovimi mund të bëhet vetëm një herë.',
+            ], 400);
+        }
+
+        try {
+            DB::transaction(function () use ($activeYear, $newYear) {
+                // 1. Merr të gjitha klasat nga viti aktiv (vetëm fushat e nevojshme)
+                $oldClasses = ClassModel::where('academic_year_id', $activeYear->id)
+                    ->select('id', 'name', 'homeroom_staff_id')
+                    ->with('students:id,class_id')
+                    ->get();
+
+                $twelfthGradeTeachers = [];
+
+                foreach ($oldClasses as $oldClass) {
+                    // Shkëput emrin: p.sh. "10/1" → ['10', '1']
+                    $parts = explode('/', $oldClass->name);
+                    $grade = (int)($parts[0] ?? 0);
+                    $parallel = $parts[1] ?? '';
+
+                    if ($grade === 10) {
+                        // Klasa 10/X → 11/X
+                        $newName = '11/' . $parallel;
+                        $newClass = $this->createPromotedClass($newYear->id, $newName, $parallel, $oldClass->homeroom_staff_id);
+                        $this->moveStudentsToClass($oldClass->students, $newClass->id);
+
+                    } elseif ($grade === 11) {
+                        // Klasa 11/X → 12/X
+                        $newName = '12/' . $parallel;
+                        $newClass = $this->createPromotedClass($newYear->id, $newName, $parallel, $oldClass->homeroom_staff_id);
+                        $this->moveStudentsToClass($oldClass->students, $newClass->id);
+
+                    } elseif ($grade === 12) {
+                        // Nxënësit e klasës 12 marrin status 'Graduated'
+                        Student::whereIn('id', $oldClass->students->pluck('id'))
+                            ->update(['status' => 'Graduated']);
+
+                        // Ruaj kujdestarët për klasat e reja 10
+                        if ($oldClass->homeroom_staff_id) {
+                            $twelfthGradeTeachers[] = [
+                                'parallel' => $parallel,
+                                'homeroom_staff_id' => $oldClass->homeroom_staff_id,
+                            ];
+                        }
+                    }
+                }
+
+                // 3. Krijo klasat e reja 10/X me kujdestarët e ish-12
+                foreach ($twelfthGradeTeachers as $teacher) {
+                    $newName = '10/' . $teacher['parallel'];
+                    $this->createPromotedClass($newYear->id, $newName, $teacher['parallel'], $teacher['homeroom_staff_id']);
+                }
+            });
+
+            $newYear->loadCount(['classes', 'feeStructures']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $newYear,
+                'message' => 'Viti i ri u promovua me sukses! Klasat 10→11, 11→12, 12→të diplomuar, 10-tat e reja u krijuan.',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Promovimi dështoi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Krijon një klasë të promovuar në vitin e ri.
+     * Përdor firstOrCreate për të parandaluar duplikatet.
+     */
+    private function createPromotedClass(int $academicYearId, string $name, string $section, ?int $homeroomStaffId): ClassModel
+    {
+        return ClassModel::firstOrCreate(
+            [
+                'academic_year_id' => $academicYearId,
+                'name' => $name,
+            ],
+            [
+                'section' => $section,
+                'homeroom_staff_id' => $homeroomStaffId,
+            ]
+        );
+    }
+
+    /**
+     * Lëviz nxënësit në një klasë të re.
+     * Përdor chunked për performancë më të mirë me shumë nxënës.
+     */
+    private function moveStudentsToClass($students, int $newClassId): void
+    {
+        if ($students->isEmpty()) {
+            return;
+        }
+
+        // Përdor chunked updates për të shmangur queries të mëdha me mijëra nxënës
+        $studentIds = $students->pluck('id');
+        $studentIds->chunk(100)->each(function ($chunk) use ($newClassId) {
+            Student::whereIn('id', $chunk)
+                ->update(['class_id' => $newClassId]);
+        });
     }
 }

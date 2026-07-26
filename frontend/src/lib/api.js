@@ -57,7 +57,9 @@ async function request(path, { method = 'GET', body, query, headers } = {}) {
     const message =
       payload?.error?.message || payload?.message || `Request failed (${res.status})`
     const code = payload?.error?.code || 'HTTP_ERROR'
-    throw new Error(JSON.stringify({ message, code, status: res.status }))
+    // Përfshijmë edhe errors për validimin 422 në mënyrë që format të mund t'i lexojë
+    const errors = payload?.errors || null
+    throw new Error(JSON.stringify({ message, code, status: res.status, errors }))
   }
 
   return payload
@@ -131,7 +133,9 @@ export const api = {
     timetable: (params) => request('/academic/timetable', { method: 'GET', query: params }),
     academicYears: () => request('/academic-years', { method: 'GET' }),
     storeAcademicYear: (payload) => request('/academic-years', { method: 'POST', body: payload }),
+    updateAcademicYear: (id, payload) => request(`/academic-years/${id}`, { method: 'PUT', body: payload }),
     activateAcademicYear: (id) => request(`/academic-years/${id}/activate`, { method: 'PUT' }),
+    promoteAcademicYear: (id) => request(`/academic-years/${id}/promote`, { method: 'POST' }),
     storeSubject: (payload) => request('/academic/subjects', { method: 'POST', body: payload }),
     updateSubject: (id, payload) => request(`/academic/subjects/${id}`, { method: 'PUT', body: payload }),
     destroySubject: (id) => request(`/academic/subjects/${id}`, { method: 'DELETE' }),

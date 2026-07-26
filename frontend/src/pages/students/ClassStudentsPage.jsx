@@ -139,7 +139,7 @@ export function ClassStudentsPage() {
 
                 <div className="flex items-center gap-2 shrink-0">
                     <Button
-                        variant={viewMode === 'cards' ? 'primary' : 'secondary'}
+                        variant={viewMode === 'cards' ? 'default' : 'secondary'}
                         onClick={() => setViewMode('cards')}
                         size="sm"
                         className="gap-2"
@@ -147,7 +147,7 @@ export function ClassStudentsPage() {
                         <LayoutGrid className="h-4 w-4" /> Kartela
                     </Button>
                     <Button
-                        variant={viewMode === 'table' ? 'primary' : 'secondary'}
+                        variant={viewMode === 'table' ? 'default' : 'secondary'}
                         onClick={() => setViewMode('table')}
                         size="sm"
                         className="gap-2"

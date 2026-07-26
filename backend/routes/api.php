@@ -88,7 +88,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/academic-years', [AcademicController::class, 'academicYears']);
     Route::get('/academic-years/{id}', [AcademicController::class, 'academicYear']);
     Route::post('/academic-years', [AcademicController::class, 'storeAcademicYear'])->middleware('role:director,secretary');
+    Route::put('/academic-years/{id}', [AcademicController::class, 'updateAcademicYear'])->middleware('role:director,secretary');
     Route::put('/academic-years/{id}/activate', [AcademicController::class, 'activateAcademicYear'])->middleware('role:director,secretary');
+    Route::post('/academic-years/{id}/promote', [AcademicController::class, 'promoteAcademicYear'])->middleware('role:director,secretary');
 
     // Dashboard
     Route::middleware('role:secretary')->get('/dashboard/secretary', [DashboardController::class, 'secretary']);

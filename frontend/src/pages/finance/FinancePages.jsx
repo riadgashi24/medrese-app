@@ -285,7 +285,7 @@ export function StudentPayPage() {
                 ))}
               </Select>
             </div>
-            <Button className="w-full">Vazhdo te pagesa</Button>
+
           </CardContent>
         </Card>
       </div>
@@ -326,7 +326,7 @@ export function InvoicesPage() {
 
   return (
     <div>
-      <PageHeader title="Faturat dhe kuponet" description="Gjenero dhe menaxho faturat" actions={<Button>Gjenero fature</Button>} />
+      <PageHeader title="Faturat dhe kuponet" description="Gjenero dhe menaxho faturat" />
       {data.length ? <DataTable columns={columns} data={data} /> : <Card><CardContent><EmptyMessage loading={loading} error={error} /></CardContent></Card>}
     </div>
   )

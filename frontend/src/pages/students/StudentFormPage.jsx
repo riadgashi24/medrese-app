@@ -146,7 +146,6 @@ export function StudentFormPage({ mode = 'create', studentData: propStudentData 
       }
 
       if (mode === 'edit' && id) {
-        console.log(payload);
         await api.students.update(id, payload)
         navigate(`/students/${id}`)
       } else {
@@ -154,13 +153,19 @@ export function StudentFormPage({ mode = 'create', studentData: propStudentData 
         navigate('/students')
       }
     } catch (err) {
-      console.error('API Error:', err.response?.data)
-      const laravelErrors = err.response?.data?.errors
-      if (laravelErrors) {
-        const firstErrorKey = Object.keys(laravelErrors)[0]
-        setError(`${firstErrorKey}: ${laravelErrors[firstErrorKey][0]}`)
-      } else {
-        setError(err.response?.data?.message || 'Gabim gjatë ruajtjes.')
+      // api.js hedh gabime si new Error(JSON.stringify({status, message, code, errors}))
+      try {
+        const parsed = JSON.parse(err.message)
+        const msg = parsed.message || 'Gabim gjatë ruajtjes.'
+        const laravelErrors = parsed.errors
+        if (laravelErrors) {
+          const firstErrorKey = Object.keys(laravelErrors)[0]
+          setError(`${firstErrorKey}: ${laravelErrors[firstErrorKey][0]}`)
+        } else {
+          setError(msg)
+        }
+      } catch {
+        setError('Gabim gjatë ruajtjes.')
       }
     } finally {
       setLoading(false)

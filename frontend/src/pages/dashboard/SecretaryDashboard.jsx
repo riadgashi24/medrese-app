@@ -40,7 +40,7 @@ export function SecretaryDashboard() {
         <Link to="/students">
           <StatCard
             label="Nxënës"
-            value={dashboard?.stats.total_students ?? '-'}
+            value={dashboard?.stats?.total_students ?? '-'}
             hint="Gjithsej"
             icon={Users}
           />
@@ -48,21 +48,21 @@ export function SecretaryDashboard() {
 
         <StatCard
           label="Regjistrime në pritje"
-          value={dashboard?.stats.pending_enrollments ?? '-'}
+          value={dashboard?.stats?.pending_enrollments ?? '-'}
           hint="Presin miratim"
           icon={UserPlus}
         />
 
         <StatCard
           label="Pa klasë"
-          value={dashboard?.stats.class_assignments ?? '-'}
+          value={dashboard?.stats?.class_assignments ?? '-'}
           hint="Duhet caktuar"
           icon={ClipboardList}
         />
 
         <StatCard
           label="Dokumente"
-          value={dashboard?.stats.documents ?? '-'}
+          value={dashboard?.stats?.documents ?? '-'}
           hint="Në sistem"
           icon={FileText}
         />

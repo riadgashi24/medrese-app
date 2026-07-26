@@ -1,897 +1,526 @@
-# 📚 Medrese School Management System (SMS)
+# Dokumentimi i Projektit — Medreseja Alauddin School Management System
 
-> **A comprehensive school management platform purpose-built for Islamic educational institutions (Medreses).**
-> Manages students, staff, academics, finance, dormitory, discipline, and extracurricular activities with role-based dashboards.
-
----
-
-## 📖 Table of Contents
-
-1. [Project Overview](#-project-overview)
-2. [Technology Stack](#-technology-stack)
-3. [Architecture Overview](#-architecture-overview)
-4. [Backend Documentation](#-backend-documentation)
-   - [Setup & Installation](#backend-setup--installation)
-   - [Environment Variables](#environment-variables)
-   - [Authentication System](#authentication-system)
-   - [API Endpoints Reference](#api-endpoints-reference)
-   - [Database Schema](#database-schema)
-   - [Services Layer](#services-layer)
-5. [Frontend Documentation](#-frontend-documentation)
-   - [Setup & Installation](#frontend-setup--installation)
-   - [Project Structure](#project-structure)
-   - [Component Architecture](#component-architecture)
-   - [State Management](#state-management)
-   - [Routing System](#routing-system)
-   - [Key Pages & Features](#key-pages--features)
-6. [Deployment Guide](#-deployment-guide)
-7. [Project File Tree](#-project-file-tree)
+> **Sistem i integruar për menaxhimin e shkollave të mesme fetare (medrese)**
+> Backend: Laravel 11 · Frontend: React 19 · Database: MySQL
 
 ---
 
-## 🎯 Project Overview
+## 1. Përshkrimi i Projektit
 
-The **Medrese School Management System (SMS)** is an end-to-end digital solution for managing the daily operations of a Medrese (Islamic school). It provides a centralized platform for:
-
-- **Student Lifecycle Management**: From enrollment to graduation, including registration, profile management, document handling, and academic tracking.
-- **Academic Administration**: Class management, subject assignment, timetable scheduling, grade entry, and assignment submissions.
-- **Finance & Fee Management**: Fee structures, payment recording, invoice generation, and outstanding balance tracking.
-- **Attendance Tracking**: Classroom attendance, Fajr (dawn prayer) attendance, and study hours monitoring.
-- **Dormitory Management**: Room assignments, inspections, and boarding student oversight.
-- **Discipline System**: Recording and tracking disciplinary actions, positive behavior recognition.
-- **Extracurricular Activities**: Hifz (Quran memorization) programs, clubs, and activity enrollment.
-- **Announcements & Communications**: School-wide notifications and document sharing.
-
-The system features **role-based access control** with tailored dashboards for each role: Director, Secretary, Cashier, Teacher, Educator, Student, and Boarding Student. The UI is fully localized in Albanian (`sq`) with a modern, dark-themed interface.
+| Fusha | Vlera |
+|-------|-------|
+| **Emri i projektit** | Medreseja Alauddin — School Management System |
+| **Qëllimi** | Sistem i integruar për menaxhimin e shkollave të mesme fetare (medrese), duke përfshirë regjistrimin e nxënësve, menaxhimin akademik, financat, konviktin, disiplinën dhe njoftimet. |
+| **Problemi që zgjidh** | Medresetë kanë nevojë për një sistem të unifikuar që zëvendëson proceset manuale me regjistrime dixhitale, duke mundësuar gjurmueshmëri, raportim dhe menaxhim të centralizuar për drejtorinë, sekretarinë, mësuesit, edukatorët dhe nxënësit. |
+| **Lloji i sistemit** | Web Application (SPA) me REST API backend |
 
 ---
 
-## 🛠 Technology Stack
+## 2. Teknologjitë
 
-### Backend — Laravel 11
+### Backend
 
-| Technology | Purpose |
-|---|---|
-| **PHP 8.2+** | Runtime |
-| **Laravel 11** | MVC framework |
-| **Laravel Sanctum** | API token authentication (SPA & mobile) |
-| **SQLite** | Database engine (dev); PostgreSQL/MySQL for production |
-| **Eloquent ORM** | Database abstraction & relationships |
+| Teknologjia | Versioni | Përdorimi |
+|-------------|----------|-----------|
+| PHP | ^8.2 | Gjuha e programimit |
+| Laravel Framework | ^11.0 | KORNIZA E BACKEND-it |
+| Laravel Sanctum | ^4.0 | Autentifikimi API (token-based) |
+| Laravel Tinker | ^2.9 | REPL për debug |
 
-### Frontend — React 19 + Vite
+### Frontend
 
-| Technology | Purpose |
-|---|---|
-| **React 19** | UI library |
-| **Vite 6** | Build tool & dev server |
-| **Tailwind CSS 4** | Utility-first styling |
-| **React Router 7** | Client-side routing |
-| **TanStack React Query 5** | Server state management & caching |
-| **Recharts** | Data visualization (charts) |
-| **Lucide React** | Icon library |
-| **React Hook Form + Zod** | Form validation |
-| **Radix UI** | Accessible headless UI primitives |
-| **Class Variance Authority** | Component-style variants |
-| **jsPDF + html2canvas** | PDF export / report generation |
-| **xlsx** | Excel import/export |
+| Teknologjia | Përdorimi |
+|-------------|-----------|
+| React 19 | KORNIZA E FRONTEND-it |
+| React Router DOM 7 | Routing client-side |
+| TanStack React Query 5 | Gjendja e serverit dhe caching |
+| Vite 6 | Build tool dhe dev server |
+| Tailwind CSS 4 | Stilizimi utility-first |
 
-### Dev Tools
+### Database
 
-| Tool | Purpose |
-|---|---|
-| **Laravel Sail** | Docker-based development environment |
-| **Laravel Pint** | Code style fixer |
-| **PHPUnit** | Backend testing |
-| **Laravel Pail** | Log viewer |
+| Teknologjia | Përdorimi |
+|-------------|-----------|
+| MySQL | Database relacional (prod) |
+| SQLite | Database për development/test |
 
----
+### Authentication
 
-## 🏗 Architecture Overview
+| Teknologjia | Përdorimi |
+|-------------|-----------|
+| Laravel Sanctum | Token-based API authentication |
+| RoleMiddleware | Custom middleware për kontrollin e roleve |
 
-```
-┌─────────────┐         ┌──────────────────┐         ┌─────────────┐
-│   Browser   │  ◄──►   │  Laravel API     │  ◄──►   │  Database   │
-│  (React 19) │  HTTP   │  (Sanctum Auth)  │  ORM    │   (SQLite   │
-│             │  JSON   │                  │  Eloqu. │   /MySQL)   │
-└─────────────┘         └──────────────────┘         └─────────────┘
-       │                        │
-       │  Vite Dev Server       │  API Base: /api/v1
-       │  (port 5173)           │  (port 8000)
-```
+### Packages kryesore — Frontend
 
-### Data Flow
-
-1. **Client → Server**: React SPA communicates with Laravel backend via RESTful JSON API calls.
-2. **Authentication**: Bearer tokens issued by Sanctum upon login. Tokens are stored in `localStorage` and attached to every request via an `Authorization: Bearer <token>` header.
-3. **Server → Client**: All responses follow a consistent JSON envelope. Protected routes are guarded by Sanctum's `auth:sanctum` middleware and custom `role` middleware.
-4. **State Management**: TanStack React Query handles server state (caching, refetching, optimistic updates). Auth state is managed via React Context.
+| Package | Përdorimi |
+|---------|-----------|
+| `recharts` | Grafikët dhe vizualizimi (bar, line, pie charts) |
+| `lucide-react` | Ikonat |
+| `class-variance-authority` | Variantet e komponentëve |
+| `clsx` + `tailwind-merge` | Menaxhimi i klasave CSS |
+| `html2canvas`, `jspdf`, `xlsx` | Eksportimi i raporteve (PDF, Excel) |
+| `react-hook-form`, `zod` | Validimi i formave |
+| `@radix-ui/react-*` | Komponentë aksesueshmërie |
 
 ---
 
-## 🔧 Backend Documentation
+## 3. Arkitektura
 
-### Backend Setup & Installation
-
-#### Prerequisites
-
-- PHP 8.2 or higher
-- Composer 2.x
-- Node.js 20+ and npm
-- SQLite (dev) or MySQL/PostgreSQL (production)
-
-#### Installation Steps
-
-```bash
-# 1. Navigate to the backend directory
-cd backend
-
-# 2. Install PHP dependencies
-composer install
-
-# 3. Create environment file
-cp .env.example .env
-
-# 4. Generate application key
-php artisan key:generate
-
-# 5. Configure database (default: SQLite)
-#    For SQLite, just ensure database/database.sqlite exists:
-touch database/database.sqlite
-
-# 6. Run migrations
-php artisan migrate
-
-# 7. Seed the database with demo data
-php artisan db:seed
-
-# 8. (Optional) Create storage link for file uploads
-php artisan storage:link
-
-# 9. Start the development server
-php artisan serve
-#    → API runs at http://127.0.0.1:8000
-```
-
-#### Running in Development Mode (with all services)
-
-```bash
-composer run dev
-# Runs: php artisan serve + queue:listen + pail (logs) + npm run dev
-```
-
-#### Running Tests
-
-```bash
-composer run test
-# Or: php artisan test
-```
-
----
-
-### Environment Variables
-
-Key environment variables in `.env`:
-
-```env
-APP_NAME=MedreseSMS
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-# Database (SQLite default)
-DB_CONNECTION=sqlite
-# DB_DATABASE=/absolute/path/to/database.sqlite
-
-# For MySQL/PostgreSQL:
-# DB_CONNECTION=mysql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306
-# DB_DATABASE=medrese
-# DB_USERNAME=root
-# DB_PASSWORD=
-
-# Sanctum stateful domains (SPA domains for cookie-based auth)
-SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,127.0.0.1
-
-# Default student password for auto-generated accounts
-DEFAULT_STUDENT_PASSWORD=medrese2026
-```
-
-> **Note**: The `medrese.php` config file exposes `default_student_password` as the default password assigned to newly created student user accounts.
-
----
-
-### Authentication System
-
-The system uses **Laravel Sanctum** for API authentication with a **token-based** approach.
-
-#### How It Works
-
-1. **Login**: User submits `email` + `password` to `POST /api/v1/auth/login`.
-2. **Token Generation**: The `User` model uses `Laravel\Sanctum\HasApiTokens` trait. On successful login, a new Sanctum token is generated.
-3. **Token Storage**: The frontend stores the token in `localStorage` under the key `medrese-token`.
-4. **Authenticated Requests**: The `api.js` client automatically attaches the token via `Authorization: Bearer <token>` header.
-5. **Middleware Stack**:
-   - `auth:sanctum` — Verifies the bearer token on protected routes.
-   - `role:director,secretary,...` — Custom middleware (`RoleMiddleware`) that checks the authenticated user's `role` field.
-6. **Logout**: `POST /api/v1/auth/logout` deletes the current token.
-
-#### Role System
-
-| Role | Description |
-|---|---|
-| `director` | Full access — all modules, management, reports |
-| `secretary` | Student registration, class assignments, read-only finance |
-| `cashier` | Payment recording, invoices, fee structure, reports |
-| `teacher` | Attendance, grades, assignments, class management |
-| `educator` | Dormitory oversight, discipline, Fajr/study-hour attendance |
-| `student` | Own grades, timetable, attendance, assignments, documents |
-| `boarding` | Same as `student` + dormitory room info, inspection reports |
-
----
-
-### API Endpoints Reference
-
-**Base URL**: `http://127.0.0.1:8000/api/v1`
-
-#### Authentication
-
-| Method | Endpoint | Description | Auth | Roles |
-|---|---|---|---|---|
-| `POST` | `/auth/login` | Login with email & password | ❌ | Public |
-| `POST` | `/auth/logout` | Logout (revoke token) | ✅ | Any |
-| `GET` | `/auth/me` | Get current authenticated user | ✅ | Any |
-
-**Request — Login**:
-```json
-{
-  "email": "director@medrese.edu",
-  "password": "demo123"
-}
-```
-
-**Response — Login**:
-```json
-{
-  "data": {
-    "token": "1|abc123...",
-    "user": {
-      "id": 1,
-      "name": "Ahmed Hassan",
-      "email": "director@medrese.edu",
-      "role": "director",
-      "initials": "AH"
-    }
-  }
-}
-```
-
-#### Students
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/students` | List students (with filters) | ✅ Any |
-| `GET` | `/students/{id}` | Get student details | ✅ Any |
-| `POST` | `/students` | Create a new student | director, secretary |
-| `PUT` | `/students/{id}` | Update student | director, secretary |
-| `DELETE` | `/students/{id}` | Delete student | director, secretary |
-| `POST` | `/students/{id}/reset-password` | Reset student's password | director, secretary |
-| `DELETE` | `/students/{id}/delete` | Soft delete student | director, secretary |
-| `POST` | `/students/import` | Bulk import via Excel/CSV | director, secretary |
-| `GET` | `/students/{studentId}/pay` | Get payment info for student | director, cashier, secretary |
-
-**GET `/students` query parameters**:
-- `search` — Search by name, student_id, parent name/phone, municipality
-- `type` — Filter by `Regular` or `Boarding`
-- `status` — Filter by `Active`, `Inactive`, `Graduated`
-- `class_id` — Filter by class
-- `per_page` — Pagination (default: 15)
-
-#### Classes
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/classes` | List all classes | ✅ Any |
-| `GET` | `/classes/{id}` | Get class details | ✅ Any |
-| `POST` | `/classes` | Create a class | ✅ Any |
-| `PUT` | `/classes/{id}` | Update a class | ✅ Any |
-| `DELETE` | `/classes/{id}` | Delete a class | ✅ Any |
-| `POST` | `/classes/{class}/assign-homeroom` | Assign homeroom teacher | director, secretary |
-| `POST` | `/classes/{class}/assign-students` | Assign students to class | director, secretary |
-
-#### Academic
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/academic/classes` | Get academic class list | ✅ Any |
-| `GET` | `/academic/subjects` | List all subjects | ✅ Any |
-| `POST` | `/academic/subjects` | Create a subject | ✅ Any |
-| `PUT` | `/academic/subjects/{id}` | Update subject | ✅ Any |
-| `DELETE` | `/academic/subjects/{id}` | Delete subject | ✅ Any |
-| `GET` | `/academic/subjects/{id}/details` | Subject details with classes | ✅ Any |
-| `GET` | `/academic/report/class/{classId}/subject/{subjectId}` | Get class-subject report | ✅ Any |
-| `GET` | `/academic/timetable` | Get timetable data | ✅ Any |
-| `GET` | `/academic-years` | List academic years | ✅ Any |
-| `GET` | `/academic-years/{id}` | Get academic year | ✅ Any |
-
-#### Finance
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/finance/overview` | Finance dashboard overview | director, cashier, secretary |
-| `GET` | `/payments` | List payments | director, cashier, secretary |
-| `POST` | `/payments` | Record a payment | director, cashier |
-| `GET` | `/outstanding` | Outstanding balances | director, cashier, secretary |
-| `GET` | `/finance/reports` | Revenue reports | director, cashier, secretary |
-| `GET` | `/fee-structures` | List fee structures | director, cashier, secretary |
-| `POST` | `/fee-structures` | Create fee structure | director, cashier |
-| `PUT` | `/fee-structures/{id}` | Update fee structure | director, cashier |
-| `GET` | `/invoices` | List invoices | director, cashier, secretary |
-| `POST` | `/invoices/generate` | Generate invoice | director, cashier |
-
-#### Attendance
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/attendance` | List attendance records | ✅ Any |
-| `GET` | `/attendance/reports` | Attendance reports | ✅ Any |
-| `GET` | `/attendance/overview` | Attendance overview | ✅ Any |
-| `POST` | `/attendance` | Mark attendance | teacher, educator |
-| `POST` | `/attendance/fajr` | Mark Fajr prayer attendance | educator |
-| `POST` | `/attendance/study-hours` | Mark study hours | educator |
-| `PUT` | `/attendance/{attendance}` | Update attendance record | teacher, educator, director, secretary |
-
-#### Grades
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/classes/{classId}/grades` | Get class grades | ✅ Any |
-| `PUT` | `/classes/{classId}/grades` | Update grades | ✅ Any |
-
-#### Dormitory
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/dormitory` | Dormitory overview | director, educator, secretary |
-| `GET` | `/dormitory/rooms` | List rooms | director, educator, secretary |
-| `GET` | `/dormitory/inspections` | List inspections | director, educator, secretary |
-| `POST` | `/dormitory/inspections` | Create inspection | educator |
-| `GET` | `/dormitory/my-room` | Student's own room | student, boarding, educator |
-
-#### Discipline
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `POST` | `/discipline/record` | Record discipline entry | teacher, educator, director |
-| `GET` | `/discipline/history` | Discipline history | teacher, educator, director |
-| `GET` | `/discipline/categories` | Discipline categories | teacher, educator, director |
-| `GET` | `/discipline/my-record` | Student's own discipline record | student, boarding |
-
-#### Others
-
-| Method | Endpoint | Description | Roles |
-|---|---|---|---|
-| `GET` | `/announcements` | List announcements | ✅ Any |
-| `POST` | `/announcements` | Create announcement | director, secretary |
-| `GET` | `/documents` | List documents | ✅ Any |
-| `GET` | `/documents/my-documents` | Student's own documents | student, boarding |
-| `GET` | `/assignments` | List assignments | ✅ Any |
-| `GET` | `/assignments/my` | Student's own assignments | student, boarding |
-| `GET` | `/extracurricular` | List activities | ✅ Any |
-| `GET` | `/extracurricular/my-enrollments` | Student's enrollments | student, boarding |
-| `GET` | `/staff` | List staff members | ✅ Any |
-| `GET` | `/settings/fee-structure` | Fee structure settings | director, cashier |
-
----
-
-### Database Schema
-
-The database consists of **25+ tables** covering all domains. Key tables:
-
-| Table | Purpose |
-|---|---|
-| `users` | System users (all roles) |
-| `students` | Student profiles (extends users) |
-| `classes` | Class/section definitions |
-| `subjects` | Academic subjects |
-| `class_subject` | Pivot: subject-class assignments |
-| `academic_years` | School year definitions |
-| `timetable_slots` | Schedule entries |
-| `fee_types` | Fee category definitions |
-| `fee_structures` | Fee amount per class/type/year |
-| `payments` | Payment transactions |
-| `invoices` | Generated invoices |
-| `attendance_records` | Daily attendance |
-| `attendance_audits` | Attendance modification logs |
-| `study_hours` | Study hour tracking |
-| `dorm_rooms` | Dormitory rooms |
-| `dorm_assignments` | Student-room assignments |
-| `dorm_inspections` | Room cleanliness inspections |
-| `discipline_categories` | Violation/positive categories |
-| `discipline_records` | Discipline events |
-| `announcements` | School announcements |
-| `documents` | Shared documents |
-| `student_documents` | Per-student documents |
-| `assignments` | Class assignments/homework |
-| `assignment_submissions` | Student submissions |
-| `extracurricular_activities` | Activities (Hifz, sports, etc.) |
-| `activity_enrollments` | Student enrollments |
-| `day_supervisor` | Daily supervision roster |
-| `grades` | Student grade records |
-| `staff` | Staff profiles |
-| `approvals` | Approval workflows |
-| `personal_access_tokens` | Sanctum API tokens |
-
----
-
-### Services Layer
-
-The backend implements a **Service Layer pattern** for business logic:
-
-- **`App\Services\FeeService`** — Financial operations: payment recording, fee structure management, invoice generation, revenue reports, outstanding balance calculation.
-- **`App\Services\StudentService`** — Student management: CRUD operations, bulk import, balance calculation, auto-classification (Regular vs Boarding based on municipality).
-
----
-
-## 🎨 Frontend Documentation
-
-### Frontend Setup & Installation
-
-#### Prerequisites
-
-- Node.js 20+
-- npm or yarn
-
-#### Installation Steps
-
-```bash
-# 1. Navigate to frontend directory
-cd frontend
-
-# 2. Install dependencies
-npm install
-
-# 3. Start development server
-npm run dev
-#    → Frontend runs at http://localhost:5173
-
-# 4. Build for production
-npm run build
-#    → Output in frontend/dist/
-```
-
-#### Configuration
-
-- **API Base URL**: Defined in `src/lib/api.js` — defaults to `http://127.0.0.1:8000/api/v1`.
-- **Vite config**: Located at `frontend/vite.config.js` — includes `@` path alias, React plugin, Tailwind CSS plugin.
-
----
-
-### Project Structure
+### Frontend Folder Structure
 
 ```
-frontend/
-├── index.html                  # HTML entry point
-├── vite.config.js              # Vite configuration
-├── package.json                # Dependencies & scripts
-├── jsconfig.json               # Path alias configuration
-│
-└── src/
-    ├── main.jsx                # React entry point
-    ├── App.jsx                 # Root component with routing
-    ├── index.css               # Global styles (Tailwind + theme)
-    │
-    ├── context/
-    │   └── AuthContext.jsx     # Auth state, login/logout, theme
-    │
-    ├── lib/
-    │   ├── api.js              # API client (fetch wrapper, auth headers)
-    │   └── utils.js            # Utility functions (cn, etc.)
-    │
-    ├── data/
-    │   ├── mockData.js         # Demo data & role constants
-    │   └── navigation.js       # Role-based navigation tree
-    │
-    ├── i18n/
-    │   └── index.js            # Internationalization (Albanian)
-    │
-    ├── locales/
-    │   └── sq.json             # Albanian translations
-    │
-    ├── routes/
-    │   └── ProtectedRoute.jsx  # Auth guard + layout wrapper
-    │
-    ├── components/
-    │   ├── layout/
-    │   │   └── AppShell.jsx    # Main layout: Sidebar + TopBar
-    │   ├── ui/
-    │   │   ├── Badge.jsx       # Status badge component
-    │   │   ├── Button.jsx      # Styled button component
-    │   │   ├── Card.jsx        # Reusable card component
-    │   │   ├── ClassCard.jsx   # Class display card
-    │   │   ├── DataTable.jsx   # Generic data table component
-    │   │   ├── Input.jsx       # Form input components
-    │   │   ├── Logo.jsx        # App logo component
-    │   │   ├── PageHeader.jsx  # Page header/title component
-    │   │   └── StatCard.jsx    # Statistic card for dashboards
-    │   └── charts/
-    │       └── Charts.jsx      # Recharts-based chart components
-    │
-    └── pages/
-        ├── auth/
-        │   └── LoginPage.jsx         # Login with demo shortcuts
-        ├── dashboard/
-        │   ├── DashboardPage.jsx     # Role-based dashboard router
-        │   ├── DirectorDashboard.jsx
-        │   ├── SecretaryDashboard.jsx
-        │   ├── CashierDashboard.jsx
-        │   ├── TeacherDashboard.jsx
-        │   ├── EducatorDashboard.jsx
-        │   └── StudentDashboard.jsx
-        ├── students/
-        │   ├── AllStudentsPage.jsx
-        │   ├── ClassStudentsPage.jsx
-        │   ├── StudentDetailPage.jsx
-        │   ├── StudentFormPage.jsx
-        │   └── StudentImportPage.jsx
-        ├── finance/
-        │   └── FinancePages.jsx      # All finance pages
-        ├── modules/
-        │   ├── ModulePages.jsx       # Misc module pages
-        │   └── AcademicModules/
-        │       ├── AcademicYearPage.jsx
-        │       ├── GradesPage.jsx
-        │       ├── Timetable.jsx
-        │       ├── Attendance/
-        │       │   ├── AttendancePage.jsx
-        │       │   └── AttendancePages.jsx
-        │       ├── classes/
-        │       │   ├── ClassesPage.jsx
-        │       │   ├── ClassDetail.jsx
-        │       │   ├── ClassFormPage.jsx
-        │       │   └── ModuleCard.jsx
-        │       └── Subject/
-        │           ├── SubjectsPage.jsx
-        │           ├── SubjectDetailPage.jsx
-        │           └── ClassSubjectReportPage.jsx
-        └── users/
-            └── UsersManagement.jsx
+frontend/src/
+├── assets/               # Imazhe statike (logo)
+├── components/
+│   ├── charts/           # Recharts komponentë
+│   ├── layout/           # AppShell, Sidebar, TopBar
+│   └── ui/               # Button, Card, Input, Badge, DataTable, etj.
+├── context/
+│   └── AuthContext.jsx   # Autentifikimi, tema, gjendja e përdoruesit
+├── data/
+│   ├── mockData.js       # Demo data dhe ROLE konstante
+│   └── navigation.js     # Navigimi sipas roleve (NAV_BY_ROLE)
+├── i18n/
+│   └── index.js          # Internacionalizimi (sq)
+├── lib/
+│   ├── api.js            # HTTP client për API Laravel
+│   └── utils.js          # Funksione ndihmëse
+├── locales/
+│   └── sq.json           # Fjalët në gjuhën shqipe
+├── pages/
+│   ├── auth/             # LoginPage
+│   ├── dashboard/        # Dashboard-et sipas roleve
+│   ├── finance/          # Pagesat, faturat, borxhet, raportet
+│   ├── modules/          # ModulePages + AcademicModules
+│   │   └── AcademicModules/
+│   │       ├── Attendance/
+│   │       ├── Subject/
+│   │       ├── classes/
+│   │       ├── AcademicYearsPage.jsx
+│   │       ├── GradesPage.jsx
+│   │       └── Timetable.jsx
+│   ├── students/         # Lista, detajet, forma, importi
+│   └── users/            # Menaxhimi i përdoruesve
+├── routes/
+│   └── ProtectedRoute.jsx
+├── App.jsx
+├── main.jsx
+└── index.css
 ```
 
----
-
-### Component Architecture
-
-#### Layout Components
-
-- **`AppShell`** — Wraps all authenticated pages. Contains:
-  - **`Sidebar`** — Collapsible navigation menu. Renders role-specific items from `NAV_BY_ROLE` configuration. Supports nested sub-menus with expand/collapse.
-  - **`TopBar`** — Header with menu toggle, user info, initials avatar, and logout button.
-  - **`main`** — Content area wrapping the `<Outlet />`.
-
-#### UI Components
-
-| Component | Description |
-|---|---|
-| **`Button`** | Styled button with loading state, variants (primary, ghost, etc.) |
-| **`Input`** | Form input with label wrapper |
-| **`DataTable`** | Generic table with configurable columns, custom render functions, row click handler |
-| **`Card`** | Glass-effect card container |
-| **`StatCard`** | Metric display card (icon, label, value, trend) |
-| **`ClassCard`** | Class display card with section and student count |
-| **`Badge`** | Status badge (success, warning, error, info) |
-| **`PageHeader`** | Page title, description, and action button |
-| **`Logo`** | Application logo component |
-| **`Charts`** | Bar chart, line chart, pie chart using Recharts |
-
----
-
-### State Management
-
-#### Auth Context (`AuthContext.jsx`)
-
-- **Provider**: `AuthProvider` wraps the entire app.
-- **State**: `user` object, `theme` (light/dark), `loading`, `isAuthenticated`.
-- **Actions**: `login(email, password)`, `logout()`, `setTheme(theme)`.
-- **Persistence**: Token stored in `localStorage` under `medrese-token`. User object under `medrese-user`. Theme per user under `medrese-theme:{userId}`.
-- **On mount**: Validates existing token by calling `GET /auth/me`. Clears invalid tokens.
-
-#### Server State (TanStack React Query)
-
-- **`QueryClient`** instantiated at app root in `App.jsx`.
-- API calls from `api.js` are wrapped in React Query hooks within pages.
-- Automatic caching, background refetching, and cache invalidation.
-
----
-
-### Routing System
-
-#### Route Structure
-
-```
-/login                          # Public login page
-/                               # Redirects to /dashboard
-
-# Protected (wrapped in AppShell layout):
-/dashboard                      # Role-based dashboard
-/profile                        # User profile
-
-# Students
-/students                       # All students list
-/students/new                   # Create student
-/students/:id                   # Student detail
-/students/:id/edit              # Edit student
-/students/import                # Bulk import
-
-# Staff
-/staff                          # Staff list
-
-# Academic
-/timetable                      # Weekly timetable
-/subjects                       # Subject list
-/subjects/:id                   # Subject details
-/subjects/:subjectId/class/:classId  # Class-subject report
-/classes                        # Classes overview
-/classes/:id                    # Class detail
-/classes/:classId/students      # Students in class
-/classes/new                    # Create class
-/classes/:id/edit               # Edit class
-
-# Finance
-/finance                        # Overview
-/finance/payments               # Payment history
-/finance/payments/new           # Record payment
-/finance/invoices               # Invoices
-/finance/outstanding            # Outstanding balances
-/finance/reports                # Finance reports
-/finance/pay                    # Student payment status
-
-# Dormitory
-/dormitory                      # Overview
-/dormitory/rooms                # Room list
-/dormitory/inspections          # Inspections
-/dormitory/my-room              # My room (student)
-
-# Attendance
-/classes/:id/attendance         # Mark/View attendance
-/classes/:id/attendance/take    # Take attendance
-/classes/:id/attendance/fajr    # Fajr attendance (educator)
-/classes/:id/attendance/study-hours    # Study hours
-/classes/:id/attendance/reports  # Attendance reports
-
-# Grades
-/classes/:id/grades             # Grade overview
-/classes/:id/grades/entry       # Enter grades
-/classes/:id/grades/exams       # Exam grades
-
-# Discipline
-/discipline                     # Discipline overview
-/discipline/record              # Record incident
-/discipline/history             # History
-/discipline/my-record           # My record (student)
-
-# Other
-/extracurricular                # Activities
-/announcements                  # Announcements
-/settings                       # Settings
-/settings/fee-structure         # Fee structure settings
-/users                          # User management
-```
-
-#### Route Guards
-
-- **`ProtectedRoute`** checks `isAuthenticated` from AuthContext. Redirects to `/login` if not authenticated.
-- Wraps children in `AppShell` layout on successful authentication.
-- **`RoleGuard`** uses `canAccessRoute()` from `navigation.js` to check if the current user's role has access to the current path.
-
----
-
-### Key Pages & Features
-
-| Page | Feature Highlights |
-|---|---|
-| **LoginPage** | Email/password form, quick-role-select buttons for all 7 demo roles |
-| **DirectorDashboard** | Stats overview, revenue charts, attendance trends, class performance, recent activity feed |
-| **SecretaryDashboard** | Registration stats, student overview, quick actions |
-| **CashierDashboard** | Financial summary, pending payments, fee collection chart |
-| **TeacherDashboard** | Daily schedule, class stats, attendance summary |
-| **EducatorDashboard** | Dormitory stats, inspection scores, Fajr attendance trend |
-| **StudentDashboard** | Own grades, timetable, attendance, announcements, payments due |
-| **AllStudentsPage** | Filterable/searchable table, create/import actions |
-| **StudentFormPage** | Full registration form (create/edit mode) |
-| **ClassesPage** | Grid of class cards with student counts, manage actions |
-| **FinancePages** | Overview, payments list, payment recording, invoices, outstanding |
-| **AttendancePage** | Per-class attendance marking with status indicators |
-| **GradesPage** | Grade entry, exam results, reports, transcripts |
-| **SubjectsPage** | Subject CRUD with teacher assignments |
-| **TimetablePage** | Weekly schedule view |
-
-#### Theme System
-
-- Default: **Dark theme** with a mesh gradient background.
-- Light theme available via toggle.
-- Theme is persisted per user in `localStorage`.
-- CSS custom properties (`--app-bg`, `--app-text`, etc.) dynamically switch between themes.
-- Smooth transitions between themes.
-
----
-
-## 🚀 Deployment Guide
-
-### Local Development
-
-```bash
-# Terminal 1 — Backend API
-cd backend
-php artisan serve
-# → http://127.0.0.1:8000
-
-# Terminal 2 — Frontend Dev Server
-cd frontend
-npm run dev
-# → http://localhost:5173
-```
-
-Or use the combined dev command:
-```bash
-cd backend
-composer run dev
-```
-
-### Production Build
-
-#### Backend
-```bash
-cd backend
-
-# Optimize Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache
-
-# Set APP_ENV=production in .env
-# Use PostgreSQL or MySQL in production
-```
-
-#### Frontend
-```bash
-cd frontend
-npm run build
-# Output in frontend/dist/
-# Serve these files via Laravel's public/ directory or a separate web server (Nginx, Apache)
-```
-
-### Server Requirements
-
-- **Web Server**: Nginx or Apache with PHP-FPM
-- **PHP**: 8.2+
-- **Database**: MySQL 8.0+ or PostgreSQL 15+ (SQLite for dev only)
-- **Node.js**: 20+ (for build step only)
-- **Composer**: 2.x
-
-### Nginx Configuration Example
-
-```nginx
-server {
-    listen 80;
-    server_name medrese.example.com;
-    root /var/www/medrese/backend/public;
-
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-
-    index index.php;
-
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-}
-```
-
----
-
-## 📁 Project File Tree
-
-### Backend (`backend/`)
+### Backend Folder Structure
 
 ```
 backend/
 ├── app/
-│   ├── Models/               # Eloquent models (25+ models)
+│   ├── Http/
+│   │   ├── Controllers/         # 17 controller-a
+│   │   └── Middleware/
+│   │       └── RoleMiddleware.php
+│   ├── Models/                  # 30+ modele Eloquent
 │   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   ├── Services/
-│   │   ├── FeeService.php     # Financial business logic
-│   │   └── StudentService.php # Student business logic
-│   └── Http/
-│       ├── Controllers/       # API controllers
-│       ├── Middleware/
-│       │   └── RoleMiddleware.php
-│       └── Requests/          # Form request validation
-├── bootstrap/
+│   └── Services/
+│       ├── FeeService.php
+│       └── StudentService.php
 ├── config/
-│   ├── app.php
-│   ├── auth.php
-│   ├── database.php
-│   ├── sanctum.php
-│   └── medrese.php           # Custom config
+│   └── medrese.php
 ├── database/
-│   ├── migrations/            # 30+ migration files
-│   └── seeders/               # Database seeders
+│   ├── migrations/              # ~30 migrime
+│   └── seeders/
 ├── routes/
-│   ├── api.php                # All API routes
-│   ├── web.php
-│   └── console.php
+│   └── api.php                  # Të gjitha rrugët API (v1)
 ├── tests/
 │   ├── Feature/
-│   │   ├── AuthTest.php
-│   │   ├── MyDocumentsTest.php
-│   │   └── RoleGuardTest.php
 │   └── TestCase.php
-├── composer.json
-└── package.json
+└── composer.json
 ```
 
-### Frontend (`frontend/`)
+### Authentication Flow
 
+1. Përdoruesi dërgon `POST /api/v1/auth/login` me email dhe password
+2. Backend-i verifikon kredencialet dhe kthen një token Sanctum
+3. Token-i ruhet në `localStorage` me çelës `medrese-token`
+4. Çdo kërkesë pasuese përfshin `Authorization: Bearer {token}` në headers
+5. `AuthContext.jsx` menaxhon gjendjen globale të autentifikimit
+6. `ProtectedRoute.jsx` ridrejton përdoruesit e paautentikuar në `/login`
+
+---
+
+## 4. Modulet
+
+| Moduli | Qëllimi | Statusi |
+|--------|---------|---------|
+| **Autentifikimi** | Login, logout, profile recovery |  Implementuar |
+| **Dashboard-i i Drejtorit** | Përmbledhje me statistika, grafikë dhe aktivitet të fundit |  Implementuar |
+| **Dashboard-i i Sekretarit** | Statistika të nxënësve, regjistrime, njoftime | Implementuar |
+| **Dashboard-i i Arkatarit** | Përmbledhje financiare, pagesa të fundit |  Implementuar |
+| **Dashboard-i i Mësuesit** | Orari i sotëm, orari javor, veprime të shpejta |  Implementuar |
+| **Dashboard-i i Edukatorit** | Përmbledhje e konviktit, kontrolle të fundit | Implementuar |
+| **Dashboard-i i Nxënësit** | Notat, prezenca, bilanci, dhoma (nëse konviktor) |  Implementuar |
+| **Regjistrimi i Nxënësve** | Shto, edito, fshi, shiko detajet e nxënësve |  Implementuar |
+| **Import masiv CSV** | Importo nxënës përmes skedarëve CSV | Implementuar |
+| **Klasat** | Menaxhimi i klasave, kujdestarëve, nxënësve |  Implementuar |
+| **Lëndët** | CRUD i lëndëve, kategorizimi sipas niveleve 10/11/12 |  Implementuar |
+| **Orari Mësimor** | Orari javor me slot-et kohore dhe kujdestarët e ditës |  Implementuar |
+| **Vitet Shkollore** | Menaxhimi i viteve akademike, aktivizimi, promovimi i klasave |  Implementuar |
+| **Prezenca** | Regjistrimi i prezencës ditore, Fajr, study hours, raporte |  Implementuar |
+| **Miratimi i Mungesave** | Shqyrtimi dhe miratimi i mungesave nga kujdestarët |  Implementuar |
+| **Notat** | Vendosja dhe shikimi i notave sipas klasës |  Pjesërisht |
+| **Financat** | Pasqyra financiare, pagesat, faturat, borxhet, tarifat |  Implementuar |
+| **Konvikti** | Përmbledhje e dhomave, kapaciteti, zënia |  Implementuar |
+| **Dhomat** | Menaxhimi i dhomave dhe caktimet |  Implementuar |
+| **Kontrollet e Dhomave** | Inspektimi i dhomave me checklist, rezultate, pastërti |  Implementuar |
+| **Rënditja e Dhomave** | Leaderboard i dhomave sipas rezultateve javore/mujore/vjetore |  Implementuar |
+| **Disiplina** | Regjistrimi i vërejtjeve, kategoritë, historiku |  Implementuar |
+| **Disiplina e Nxënësit** | Shikimi i të dhënave disiplinore të vetes |  Implementuar |
+| **Aktivitetet** | Listimi i aktiviteteve jashtëshkollore dhe hifz |  Implementuar |
+| **Njoftimet** | Shikimi i njoftimeve të shkollës |  Implementuar |
+| **Stafi** | Listimi dhe filtrimi i stafit sipas roleve |  Implementuar |
+| **Dokumentet** | Shikimi i dokumenteve të mia (për nxënës) |  Implementuar |
+| **Cilësimet** | Ndryshimi i temës (light/dark) |  Implementuar |
+| **Profili** | Shikimi i të dhënave të llogarisë |  Implementuar |
+| **Përdoruesit** | Menaxhimi i përdoruesve (nxënës dhe staf) |  Implementuar |
+
+---
+
+## 5. Rolet e Përdoruesve
+
+### 🟣 Drejtor (director)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Paneli i përgjithshëm me statistika | Dashboard, Akademike, Stafi, Financat, Konvikti, Disiplina, Aktivitetet, Raportet, Njoftimet, Cilësimet |
+| Menaxhim i viteve shkollore dhe promovimi | Vitet Shkollore, Klasat |
+| Akses i plotë në të gjitha modulet | Të gjitha |
+| Menaxhim i stafit dhe nxënësve | Stafi, Nxënësit |
+
+### 🔵 Sekretar (secretary)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Regjistrimi i nxënësve të rinj | Regjistrimi (formular + import) |
+| Menaxhimi i dosjeve të nxënësve | Dosjet e Nxënësve, Caktimet në Klasa |
+| Shikimi i dokumenteve | Dokumentet |
+| Shikimi i raporteve financiare (vetëm lexim) | Raportet Financiare |
+| Menaxhimi i njoftimeve | Njoftimet |
+
+### 🟢 Arkatar (cashier)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Regjistrimi i pagesave | Pagesat |
+| Shikimi i historikut të pagesave | Historiku i Pagesave |
+| Menaxhimi i faturave | Faturat |
+| Shikimi i borxheve | Borxhet |
+| Menaxhimi i tarifave | Tarifat |
+
+### 🟡 Mësues (teacher)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Paneli me orarin e sotëm dhe javor | Dashboard, Klasat e Mia |
+| Regjistrimi i prezencës | Prezenca (përmes klasave) |
+| Vendosja e notave | Notat (përmes klasave) |
+| Shikimi i nxënësve | Nxënësit |
+| Mbikëqyrja e disiplinës | Disiplina |
+
+### 🟠 Edukator (educator)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Paneli i konviktit | Dashboard, Nxënësit Konviktorë |
+| Menaxhimi i dhomave | Dhomat |
+| Kryerja e kontrolleve të dhomave | Kontrollet |
+| Regjistrimi i vërejtjeve | Disiplina |
+| Regjistrimi i prezencës (Fajr, study hours) | Prezenca |
+
+### 🔴 Nxënës (student) / Konviktor (boarding)
+
+| Mundësitë | Modulet që përdor |
+|-----------|-------------------|
+| Paneli personal me notat dhe prezencën | Dashboard |
+| Shikimi i orarit | Orari |
+| Shikimi i faturave dhe pagesave | Gjendja e Pagesave |
+| Shikimi i njoftimeve | Njoftimet |
+| Shikimi i dokumenteve | Dokumentet |
+| Shikimi i të dhënave disiplinore | Disiplina |
+| (Vetëm konviktorët) Menaxhimi i dhomës | Dhoma ime, Raportet e Pastërtisë |
+
+---
+
+## 6. Database
+
+### Tabelat kryesore
+
+| Tabela | Qëllimi | Relationship kryesore |
+|--------|---------|----------------------|
+| `users` | Përdoruesit e sistemit (staff + student accounts) | — |
+| `academic_years` | Vitet shkollore | hasMany: classes, fee_structures |
+| `classes` | Klasat | belongsTo: academic_year, staff; hasMany: students |
+| `subjects` | Lëndët mësimore | belongsToMany: classes (pivot: class_subject) |
+| `class_subject` | Lidhja klasë-lëndë | Pivot: classes ↔ subjects |
+| `students` | Të dhënat e nxënësve | belongsTo: class |
+| `timetable_slots` | Orari mësimor | belongsTo: class, subject, staff |
+| `grades` | Notat e nxënësve | belongsTo: student, subject, class |
+| `attendance_records` | Prezenca ditore | belongsTo: student, class |
+| `study_hours` | Orët e studimit në konvikt | belongsTo: student |
+| `fee_types` | Llojet e tarifave | hasMany: fee_structures |
+| `fee_structures` | Struktura e tarifave | belongsTo: fee_type, academic_year |
+| `payments` | Pagesat e kryera | belongsTo: student, fee_type |
+| `invoices` | Faturat | belongsTo: student |
+| `dorm_rooms` | Dhomat e konviktit | hasMany: dorm_assignments, dorm_inspections |
+| `dorm_assignments` | Caktimi i nxënësve në dhoma | belongsTo: dorm_room, student |
+| `dorm_inspections` | Kontrollet e dhomave | belongsTo: dorm_room; hasMany: dorm_inspection_items |
+| `discipline_categories` | Kategoritë disiplinore | hasMany: discipline_records |
+| `discipline_records` | Vërejtjet disiplinore | belongsTo: student, category |
+| `announcements` | Njoftimet | belongsTo: user (author) |
+| `documents` | Dokumentet | belongsToMany: students (pivot: student_documents) |
+| `extracurricular_activities` | Aktivitetet jashtëshkollore | belongsToMany: students (pivot: activity_enrollments) |
+| `assignments` | Detyrat | belongsTo: subject, class |
+| `assignment_submissions` | Dorëzimi i detyrave | belongsTo: assignment, student |
+| `staff` | Stafi i shkollës | belongsTo: user |
+| `approvals` | Kërkesat për miratim | morphTo: approvable |
+| `day_supervisors` | Kujdestarët e ditës | belongsTo: staff |
+| `attendance_audits` | Auditimi i prezencës | belongsTo: attendance_record |
+| `room_weekly_scores` | Rezultatet javore të dhomave | belongsTo: dorm_room |
+
+---
+
+## 7. API Endpoint-et Kryesore
+
+### Autentifikimi
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| POST | `/auth/login` | Hyrje në sistem |
+| POST | `/auth/logout` | Dalje nga sistemi |
+| GET | `/auth/me` | Profili i përdoruesit aktual |
+
+### Nxënësit
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/students` | Lista e nxënësve (me pagination, filtra) |
+| GET | `/students/{id}` | Detajet e nxënësit |
+| POST | `/students` | Regjistrimi i nxënësit të ri |
+| PUT | `/students/{id}` | Përditësimi i nxënësit |
+| DELETE | `/students/{id}` | Fshirja e nxënësit |
+| POST | `/students/import` | Import masiv CSV |
+
+### Klasat
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/classes` | Lista e klasave (filtruar sipas vitit) |
+| GET | `/classes/{id}` | Detajet e klasës |
+| POST | `/classes` | Krijimi i klasës |
+| PUT | `/classes/{id}` | Përditësimi i klasës |
+| DELETE | `/classes/{id}` | Fshirja e klasës |
+| POST | `/classes/{class}/assign-homeroom` | Caktimi i kujdestarit |
+
+### Akademike
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/academic/subjects` | Lista e lëndëve |
+| GET | `/academic/timetable` | Orari mësimor |
+| GET | `/academic-years` | Lista e viteve shkollore |
+| POST | `/academic-years` | Krijimi i vitit të ri |
+| PUT | `/academic-years/{id}/activate` | Aktivizimi i vitit |
+| POST | `/academic-years/{id}/promote` | Promovimi i klasave për vitin e ri |
+
+### Financat
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/finance/overview` | Përmbledhja financiare |
+| GET | `/payments` | Lista e pagesave |
+| POST | `/payments` | Regjistrimi i pagesës |
+| GET | `/outstanding` | Borxhet |
+| GET | `/fee-structures` | Tarifat |
+| GET | `/invoices` | Faturat |
+
+### Konvikti
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/dormitory` | Përmbledhja e konviktit |
+| GET | `/dormitory/rooms` | Lista e dhomave |
+| GET | `/dormitory/inspections` | Kontrollet e dhomave |
+| POST | `/dormitory/inspections` | Regjistrimi i kontrollit |
+
+### Disiplina
+
+| Metoda | Endpoint | Qëllimi |
+|--------|----------|---------|
+| GET | `/discipline/history` | Historiku i vërejtjeve |
+| POST | `/discipline/record` | Regjistrimi i vërejtjes |
+
+---
+
+## 8. Funksionalitetet Kryesore të Implementuara
+
+1. **Autentifikimi me role** — Hyrje e sigurt me token Sanctum, role-based authorization
+2. **Regjistrimi i nxënësve** — Formular i plotë me validim, import CSV, editim, fshirje
+3. **Menaxhimi i klasave** — Krijo, edito, fshi klasa, cakto kujdestarë
+4. **Menaxhimi i lëndëve** — CRUD i lëndëve të kategorizuara sipas nivelit (10, 11, 12)
+5. **Orari mësimor** — Shfaqja e orarit javor me slot-et kohore
+6. **Vitet shkollore** — Krijo, aktivizo, promovo klasat automatikisht (10→11, 11→12, 12→diplomim)
+7. **Prezenca ditore** — Regjistro prezencë (prezent/mungon/vonesë) për çdo klasë
+8. **Prezenca e Fajr-it** — Regjistro prezencën e namazit të sabahut për konviktorët
+9. **Miratimi i mungesave** — Shqyrto dhe mirato/refuzo mungesat në grup
+10. **Menaxhimi financiar** — Pasqyra financiare, regjistrimi i pagesave, borxhet, faturat
+11. **Konvikti** — Shiko kapacitetin dhe zënien e dhomave
+12. **Kontrollet e dhomave** — Inspektimi me checklist, rezultate automatike
+13. **Rënditja e dhomave** — Leaderboard javor/mujor/vjetor
+14. **Disiplina** — Regjistro vërejtje, kategorizo, shiko historikun
+15. **Njoftimet** — Shfaq njoftimet e shkollës me prioritete
+16. **Dashboard-et e personalizuara** — 6 role me panele të ndryshme
+17. **Tema dark/light** — Ndrysho pamjen e aplikacionit
+18. **Eksportimi i raporteve** — Excel dhe PDF për prezencë
+19. **Stafi** — Listimi dhe grupimi i stafit sipas roleve
+20. **Shikimi i dokumenteve** — Nxënësit mund të shohin dokumentet e tyre
+
+---
+
+## 9. Screens që Ekzistojnë (React Pages)
+
+| Path | Page/Component | Roli |
+|------|---------------|------|
+| `/login` | LoginPage | Publik |
+| `/dashboard` | DirectorDashboard / SecretaryDashboard / CashierDashboard / TeacherDashboard / EducatorDashboard / StudentDashboard | Të gjithë |
+| `/profile` | ProfilePage | Të gjithë |
+| `/students` | AllStudentsPage | Drejtor, Sekretar, Mësues |
+| `/students/new` | StudentFormPage (create) | Drejtor, Sekretar |
+| `/students/:id` | StudentDetailPage | Drejtor, Sekretar |
+| `/students/:id/edit` | StudentFormPage (edit) | Drejtor, Sekretar |
+| `/students/import` | StudentImportPage | Drejtor, Sekretar |
+| `/staff` | GenericListPage (staff) | Drejtor |
+| `/timetable` | TimetablePage | Drejtor, Student, Boarding |
+| `/subjects` | SubjectsPage | Drejtor |
+| `/subjects/:id` | SubjectDetailPage | Drejtor |
+| `/subjects/:subjectId/class/:classId` | ClassSubjectReportPage | Drejtor |
+| `/academic-years` | AcademicYearsPage | Drejtor, Sekretar |
+| `/classes` | ClassesPage | Të gjithë (përveç student) |
+| `/classes/:id` | ClassDetailPage | Të gjithë (përveç student) |
+| `/classes/new` | ClassFormPage (create) | Drejtor, Sekretar |
+| `/classes/:id/edit` | ClassFormPage (edit) | Drejtor, Sekretar |
+| `/classes/:classId/students` | ClassStudentsPage | Drejtor, Sekretar, Mësues |
+| `/classes/:classId/students/:id` | StudentDetailPage | Drejtor, Sekretar |
+| `/classes/:id/attendance` | AttendancePage | Mësues, Edukator |
+| `/classes/:id/attendance/take` | AttendancePage | Mësues, Edukator |
+| `/classes/:id/attendance/fajr` | FajrAttendancePage | Edukator |
+| `/classes/:id/attendance/study-hours` | StudyHoursPage | Edukator |
+| `/classes/:id/attendance/reports` | AttendanceReportsPage | Të gjithë |
+| `/classes/:id/grades` | GradesPage | Mësues, Drejtor |
+| `/attendance/approval` | AbsenceApprovalPage | Mësues, Edukator |
+| `/finance` | FinanceOverviewPage | Drejtor, Arkatar |
+| `/finance/payments` | PaymentsPage | Drejtor, Arkatar |
+| `/finance/payments/new` | RecordPaymentPage | Drejtor, Arkatar |
+| `/finance/invoices` | InvoicesPage | Arkatar |
+| `/finance/outstanding` | OutstandingPage | Drejtor, Arkatar |
+| `/finance/reports` | FinanceReportsPage | Të gjithë (me role) |
+| `/finance/pay` | StudentPayPage | Student, Boarding |
+| `/settings/fee-structure` | FeeStructurePage | Arkatar |
+| `/dormitory` | DormitoryPage | Drejtor, Edukator |
+| `/dormitory/rooms` | RoomsPage | Drejtor, Edukator |
+| `/dormitory/inspections` | InspectionsPage | Drejtor, Edukator |
+| `/dormitory/inspections/new` | InspectionFormPage | Edukator |
+| `/dormitory/inspections/:id/edit` | InspectionFormPage | Edukator |
+| `/dormitory/my-room` | MyRoomPage | Student (boarding) |
+| `/dormitory/leaderboard` | LeaderboardPage | Edukator, Student (boarding) |
+| `/discipline` | DisciplinePage | Drejtor, Mësues |
+| `/discipline/record` | DisciplineRecordPage | Edukator |
+| `/discipline/history` | DisciplinePage | Edukator |
+| `/discipline/my-record` | MyDisciplinePage | Student, Boarding |
+| `/extracurricular` | ExtracurricularPage | Drejtor |
+| `/announcements` | AnnouncementsPage | Të gjithë |
+| `/documents/my-documents` | GenericListPage (documents) | Student, Boarding |
+| `/settings` | SettingsPage | Drejtor |
+| `/users` | UsersManagementPage | Drejtor |
+| `/reports` | FinanceReportsPage | Të gjithë |
+
+---
+
+## 10. Çfarë Nuk Është Implementuar Ende
+
+- **Detyrat (Assignments)** — Faqja e listimit dhe dorëzimit të detyrave nuk është e gatshme
+- **Klubet (Clubs)** — Nuk ka funksionalitet për klube shkollore
+- **Dokumentet (Documents)** — Faqja e përgjithshme e dokumenteve (jo vetëm ato të nxënësve)
+- **Raportet specifike** — Raportet akademike, të prezencës dhe disiplinës nuk kanë faqe të dedikuara
+- **Modulet e klasës** — Lëndët, orari, pagesat dhe dokumentet për klasa specifike nuk kanë route të dedikuara
+- **Njoftim i ri** — Shtimi i njoftimeve të reja në UI nuk është i implementuar
+- **Gjenerimi i faturave** — Gjenerimi i faturave nga UI nuk është i implementuar
+- **Pagesa online** — Funksionaliteti i pagesës online nuk është i integruar
+
+---
+
+## 11. Pikat më të forta të Projektit
+
+1. **Arkitekturë role-based** — 6 role të përcaktuara qartë me pamje dhe funksionalitete të ndryshme
+2. **UI/UX modern** — Dizajn i errët profesional me Tailwind CSS, animacione dhe mikrovizuale
+3. **Dashboard-e të personalizuara** — Çdo rol ka panelin e vet informativ me statistika relevante
+4. **Menaxhimi i vitit shkollor** — Promovimi automatik i klasave 10→11→12 me diplomim
+5. **Sistemi i konviktit** — Menaxhim i plotë nga dhomat te kontrollet dhe leaderboard-i
+6. **Moduli financiar** — Nga regjistrimi i pagesave te faturat dhe raportet
+7. **Import masiv CSV** — Regjistrim i shpejtë i nxënësve përmes skedarëve CSV
+8. **Prezenca fleksibël** — Regjistro prezencë të rregullt, Fajr, dhe orë studimi
+9. **Miratimi i mungesave** — Proces i kompletuar i shqyrtimit dhe miratimit në grup
+10. **Shkallëzueshmëri** — Arkitektura Laravel + React lejon shtimin e lehtë të moduleve të reja
+
+---
+
+## 12. Përmbledhje
+
+**Medreseja Alauddin School Management System** është një aplikacion web i plotë i ndërtuar me Laravel 11 dhe React 19, i projektuar për të dixhitalizuar dhe centralizuar menaxhimin e shkollave të mesme fetare. Sistemi trajton të gjitha aspektet kryesore të administratës shkollore: regjistrimin dhe menaxhimin e nxënësve, organizimin e klasave dhe lëndëve, orarin mësimor, prezencën, notat, financat, konviktin, disiplinën dhe njoftimet.
+
+Arkitektura e sistemit është e ndarë në një backend API të ndërtuar me Laravel Sanctum për autentifikim token-based dhe një frontend Single Page Application të ndërtuar me React. Autentifikimi mbështet gjashtë role të ndryshme përdoruesish — drejtor, sekretar, arkatar, mësues, edukator dhe nxënës — secili me pamje dhe funksionalitete të përshtatura sipas nevojave të tyre.
+
+Backend-i ofron mbi 50 endpoint-e API të organizuara sipas moduleve, me middleware të personalizuar për autorizimin e roleve. Database përfshin mbi 25 tabela të lidhura në mënyrë efikase përmes Eloquent ORM. Frontend-i përmban mbi 40 faqe dhe komponentë të ndryshëm, duke përfshirë dashboard-e të personalizuara, tabela interaktive, grafikë (recharts), dhe formularë me validim.
+
+Modulet më të fuqishme përfshijnë menaxhimin e viteve shkollore me promovim automatik të klasave (10→11, 11→12, 12→diplomim), sistemin e konviktit me kontrolle dhe leaderboard, modulin financiar me pagesa dhe fatura, si dhe procesin e plotë të prezencës nga regjistrimi te miratimi i mungesave. Projekti është në fazën përfundimtare të zhvillimit dhe është gati për demonstrim, me disa module dytësore që priten të implementohen në përditësimet e ardhshme.
+
+---
+
+## Demo Credentials
+
+Të gjitha llogaritë demo përdorin password: **demo123**
+
+| Roli | Email |
+|------|-------|
+| Drejtor | director@medrese.edu |
+| Sekretar | secretary@medrese.edu |
+| Arkatar | cashier@medrese.edu |
+| Mësues | teacher@medrese.edu |
+| Edukator | educator@medrese.edu |
+| Nxënës | student@medrese.edu |
+| Konviktor | boarding@medrese.edu |
+
+## Setup i Shpejtë
+
+### Backend
+
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan serve   # → http://127.0.0.1:8000
 ```
-frontend/
-├── public/
-├── src/
-│   ├── main.jsx
-│   ├── App.jsx
-│   ├── index.css
-│   ├── context/
-│   ├── lib/
-│   ├── data/
-│   ├── i18n/
-│   ├── locales/
-│   ├── routes/
-│   ├── components/
-│   │   ├── layout/
-│   │   ├── ui/
-│   │   └── charts/
-│   └── pages/
-│       ├── auth/
-│       ├── dashboard/
-│       ├── students/
-│       ├── finance/
-│       ├── modules/
-│       │   └── AcademicModules/
-│       │       ├── classes/
-│       │       ├── Subject/
-│       │       └── Attendance/
-│       └── users/
-├── vite.config.js
-└── package.json
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev         # → http://localhost:5173
 ```
 
 ---
 
-## 📄 License
-
-This project is developed for educational institution management. All rights reserved.
-
----
-
-> **Maintained by**: The Medrese Development Team
-> **Last updated**: July 2026
-> **Tech Stack**: Laravel 11 + React 19 + Tailwind CSS 4 + SQLite/MySQL
+> **Teknologjitë**: Laravel 11 · React 19 · Tailwind CSS 4 · MySQL
+> **Versioni i dokumentit**: 1.0.0
+> **Data**: Korrik 2026

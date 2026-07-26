@@ -11,6 +11,40 @@ import { formatDate, formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { Plus, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react'
 
+function useApiData(load, fallback = []) {
+  const [data, setData] = useState(fallback)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let mounted = true
+
+    async function run() {
+      try {
+        const response = await load()
+        if (mounted) setData(response?.data ?? fallback)
+      } catch (err) {
+        console.error(err)
+        if (mounted) setError('Te dhenat nuk u ngarkuan.')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    run()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  return { data, loading, error }
+}
+
+function EmptyMessage({ loading, error, message }) {
+  if (loading) return <p className="text-sm text-surface-300">Duke ngarkuar...</p>
+  if (error) return <p className="text-sm text-red-400">{error}</p>
+  return <p className="text-sm text-surface-300">{message || 'Nuk ka te dhena per t’u shfaqur.'}</p>
+}
 
 function roomName(room) {
   return [room?.block, room?.name || room?.room_no || room?.number].filter(Boolean).join(' - ') || 'Dhome'
@@ -524,7 +558,7 @@ export function DisciplinePage() {
 
   return (
     <div>
-      <PageHeader title="Disiplina" description="Verejtjet dhe shenimet e sjelljes" actions={<Button>Regjistro verejtje</Button>} />
+      <PageHeader title="Disiplina" description="Verejtjet dhe shenimet e sjelljes" />
       {rows.length ? <DataTable columns={columns} data={rows} /> : <Card><CardContent><EmptyMessage loading={loading} error={error} /></CardContent></Card>}
     </div>
   )
@@ -663,7 +697,7 @@ export function AnnouncementsPage() {
 
   return (
     <div>
-      <PageHeader title="Njoftime" description="Njoftime dhe perditesime per shkolle" actions={<Button>Njoftim i ri</Button>} />
+      <PageHeader title="Njoftime" description="Njoftime dhe perditesime per shkolle" />
       <div className="space-y-3">
         {data.map((a) => (
           <Card key={a.id}>

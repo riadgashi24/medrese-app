@@ -52,6 +52,7 @@ import { AllStudentsPage } from './pages/students/AllStudentsPage'
 import { ClassStudentsPage } from './pages/students/ClassStudentsPage'
 import ClassFormPage from './pages/modules/AcademicModules/classes/ClassFormPage'
 import { AttendancePage } from './pages/modules/AcademicModules/Attendance/AttendancePage'
+import AcademicYearsPage from './pages/modules/AcademicModules/AcademicYearsPage'
 
 const queryClient = new QueryClient()
 
@@ -125,7 +126,7 @@ function AppRoutes() {
         <Route path="/subjects/:id" element={<SubjectDetailPage />} />
         <Route path="/subjects/:subjectId/class/:classId" element={<ClassSubjectReportPage />} />
 
-        {/* <Route path="/academic-years" element={<AcademicYearsPage />} /> */}
+        <Route path="/academic-years" element={<AcademicYearsPage />} />
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/:id" element={<ClassDetailPage />} />
         <Route path="/classes/:classId/students" element={<ClassStudentsPage />} />
@@ -133,8 +134,6 @@ function AppRoutes() {
         <Route path="/classes/:classId/students/:id/edit" element={<StudentFormPage mode="edit" />} />
         <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
         <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} />
-        {/* <Route path="/classes/:id/subjects" element={<SubjectsPage />} /> */}
-
 
         {/* Finance */}
         <Route path="/finance" element={<FinanceOverviewPage />} />

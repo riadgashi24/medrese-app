@@ -64,8 +64,8 @@ export default function UsersManagementPage() {
             <Card className="mb-4">
                 <CardContent className="flex flex-col md:flex-row gap-3 items-start md:items-center">
                     <div className="flex gap-2">
-                        <Button variant={tab === 'students' ? 'primary' : 'ghost'} onClick={() => setTab('students')}>Nxënës</Button>
-                        <Button variant={tab === 'staff' ? 'primary' : 'ghost'} onClick={() => setTab('staff')}>Staf</Button>
+                        <Button variant={tab === 'students' ? 'default' : 'ghost'} onClick={() => setTab('students')}>Nxënës</Button>
+                        <Button variant={tab === 'staff' ? 'default' : 'ghost'} onClick={() => setTab('staff')}>Staf</Button>
                     </div>
 
                     <div className="flex-1" />

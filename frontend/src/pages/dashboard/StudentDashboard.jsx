@@ -96,7 +96,7 @@ export function StudentDashboard({ isBoarding = false }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base font-body font-medium">Notat e Fundit</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/grades/reports')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
               Shiko të gjitha
             </Button>
           </CardHeader>

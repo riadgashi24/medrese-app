@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateClassRequest;
 use App\Http\Requests\UpdateClassRequest;
+use App\Models\AcademicYear;
 use App\Models\ClassModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,13 +18,25 @@ class ClassController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $classes = ClassModel::with(['academicYear', 'homeroomStaff'])
+        // Nëse nuk dërgohet academic_year_id, merr vitin aktiv
+        $academicYearId = $request->input('academic_year_id');
+        if (!$academicYearId) {
+            $activeYear = AcademicYear::where('is_active', true)->first();
+            $academicYearId = $activeYear?->id;
+        }
+
+        $query = ClassModel::with(['academicYear', 'homeroomStaff'])
             ->withCount('students')
             ->orderBy('name')
-            ->orderBy('section')
-            ->paginate(
-                $request->integer('per_page', 35)
-            );
+            ->orderBy('section');
+
+        if ($academicYearId) {
+            $query->where('academic_year_id', $academicYearId);
+        }
+
+        $classes = $query->paginate(
+            $request->integer('per_page', 35)
+        );
 
         // Transformimi i saktë në PHP
         $formattedItems = collect($classes->items())->map(function ($class) {
