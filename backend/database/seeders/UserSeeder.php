@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
             ['email' => 'secretary@medrese.edu', 'name' => 'Vahid Sadiku', 'role' => 'secretary'],
             ['email' => 'cashier@medrese.edu', 'name' => 'Arkatar', 'role' => 'cashier'],
             ['email' => 'educator@medrese.edu', 'name' => 'Edukator', 'role' => 'educator'],
+            ['email' => 'student@medrese.edu', 'name' => 'Student', 'role' => 'student'],
         ];
 
         foreach ($users as $user) {
