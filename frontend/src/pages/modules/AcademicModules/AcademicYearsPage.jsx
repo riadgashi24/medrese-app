@@ -164,23 +164,22 @@ export default function AcademicYearsPage() {
           years.map((year) => {
             const isEditing = editingId === year.id
             const isPromoting = promoting === year.id
+            const canPromote = !year.is_active && !year.promoted_at && !(year.classes_count > 0)
 
             return (
               <Card
                 key={year.id}
-                className={`transition-all duration-200 hover:border-surface-600 ${
-                  year.is_active ? 'border-brand-500/40 ring-1 ring-brand-500/10' : ''
-                }`}
+                className={`transition-all duration-200 hover:border-surface-600 ${year.is_active ? 'border-brand-500/40 ring-1 ring-brand-500/10' : ''
+                  }`}
               >
                 <CardContent className="flex items-center justify-between gap-4 py-4">
                   {/* Left side */}
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
-                      className={`h-2.5 w-2.5 rounded-full flex-shrink-0 transition-colors ${
-                        year.is_active
+                      className={`h-2.5 w-2.5 rounded-full flex-shrink-0 transition-colors ${year.is_active
                           ? 'bg-brand-400 shadow-sm shadow-brand-400/50'
                           : 'bg-surface-600'
-                      }`}
+                        }`}
                     />
 
                     {isEditing ? (
@@ -245,21 +244,26 @@ export default function AcademicYearsPage() {
                       </Badge>
                     ) : (
                       <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePromote(year.id)}
-                          disabled={isPromoting}
-                          className="gap-1.5 text-xs"
-                          title="Promovo klasat për këtë vit"
-                        >
-                          {isPromoting ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <ArrowUpRight className="h-3.5 w-3.5" />
-                          )}
-                          Promovo
-                        </Button>
+
+                        {canPromote ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePromote(year.id)}
+                            disabled={isPromoting}
+                            className="gap-1.5 text-xs"
+                            title="Promovo klasat për këtë vit"
+                          >
+                            {isPromoting ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            )}
+                            Promovo
+                          </Button>
+                        ) : year.promoted_at || year.classes_count > 0 ? (
+                          <Badge variant="slate">Promovuar</Badge>
+                        ) : null}
                         <Button
                           variant="ghost"
                           size="sm"

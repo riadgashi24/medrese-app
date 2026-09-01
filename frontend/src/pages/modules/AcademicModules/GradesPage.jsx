@@ -3,9 +3,6 @@ import { useParams } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Edit3, Check, FileSpreadsheet, FileText } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export default function GradesPage() {
     const { id: classId } = useParams();
@@ -67,16 +64,21 @@ export default function GradesPage() {
         }
     };
 
-    const exportToExcel = () => {
+    const exportToExcel = async () => {
         const table = tableRef.current;
         if (!table) return;
+        const XLSX = await import('xlsx');
         const wb = XLSX.utils.table_to_book(table, { sheet: "Pasqyra e Notave" });
         XLSX.writeFile(wb, `Pasqyra_Notave_Klasa_${data?.class?.name || classId}.xlsx`);
     };
 
-    const exportToPDF = () => {
+    const exportToPDF = async () => {
         const input = tableRef.current;
         if (!input) return;
+        const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+            import('html2canvas'),
+            import('jspdf'),
+        ]);
         html2canvas(input, { scale: 1.5, backgroundColor: "#0f172a" }).then((canvas) => {
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('landscape', 'mm', 'a4');

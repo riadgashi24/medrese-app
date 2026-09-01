@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Search, UserPlus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, UserPlus } from 'lucide-react'
 import { api } from '@/lib/api'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -13,12 +13,17 @@ export function AllStudentsPage() {
   const [search, setSearch] = useState('')
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [page, setPage] = useState(1)
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 })
   const navigate = useNavigate()
 
   useEffect(() => {
-    const loadAllStudents = async () => {
+    const timeoutId = setTimeout(async () => {
       try {
-        const res = await api.students.index({ per_page: 2000 })
+        setLoading(true)
+        setError('')
+        const res = await api.students.index({ per_page: 25, page, search: search.trim() || undefined })
 
         const rawData = Array.isArray(res) ? res : res?.data || []
 
@@ -32,20 +37,17 @@ export function AllStudentsPage() {
           status: s.status,
         }))
         setStudents(mapped)
+        setMeta(res?.meta || { current_page: page, last_page: 1, total: mapped.length })
       } catch (err) {
-        console.error('Gabim gjatë ngarkimit të të gjithë nxënësve:', err)
+        console.error('Gabim gjatë ngarkimit të nxënësve:', err)
+        setError('Nuk u ngarkua lista e nxënësve.')
       } finally {
         setLoading(false)
       }
-    }
-    loadAllStudents()
-  }, [])
+    }, 300)
 
-  const filteredStudents = students.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.studentId.toLowerCase().includes(search.toLowerCase()) ||
-    s.className.toLowerCase().includes(search.toLowerCase())
-  )
+    return () => clearTimeout(timeoutId)
+  }, [page, search])
 
   const columns = [
     {
@@ -110,7 +112,10 @@ export function AllStudentsPage() {
             <Input
               placeholder="Kërko sipas emrit, ID-së ose klasës..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
               className="pl-10"
             />
           </div>
@@ -121,12 +126,44 @@ export function AllStudentsPage() {
         <Card>
           <CardContent className="h-64 animate-pulse bg-surface-800 rounded-xl" />
         </Card>
+      ) : error ? (
+        <Card><CardContent className="py-8 text-center text-sm text-red-400">{error}</CardContent></Card>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredStudents}
-          onRowClick={(row) => navigate(`/students/${row.id}`)}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={students}
+            onRowClick={(row) => navigate(`/students/${row.id}`)}
+          />
+          {!students.length ? (
+            <Card><CardContent className="py-8 text-center text-sm text-surface-400">Nuk u gjetën nxënës.</CardContent></Card>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-surface-400">
+              <span>{meta.total} nxënës gjithsej</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => current - 1)}
+                  aria-label="Faqja paraprake"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span>Faqja {meta.current_page || page} / {meta.last_page || 1}</span>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  disabled={page >= (meta.last_page || 1)}
+                  onClick={() => setPage((current) => current + 1)}
+                  aria-label="Faqja pasuese"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

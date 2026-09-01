@@ -13,6 +13,7 @@ class AcademicYear extends Model
     {
         return [
             'is_active' => 'boolean',
+            'promoted_at' => 'datetime',
         ];
     }
 

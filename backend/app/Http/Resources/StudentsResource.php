@@ -22,15 +22,15 @@ class StudentsResource extends ResourceCollection
     {
         $this->meta = [
             'current_page' => $this->currentPage(),
-            'last_page'    => $this->lastPage(),
-            'per_page'     => $this->perPage(),
-            'total'        => $this->total(),
+            'last_page' => $this->lastPage(),
+            'per_page' => $this->perPage(),
+            'total' => $this->total(),
         ];
 
         return [
             'success' => true,
-            'data'    => StudentResource::collection($this->collection),
-            'meta'    => $this->meta,
+            'data' => StudentListResource::collection($this->collection),
+            'meta' => $this->meta,
         ];
     }
 }

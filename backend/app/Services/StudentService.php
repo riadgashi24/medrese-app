@@ -65,7 +65,7 @@ class StudentService
      */
     public function getStudents(array $filters = [], int $perPage = 15)
     {
-        $query = Student::with(['class', 'user']);
+        $query = Student::with(['class:id,name']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -114,9 +114,9 @@ class StudentService
         // Automatically create a User for the student if email provided and no user attached
         if (!$student->user_id && !empty($data['student_email'])) {
             $user = \App\Models\User::create([
-                'name'     => $student->full_name,
-                'email'    => $data['student_email'],
-                'role'     => 'student',
+                'name' => $student->full_name,
+                'email' => $data['student_email'],
+                'role' => 'student',
                 'password' => \Illuminate\Support\Facades\Hash::make(
                     config('medrese.default_student_password', 'medrese2026')
                 ),
@@ -146,7 +146,7 @@ class StudentService
         if ($student->user && !empty($data['student_email'])) {
             $student->user->update([
                 'email' => $data['student_email'],
-                'name'  => $student->full_name,
+                'name' => $student->full_name,
             ]);
         }
 
@@ -189,25 +189,26 @@ class StudentService
                 }
             }
 
-            Student::create([
-                'student_id'                => $row['student_id'] ?? null,
-                'first_name'                => $row['first_name'] ?? null,
-                'last_name'                 => $row['last_name'] ?? null,
-                'class_id'                  => $row['class_id'] ?? 1,
-                'type'                      => $row['type'] ?? 'Regular',
-                'status'                    => $row['status'] ?? 'Active',
-                'municipality'              => $row['municipality'] ?? null,
-                'address'                   => $row['address'] ?? null,
-                'student_email'             => $row['student_email'] ?? null,
-                'parent_name'               => $row['parent_name'] ?? null,
-                'parent_phone'              => $row['parent_phone'] ?? null,
-                'parent_phone_secondary'    => $row['parent_phone_secondary'] ?? null,
+            $student = Student::create([
+                'student_id' => $row['student_id'] ?? null,
+                'first_name' => $row['first_name'] ?? null,
+                'last_name' => $row['last_name'] ?? null,
+                'class_id' => $row['class_id'] ?? 1,
+                'type' => $row['type'] ?? 'Regular',
+                'status' => $row['status'] ?? 'Active',
+                'municipality' => $row['municipality'] ?? null,
+                'address' => $row['address'] ?? null,
+                'student_email' => $row['student_email'] ?? null,
+                'parent_name' => $row['parent_name'] ?? null,
+                'parent_phone' => $row['parent_phone'] ?? null,
+                'parent_phone_secondary' => $row['parent_phone_secondary'] ?? null,
             ]);
             $imported++;
         }
 
         return $imported;
     }
+
 
     /**
      * Get payment info for a student
@@ -237,9 +238,9 @@ class StudentService
         }
 
         return [
-            'student'       => $student,
+            'student' => $student,
             'fee_structures' => $feeStructures,
-            'balance'       => $student->balance,
+            'balance' => $student->balance,
         ];
     }
 

@@ -22,7 +22,8 @@ function useApiData(load, fallback = []) {
     async function run() {
       try {
         const response = await load()
-        if (mounted) setData(response?.data ?? fallback)
+        const loadedData = Array.isArray(response) ? response : response?.data
+        if (mounted) setData(loadedData ?? fallback)
       } catch (err) {
         console.error(err)
         if (mounted) setError('Te dhenat nuk u ngarkuan.')
@@ -56,6 +57,8 @@ function getStaffRoleMeta(role) {
   switch (normalized) {
     case 'director':
       return { label: 'Drejtor', badge: 'purple' }
+    case 'secretary':
+      return { label: 'Sekretar', badge: 'green' }
     case 'teacher':
       return { label: 'Profesor', badge: 'blue' }
     case 'educator':
@@ -69,7 +72,7 @@ function getStaffRoleMeta(role) {
 
 function getStaffRoleOrder(role) {
   const normalized = String(role ?? '').toLowerCase()
-  const order = ['director', 'teacher', 'educator', 'cashier']
+  const order = ['director', 'secretary', 'teacher', 'educator', 'cashier']
   const index = order.indexOf(normalized)
   return index === -1 ? 999 : index
 }
@@ -265,11 +268,10 @@ export function InspectionsPage() {
                       {item.items.map((checkItem) => (
                         <span
                           key={checkItem.id}
-                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-mono ${
-                            checkItem.passed
-                              ? 'bg-emerald-500/10 text-emerald-400'
-                              : 'bg-red-500/10 text-red-400'
-                          }`}
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-mono ${checkItem.passed
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : 'bg-red-500/10 text-red-400'
+                            }`}
                         >
                           {checkItem.passed ? <Check className="h-2.5 w-2.5" /> : <X className="h-2.5 w-2.5" />}
                           {checkItem.item_label}
@@ -314,7 +316,7 @@ export function InspectionFormPage() {
   const [loading, setLoading] = useState(isEditing)
 
   useEffect(() => {
-    api.dormitory.rooms().then(r => setRooms(r?.data ?? [])).catch(() => {})
+    api.dormitory.rooms().then(r => setRooms(r?.data ?? [])).catch(() => { })
 
     if (isEditing) {
       api.dormitory.showInspection(id)
@@ -434,9 +436,8 @@ export function InspectionFormPage() {
             <div className="rounded-xl bg-surface-800/60 border border-white/5 p-4 text-center">
               <p className="text-xs text-surface-400 mb-1">Rezultati</p>
               <div className="flex items-center justify-center gap-3">
-                <div className={`text-4xl font-bold font-mono ${
-                  liveScore >= 8 ? 'text-emerald-400' : liveScore >= 6 ? 'text-amber-400' : 'text-red-400'
-                }`}>
+                <div className={`text-4xl font-bold font-mono ${liveScore >= 8 ? 'text-emerald-400' : liveScore >= 6 ? 'text-amber-400' : 'text-red-400'
+                  }`}>
                   {liveScore.toFixed(1)}
                 </div>
                 <span className="text-xl text-surface-500">/10</span>
@@ -453,21 +454,19 @@ export function InspectionFormPage() {
                 {items.map((item, index) => (
                   <div
                     key={item.item_key}
-                    className={`rounded-lg border p-3 transition-colors ${
-                      item.passed
-                        ? 'border-emerald-500/20 bg-emerald-500/5'
-                        : 'border-red-500/20 bg-red-500/5'
-                    }`}
+                    className={`rounded-lg border p-3 transition-colors ${item.passed
+                      ? 'border-emerald-500/20 bg-emerald-500/5'
+                      : 'border-red-500/20 bg-red-500/5'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => toggleItem(index)}
-                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
-                          item.passed
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-red-500/20 text-red-400'
-                        }`}
+                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${item.passed
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-red-500/20 text-red-400'
+                          }`}
                       >
                         {item.passed ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
                       </button>
@@ -726,19 +725,28 @@ export function GenericListPage({ title, description, loader, columns, mapRow = 
   const staffRows = isStaffPage
     ? [...rows].sort((a, b) => getStaffRoleOrder(a.role) - getStaffRoleOrder(b.role))
     : rows
+  const staffRoleKeys = ['director', 'secretary', 'teacher', 'educator', 'cashier']
+  const staffGroups = isStaffPage
+    ? [
+      ...staffRoleKeys.map((roleKey) => ({
+        roleKey,
+        items: staffRows.filter((row) => String(row.role ?? '').toLowerCase() === roleKey),
+      })),
+      {
+        roleKey: 'other',
+        items: staffRows.filter((row) => !staffRoleKeys.includes(String(row.role ?? '').toLowerCase())),
+      },
+    ].filter((group) => group.items.length)
+    : []
 
   return (
     <div>
       <PageHeader title={title} description={description} />
       {staffRows.length ? (
         isStaffPage ? (
-          <div className="space-y-4">
-            {['director', 'teacher', 'educator', 'cashier'].map((roleKey) => {
-              const roleItems = staffRows.filter((row) => String(row.role ?? '').toLowerCase() === roleKey)
-              if (!roleItems.length) return null
-
-              const meta = getStaffRoleMeta(roleKey)
-
+          <div className="space-y-5">
+            {staffGroups.map(({ roleKey, items: roleItems }) => {
+              const meta = getStaffRoleMeta(roleKey === 'other' ? roleItems[0]?.role : roleKey)
               return (
                 <Card key={roleKey}>
                   <CardContent className="space-y-3">
@@ -746,16 +754,18 @@ export function GenericListPage({ title, description, loader, columns, mapRow = 
                       <h3 className="text-sm font-medium text-surface-100">{meta.label}</h3>
                       <Badge variant={meta.badge}>{roleItems.length}</Badge>
                     </div>
-                    <div className="space-y-2">
+                    <div className="grid gap-2 md:grid-cols-2">
                       {roleItems.map((row) => (
-                        <div key={row.id || `${row.name}-${row.email}`} className="rounded-lg border border-white/8 bg-surface-900/30 p-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-medium text-surface-100">{row.name}</p>
-                              <p className="text-xs text-surface-400">{row.email}</p>
-                            </div>
-                            <Badge variant={meta.badge}>{meta.label}</Badge>
+                        <div key={row.id || `${row.name}-${row.email}`} className="flex items-center gap-3 rounded-lg border border-white/8 bg-surface-900/30 p-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-sm font-semibold text-brand-300">
+                            {row.name?.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() || '?'}
                           </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-surface-100">{row.name}</p>
+                            <p className="truncate text-xs text-surface-400">{row.position || meta.label}</p>
+                            <p className="truncate text-xs text-surface-500">{row.email}</p>
+                          </div>
+                          <Badge variant={meta.badge}>{meta.label}</Badge>
                         </div>
                       ))}
                     </div>
@@ -972,13 +982,12 @@ export function AbsenceApprovalPage() {
               <button
                 type="button"
                 onClick={toggleSelectAll}
-                className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${
-                  selectedIds.size === pendingNotReviewed.length
-                    ? 'bg-brand-500 border-brand-500'
-                    : selectedIds.size > 0
-                      ? 'bg-brand-500/50 border-brand-500/50'
-                      : 'border-white/20 hover:border-white/40'
-                }`}
+                className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${selectedIds.size === pendingNotReviewed.length
+                  ? 'bg-brand-500 border-brand-500'
+                  : selectedIds.size > 0
+                    ? 'bg-brand-500/50 border-brand-500/50'
+                    : 'border-white/20 hover:border-white/40'
+                  }`}
               >
                 {selectedIds.size > 0 && <Check className="h-3 w-3 text-white" />}
               </button>
@@ -997,11 +1006,10 @@ export function AbsenceApprovalPage() {
                       <button
                         type="button"
                         onClick={() => toggleSelect(record.id)}
-                        className={`h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                          selectedIds.has(record.id)
-                            ? 'bg-brand-500 border-brand-500'
-                            : 'border-white/20 hover:border-white/40'
-                        }`}
+                        className={`h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors ${selectedIds.has(record.id)
+                          ? 'bg-brand-500 border-brand-500'
+                          : 'border-white/20 hover:border-white/40'
+                          }`}
                       >
                         {selectedIds.has(record.id) && <Check className="h-3 w-3 text-white" />}
                       </button>
@@ -1013,10 +1021,10 @@ export function AbsenceApprovalPage() {
                           </span>
                           <Badge variant={
                             record.status === 'Absent' ? 'red' :
-                            record.status === 'Late' ? 'warning' : 'slate'
+                              record.status === 'Late' ? 'warning' : 'slate'
                           }>
                             {record.status === 'Absent' ? 'Mungesë' :
-                             record.status === 'Late' ? 'Vonesë' : record.status}
+                              record.status === 'Late' ? 'Vonesë' : record.status}
                           </Badge>
                         </div>
                         <p className="text-xs text-surface-500 mt-0.5">
@@ -1135,11 +1143,10 @@ export function LeaderboardPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-              activeTab === tab.key
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-surface-300 hover:text-surface-100 hover:bg-white/5'
-            }`}
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${activeTab === tab.key
+              ? 'bg-brand-600 text-white shadow-sm'
+              : 'text-surface-300 hover:text-surface-100 hover:bg-white/5'
+              }`}
           >
             {tab.label}
           </button>
@@ -1161,17 +1168,15 @@ export function LeaderboardPage() {
               }
               const room = item.dorm_room
               return (
-                <Card key={rankPos} className={`text-center relative overflow-hidden ${
-                  rankPos === 1 ? 'ring-2 ring-amber-400/50' :
+                <Card key={rankPos} className={`text-center relative overflow-hidden ${rankPos === 1 ? 'ring-2 ring-amber-400/50' :
                   rankPos === 2 ? 'ring-1 ring-slate-400/30' :
-                  'ring-1 ring-amber-600/30'
-                }`}>
+                    'ring-1 ring-amber-600/30'
+                  }`}>
                   {/* Decorative top strip */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${
-                    rankPos === 1 ? 'bg-amber-400' :
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${rankPos === 1 ? 'bg-amber-400' :
                     rankPos === 2 ? 'bg-slate-400' :
-                    'bg-amber-600'
-                  }`} />
+                      'bg-amber-600'
+                    }`} />
                   <CardContent className="pt-6 pb-4">
                     <span className="text-2xl">{getTrophy(rankPos)}</span>
                     <h3 className="text-sm font-medium text-surface-100 mt-2 truncate">

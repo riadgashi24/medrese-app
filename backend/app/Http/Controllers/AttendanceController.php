@@ -203,8 +203,10 @@ class AttendanceController extends Controller
         $studentId = $request->get('student_id');
 
         $query = AttendanceRecord::query();
-        if ($classId) $query->where('class_id', $classId);
-        if ($studentId) $query->where('student_id', $studentId);
+        if ($classId)
+            $query->where('class_id', $classId);
+        if ($studentId)
+            $query->where('student_id', $studentId);
 
         $records = $query->get();
 

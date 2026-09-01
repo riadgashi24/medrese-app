@@ -25,7 +25,7 @@ export function ClassStudentsPage() {
                 // Ngarkojmë detajet e klasës dhe listën e nxënësve paralelisht
                 const [classRes, studentsRes] = await Promise.all([
                     api.classes.show(classId),
-                    api.students.index({ per_page: 1000 })
+                    api.students.index({ per_page: 1000, class_id: classId })
                 ])
 
                 const classInfo = classRes?.data || classRes || {}

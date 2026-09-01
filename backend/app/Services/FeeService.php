@@ -33,24 +33,52 @@ class FeeService
 
         $totalRevenue = Payment::where('status', 'Completed')->sum('amount');
         $totalPending = Payment::where('status', 'Pending')->sum('amount');
-        $outstandingCount = Student::where('status', 'Active')
-            ->get()
-            ->filter(fn ($s) => $s->balance > 0)
-            ->count();
+        $outstandingCount = 0;
+        $activeStudents = collect();
+        $feeStructures = collect();
 
-        $revenueByCategory = [];
         if ($academicYear) {
-            $structures = FeeStructure::with('feeType')
+            $activeStudents = Student::query()
+                ->select(['id', 'class_id', 'type'])
+                ->where('status', 'Active')
+                ->get();
+            $feeStructures = FeeStructure::query()
+                ->select(['fee_type_id', 'class_id', 'applies_to_type', 'amount'])
                 ->where('academic_year_id', $academicYear->id)
                 ->get();
 
-            foreach ($structures as $structure) {
-                $collected = Payment::where('fee_type_id', $structure->fee_type_id)
-                    ->where('status', 'Completed')
+            $paidByStudent = Payment::query()
+                ->selectRaw('student_id, SUM(amount) as total_paid')
+                ->where('status', 'Completed')
+                ->whereIn('student_id', $activeStudents->pluck('id'))
+                ->groupBy('student_id')
+                ->pluck('total_paid', 'student_id');
+
+            $outstandingCount = $activeStudents->filter(function ($student) use ($feeStructures, $paidByStudent) {
+                $totalFees = $feeStructures
+                    ->filter(
+                        fn($structure) =>
+                        ($structure->class_id === null || $structure->class_id === $student->class_id) &&
+                        ($structure->applies_to_type === 'All' || $structure->applies_to_type === $student->type)
+                    )
                     ->sum('amount');
+
+                return $totalFees - (float) ($paidByStudent[$student->id] ?? 0) > 0;
+            })->count();
+        }
+
+        $revenueByCategory = [];
+        if ($academicYear) {
+            $collectedByType = Payment::query()
+                ->selectRaw('fee_type_id, SUM(amount) as collected')
+                ->where('status', 'Completed')
+                ->groupBy('fee_type_id')
+                ->pluck('collected', 'fee_type_id');
+
+            foreach ($feeStructures->load('feeType')->unique('fee_type_id') as $structure) {
                 $revenueByCategory[] = [
                     'category' => $structure->feeType->name,
-                    'collected' => (float) $collected,
+                    'collected' => (float) ($collectedByType[$structure->fee_type_id] ?? 0),
                 ];
             }
         }
@@ -121,21 +149,57 @@ class FeeService
      */
     public function getOutstandingStudents(array $filters = []): array
     {
-        $query = Student::with(['class'])->where('status', 'Active');
+        $academicYear = $this->getActiveAcademicYear();
+        if (!$academicYear) {
+            return [];
+        }
+
+        $query = Student::query()
+            ->select(['id', 'student_id', 'first_name', 'last_name', 'class_id', 'type'])
+            ->with(['class:id,name'])
+            ->where('status', 'Active');
 
         if (!empty($filters['class_id'])) {
             $query->where('class_id', $filters['class_id']);
         }
 
-        $students = $query->get()
-            ->filter(fn ($s) => $s->balance > 0)
-            ->map(fn ($s) => [
+        $students = $query->get();
+        $feeStructures = FeeStructure::query()
+            ->select(['class_id', 'applies_to_type', 'amount'])
+            ->where('academic_year_id', $academicYear->id)
+            ->get();
+        $paidByStudent = Payment::query()
+            ->selectRaw('student_id, SUM(amount) as total_paid')
+            ->where('status', 'Completed')
+            ->whereIn('student_id', $students->pluck('id'))
+            ->groupBy('student_id')
+            ->pluck('total_paid', 'student_id');
+
+        $students = $students
+            ->filter(function ($student) use ($feeStructures, $paidByStudent) {
+                $totalFees = $feeStructures
+                    ->filter(
+                        fn($structure) =>
+                        ($structure->class_id === null || $structure->class_id === $student->class_id) &&
+                        ($structure->applies_to_type === 'All' || $structure->applies_to_type === $student->type)
+                    )
+                    ->sum('amount');
+
+                return $totalFees - (float) ($paidByStudent[$student->id] ?? 0) > 0;
+            })
+            ->map(fn($s) => [
                 'id' => $s->id,
                 'student_id' => $s->student_id,
                 'name' => $s->full_name,
                 'class_name' => $s->class?->name,
                 'type' => $s->type,
-                'balance' => $s->balance,
+                'balance' => max(0, $feeStructures
+                    ->filter(
+                        fn($structure) =>
+                        ($structure->class_id === null || $structure->class_id === $s->class_id) &&
+                        ($structure->applies_to_type === 'All' || $structure->applies_to_type === $s->type)
+                    )
+                    ->sum('amount') - (float) ($paidByStudent[$s->id] ?? 0)),
             ])
             ->values()
             ->all();

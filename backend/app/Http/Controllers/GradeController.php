@@ -46,23 +46,35 @@ class GradeController extends Controller
         // Formatojmë matricën përfundimtare për Frontend
         $formattedStudents = $students->map(function ($student) use ($grades, $subjects) {
             $studentGrades = $grades->get($student->id, collect());
-            
+
             $gradesMap = [];
-            $sumT1 = 0; $countT1 = 0;
-            $sumT2 = 0; $countT2 = 0;
-            $sumNP = 0; $countNP = 0;
+            $sumT1 = 0;
+            $countT1 = 0;
+            $sumT2 = 0;
+            $countT2 = 0;
+            $sumNP = 0;
+            $countNP = 0;
 
             foreach ($subjects as $subject) {
                 $g = $studentGrades->firstWhere('subject_id', $subject->id);
-                
+
                 $t1 = $g ? $g->term_1_grade : null;
                 $t2 = $g ? $g->term_2_grade : null;
                 $np = $g ? $g->final_grade : null;
 
                 // Akumulimi për mesataret e përgjithshme të nxënësit
-                if ($t1) { $sumT1 += $t1; $countT1++; }
-                if ($t2) { $sumT2 += $t2; $countT2++; }
-                if ($np) { $sumNP += $np; $countNP++; }
+                if ($t1) {
+                    $sumT1 += $t1;
+                    $countT1++;
+                }
+                if ($t2) {
+                    $sumT2 += $t2;
+                    $countT2++;
+                }
+                if ($np) {
+                    $sumNP += $np;
+                    $countNP++;
+                }
 
                 $gradesMap[$subject->id] = [
                     't1' => $t1,
@@ -136,7 +148,7 @@ class GradeController extends Controller
         ]);
 
         $class = ClassModel::findOrFail($classId);
-        
+
         $grade = Grade::firstOrNew([
             'student_id' => $request->student_id,
             'subject_id' => $request->subject_id,

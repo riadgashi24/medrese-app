@@ -439,6 +439,13 @@ class AcademicController extends Controller
             ], 400);
         }
 
+        if ($newYear->promoted_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ky vit akademik është promovuar tashmë. Promovimi mund të bëhet vetëm një herë.',
+            ], 400);
+        }
+
         // Parandalon promovimin e dyfishtë nëse viti ka tashmë klasa
         if (ClassModel::where('academic_year_id', $newAcademicYearId)->exists()) {
             return response()->json([
@@ -460,7 +467,7 @@ class AcademicController extends Controller
                 foreach ($oldClasses as $oldClass) {
                     // Shkëput emrin: p.sh. "10/1" → ['10', '1']
                     $parts = explode('/', $oldClass->name);
-                    $grade = (int)($parts[0] ?? 0);
+                    $grade = (int) ($parts[0] ?? 0);
                     $parallel = $parts[1] ?? '';
 
                     if ($grade === 10) {
@@ -495,6 +502,7 @@ class AcademicController extends Controller
                     $newName = '10/' . $teacher['parallel'];
                     $this->createPromotedClass($newYear->id, $newName, $teacher['parallel'], $teacher['homeroom_staff_id']);
                 }
+
             });
 
             $newYear->loadCount(['classes', 'feeStructures']);
@@ -547,5 +555,6 @@ class AcademicController extends Controller
             Student::whereIn('id', $chunk)
                 ->update(['class_id' => $newClassId]);
         });
+
     }
 }

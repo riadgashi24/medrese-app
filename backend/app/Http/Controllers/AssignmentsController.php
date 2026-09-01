@@ -39,7 +39,7 @@ class AssignmentsController extends Controller
         $user = $request->user();
         $student = $user->student;
 
-        if (! $student) {
+        if (!$student) {
             return response()->json([
                 'success' => false,
                 'error' => ['message' => 'No student profile found.', 'code' => 'NOT_FOUND'],
@@ -49,14 +49,17 @@ class AssignmentsController extends Controller
         $assignments = Assignment::with(['class', 'subject'])
             ->where('class_id', $student->class_id)
             ->latest('due_date')
+            ->get();
+
+        $submissions = AssignmentSubmission::query()
+            ->where('student_id', $student->id)
+            ->whereIn('assignment_id', $assignments->pluck('id'))
             ->get()
-            ->map(function ($assignment) use ($student) {
-                $submission = AssignmentSubmission::where('assignment_id', $assignment->id)
-                    ->where('student_id', $student->id)
-                    ->first();
-                $assignment->submission = $submission;
-                return $assignment;
-            });
+            ->keyBy('assignment_id');
+
+        $assignments->each(function ($assignment) use ($submissions) {
+            $assignment->submission = $submissions->get($assignment->id);
+        });
 
         return response()->json([
             'success' => true,
