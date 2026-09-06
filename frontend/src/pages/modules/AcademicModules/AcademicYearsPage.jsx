@@ -21,6 +21,11 @@ export default function AcademicYearsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [label, setLabel] = useState('')
+  const [previousYearId, setPreviousYearId] = useState('')
+  const [grade10Count, setGrade10Count] = useState('')
+  const [copyHomeroomTeachers, setCopyHomeroomTeachers] = useState(false)
+  const [promotionPreview, setPromotionPreview] = useState(null)
+  const [loadingPreview, setLoadingPreview] = useState(false)
   const [saving, setSaving] = useState(false)
   const [promoting, setPromoting] = useState(null) // id e vitit që po promovohet
 
@@ -48,16 +53,45 @@ export default function AcademicYearsPage() {
   async function handleCreate(e) {
     e.preventDefault()
     if (!label.trim()) return
+    if (previousYearId && !promotionPreview) {
+      await handlePreview()
+      return
+    }
     setSaving(true)
     try {
-      await api.academic.storeAcademicYear({ label })
+      await api.academic.initializeAcademicYear({
+        label,
+        previous_academic_year_id: previousYearId || null,
+        new_grade10_classes: grade10Count ? Number(grade10Count) : null,
+        copy_homeroom_teachers: copyHomeroomTeachers,
+      })
       setLabel('')
+      setPreviousYearId('')
+      setGrade10Count('')
+      setCopyHomeroomTeachers(false)
+      setPromotionPreview(null)
       setShowForm(false)
       loadYears()
     } catch (err) {
       console.error('Failed to create academic year:', err)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handlePreview() {
+    if (!previousYearId) return
+    setLoadingPreview(true)
+    try {
+      const res = await api.academic.previewPromotion({
+        previous_academic_year_id: Number(previousYearId),
+        new_grade10_classes: grade10Count ? Number(grade10Count) : null,
+      })
+      setPromotionPreview(res?.data ?? res)
+    } catch (err) {
+      alert('Parashikimi i promovimit dështoi.')
+    } finally {
+      setLoadingPreview(false)
     }
   }
 
@@ -140,11 +174,57 @@ export default function AcademicYearsPage() {
                   required
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Krijo nga viti paraprak</Label>
+                <select
+                  value={previousYearId}
+                  onChange={(e) => { setPreviousYearId(e.target.value); setPromotionPreview(null) }}
+                  className="w-full h-10 rounded-md border border-white/10 bg-surface-950 px-3 text-sm text-surface-100"
+                >
+                  <option value="">Pa promovim (vit bosh)</option>
+                  {years.map((year) => <option key={year.id} value={year.id}>{year.label}</option>)}
+                </select>
+              </div>
+              {previousYearId && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Sa klasa të 10-ta dëshironi të krijoni?</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={grade10Count}
+                      onChange={(e) => { setGrade10Count(e.target.value); setPromotionPreview(null) }}
+                      placeholder="Si numri i klasave të 10-ta paraprake"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-surface-300">
+                    <input
+                      type="checkbox"
+                      checked={copyHomeroomTeachers}
+                      onChange={(e) => setCopyHomeroomTeachers(e.target.checked)}
+                    />
+                    Kopjo kujdestarët e klasave nga viti paraprak
+                  </label>
+                </>
+              )}
+              {promotionPreview && (
+                <div className="rounded-lg border border-white/10 bg-surface-950 p-3 space-y-2 text-xs text-surface-300">
+                  <p className="font-semibold text-surface-100">Promovimi nga {promotionPreview.previous_year?.label}</p>
+                  {promotionPreview.promotions?.map((item) => (
+                    <div key={`${item.from}-${item.to}`} className="flex justify-between gap-3">
+                      <span>{item.from} → {item.to}</span>
+                      <span>{item.students_count} nxënës</span>
+                    </div>
+                  ))}
+                  <p className="pt-1 text-brand-300">Klasa të reja: {promotionPreview.new_grade10_classes?.map((item) => item.name).join(', ') || 'Asnjë'}</p>
+                </div>
+              )}
               <div className="flex gap-2">
-                <Button type="submit" disabled={saving}>
-                  {saving ? 'Duke ruajtur...' : 'Krijo Vitin'}
+                <Button type="submit" disabled={saving || loadingPreview}>
+                  {saving ? 'Duke ruajtur...' : loadingPreview ? 'Duke përgatitur...' : previousYearId && !promotionPreview ? 'Shiko promovimin' : previousYearId ? 'Krijo dhe promovo' : 'Krijo Vitin'}
                 </Button>
-                <Button variant="ghost" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="ghost" onClick={() => { setShowForm(false); setPromotionPreview(null) }}>
                   Anulo
                 </Button>
               </div>
@@ -177,8 +257,8 @@ export default function AcademicYearsPage() {
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
                       className={`h-2.5 w-2.5 rounded-full flex-shrink-0 transition-colors ${year.is_active
-                          ? 'bg-brand-400 shadow-sm shadow-brand-400/50'
-                          : 'bg-surface-600'
+                        ? 'bg-brand-400 shadow-sm shadow-brand-400/50'
+                        : 'bg-surface-600'
                         }`}
                     />
 

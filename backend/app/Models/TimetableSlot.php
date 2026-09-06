@@ -11,7 +11,7 @@ class TimetableSlot extends Model
     use HasFactory;
 
     protected $fillable = [
-        'day',
+        'day_of_week',
         'slot_number',
         'start_time',
         'end_time',
@@ -25,6 +25,7 @@ class TimetableSlot extends Model
      * Konvertimi automatik i tipave të të dhënave
      */
     protected $casts = [
+        'day_of_week' => 'integer',
         'slot_number' => 'integer',
         'class_id' => 'integer',
         'subject_id' => 'integer',

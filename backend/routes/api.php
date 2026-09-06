@@ -77,17 +77,26 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('subjects/{id}', [AcademicController::class, 'updateSubject']);               // PUT /academic/subjects/{id}
         Route::delete('subjects/{id}', [AcademicController::class, 'destroySubject']);           // DELETE /academic/subjects/{id}
         Route::get('subjects/{id}/details', [AcademicController::class, 'showSubjectDetails']);  // GET /academic/subjects/{id}/details
+        Route::get('subject-options', [AcademicController::class, 'subjectOptions']);
+        Route::post('subject-assignments', [AcademicController::class, 'assignSubjectToClass'])->middleware('role:director,secretary');
+        Route::put('subject-assignments/{assignmentId}', [AcademicController::class, 'updateSubjectAssignment'])->middleware('role:director,secretary');
+        Route::delete('subject-assignments/{assignmentId}', [AcademicController::class, 'deleteSubjectAssignment'])->middleware('role:director,secretary');
 
         // Raporti i klasës për lëndën
         Route::get('report/class/{classId}/subject/{subjectId}', [AcademicController::class, 'getClassSubjectReport']); // GET /academic/report/class/{classId}/subject/{subjectId}
 
         // Orari
         Route::get('timetable', [AcademicController::class, 'timetable']);
+        Route::put('day-supervisor', [AcademicController::class, 'updateDaySupervisor']);
+        Route::post('timetable/slots', [AcademicController::class, 'saveTimetableSlot'])->middleware('role:director,secretary');
+        Route::delete('timetable/slots/{id}', [AcademicController::class, 'deleteTimetableSlot'])->middleware('role:director,secretary');
     });
 
     Route::get('/academic-years', [AcademicController::class, 'academicYears']);
     Route::get('/academic-years/{id}', [AcademicController::class, 'academicYear']);
     Route::post('/academic-years', [AcademicController::class, 'storeAcademicYear'])->middleware('role:director,secretary');
+    Route::post('/academic-years/initialize', [AcademicController::class, 'initializeAcademicYear'])->middleware('role:director,secretary');
+    Route::post('/academic-years/promotion-preview', [AcademicController::class, 'previewPromotion'])->middleware('role:director,secretary');
     Route::put('/academic-years/{id}', [AcademicController::class, 'updateAcademicYear'])->middleware('role:director,secretary');
     Route::put('/academic-years/{id}/activate', [AcademicController::class, 'activateAcademicYear'])->middleware('role:director,secretary');
     Route::post('/academic-years/{id}/promote', [AcademicController::class, 'promoteAcademicYear'])->middleware('role:director,secretary');

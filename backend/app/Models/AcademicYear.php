@@ -31,4 +31,9 @@ class AcademicYear extends Model
     {
         return $this->hasMany(TimetableSlot::class);
     }
+
+    public function studentEnrollments(): HasMany
+    {
+        return $this->hasMany(StudentAcademicEnrollment::class);
+    }
 }

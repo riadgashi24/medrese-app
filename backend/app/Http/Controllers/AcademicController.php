@@ -8,6 +8,8 @@ use App\Models\DaySupervisor;
 use App\Models\Subject;
 use App\Models\TimetableSlot;
 use App\Models\Student;
+use App\Models\StudentAcademicEnrollment;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,85 +58,128 @@ class AcademicController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'level' => 'required|integer|in:10,11,12',
+            'description' => 'nullable|string',
         ]);
 
         $subject = \App\Models\Subject::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'data' => $subject,
-        ]);
+        return response()->json(['success' => true, 'data' => $subject]);
     }
 
-    // 3. Ndrysho një lëndë (Vetëm Drejtori dhe Sekretari)
     public function updateSubject(\Illuminate\Http\Request $request, $id): \Illuminate\Http\JsonResponse
     {
         if (!in_array(auth()->user()->role, ['director', 'secretary'])) {
             return response()->json(['success' => false, 'message' => 'Pa autorizim'], 403);
         }
-
-        $subject = \App\Models\Subject::findOrFail($id);
-
+        $subject = Subject::findOrFail($id);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'level' => 'required|integer|in:10,11,12',
+            'description' => 'nullable|string',
         ]);
-
         $subject->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'data' => $subject,
-        ]);
+        return response()->json(['success' => true, 'data' => $subject]);
     }
 
-    // 4. Fshij një lëndë (Vetëm Drejtori dhe Sekretari)
     public function destroySubject($id): \Illuminate\Http\JsonResponse
     {
         if (!in_array(auth()->user()->role, ['director', 'secretary'])) {
             return response()->json(['success' => false, 'message' => 'Pa autorizim'], 403);
         }
-
-        $subject = \App\Models\Subject::findOrFail($id);
-        $subject->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lënda u fshi me sukses.',
-        ]);
+        Subject::findOrFail($id)->delete();
+        return response()->json(['success' => true, 'message' => 'Lënda u fshi me sukses.']);
     }
 
-    // 5. Detajet specifike të një lënde (Klasat ku ligjërohet, Profesorët dhe orët javore)
-    public function showSubjectDetails($id): \Illuminate\Http\JsonResponse
+    public function showSubjectDetails(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        // Ngarkojmë lëndën duke marrë klasat (ClassModel) përmes lidhjes së saj
-        $subject = \App\Models\Subject::with(['classes'])->findOrFail($id);
-
-        // Formatojmë klasat me të dhënat ekzistuese nga tabela pivot
-        $classes = $subject->classes->map(function ($class) {
-            // Gjejmë profesorin nga tabela users përmes id-së në pivot
-            $teacher = \App\Models\User::find($class->pivot->teacher_user_id);
-
-            // Numërojmë studentët e kësaj klase duke përdorur lidhjen tënde: $class->students()
-            $studentsCount = $class->students()->count();
-
+        $academicYearId = $request->integer('academic_year_id') ?: AcademicYear::where('is_active', true)->value('id');
+        $subject = Subject::findOrFail($id);
+        $classes = $subject->classes()
+            ->when($academicYearId, fn($query) => $query->where('classes.academic_year_id', $academicYearId))
+            ->withCount('students')
+            ->when($academicYearId, fn($query) => $query->withCount(['academicEnrollments as academic_students_count' => fn($enrollments) => $enrollments->where('academic_year_id', $academicYearId)]))
+            ->get();
+        $teacherNames = User::whereIn('id', $classes->pluck('pivot.teacher_user_id')->filter()->unique())
+            ->pluck('name', 'id');
+        $classAssignments = $classes->map(function ($class) use ($teacherNames) {
             return [
+                'assignment_id' => $class->pivot->id ?? null,
                 'class_id' => $class->id,
-                'class_name' => $class->name . ($class->section ? ' - ' . $class->section : ''),
+                'class_name' => $class->name,
                 'weekly_hours' => $class->pivot->weekly_hours,
-                'teacher_name' => $teacher ? $teacher->name : 'I pacaktuar',
-                'students_count' => $studentsCount,
+                'teacher_name' => $teacherNames[$class->pivot->teacher_user_id] ?? 'I pacaktuar',
+                'teacher_user_id' => $class->pivot->teacher_user_id,
+                'students_count' => ($class->academic_students_count ?? 0) > 0 ? $class->academic_students_count : ($class->students_count ?? 0),
+                'academic_year_id' => $class->academic_year_id,
             ];
         });
+        return response()->json(['success' => true, 'data' => ['subject' => $subject, 'classes' => $classAssignments]]);
+    }
 
+    public function subjectOptions(Request $request): JsonResponse
+    {
+        $academicYearId = $request->integer('academic_year_id') ?: AcademicYear::where('is_active', true)->value('id');
+        $classes = ClassModel::when($academicYearId, fn($query) => $query->where('academic_year_id', $academicYearId))
+            ->orderBy('name')->orderBy('section')->withCount('students')
+            ->when($academicYearId, fn($query) => $query->withCount(['academicEnrollments as academic_students_count' => fn($enrollments) => $enrollments->where('academic_year_id', $academicYearId)]))
+            ->get(['id', 'name', 'section', 'academic_year_id']);
+        $assignments = DB::table('class_subject')
+            ->join('classes', 'class_subject.class_model_id', '=', 'classes.id')
+            ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
+            ->where('classes.academic_year_id', $academicYearId)
+            ->select(
+                'class_subject.teacher_user_id',
+                'class_subject.subject_id',
+                'subjects.name as subject_name',
+                'class_subject.class_model_id as class_id',
+                'classes.name as class_name',
+                'classes.section'
+            )
+            ->orderBy('subjects.name')
+            ->orderBy('classes.name')
+            ->get();
         return response()->json([
             'success' => true,
             'data' => [
-                'subject' => $subject,
-                'classes' => $classes,
+                'classes' => $classes->map(fn($class) => ['id' => $class->id, 'name' => $class->name . ($class->section ? ' - ' . $class->section : ''), 'students_count' => ($class->academic_students_count ?? 0) > 0 ? $class->academic_students_count : $class->students_count, 'academic_year_id' => $class->academic_year_id]),
+                'teachers' => User::where('role', 'teacher')->orderBy('name')->get(['id', 'name']),
+                'assignments' => $assignments,
+                'academic_year_id' => $academicYearId,
             ]
         ]);
+    }
+    public function assignSubjectToClass(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'class_id' => 'required|exists:classes,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'teacher_user_id' => 'required|exists:users,id',
+            'weekly_hours' => 'required|integer|min:1|max:40',
+        ]);
+        $class = ClassModel::where('academic_year_id', $validated['academic_year_id'])->findOrFail($validated['class_id']);
+        User::where('role', 'teacher')->findOrFail($validated['teacher_user_id']);
+        DB::table('class_subject')->updateOrInsert(
+            ['class_model_id' => $class->id, 'subject_id' => $validated['subject_id']],
+            ['teacher_user_id' => $validated['teacher_user_id'], 'weekly_hours' => $validated['weekly_hours'], 'updated_at' => now(), 'created_at' => now()]
+        );
+        return response()->json(['success' => true, 'data' => DB::table('class_subject')->where('class_model_id', $class->id)->where('subject_id', $validated['subject_id'])->first()], 200);
+    }
+
+    public function updateSubjectAssignment(Request $request, int $assignmentId): JsonResponse
+    {
+        $validated = $request->validate(['teacher_user_id' => 'required|exists:users,id', 'weekly_hours' => 'required|integer|min:1|max:40']);
+        User::where('role', 'teacher')->findOrFail($validated['teacher_user_id']);
+        DB::table('class_subject')->where('id', $assignmentId)->firstOrFail();
+        DB::table('class_subject')->where('id', $assignmentId)->update(['teacher_user_id' => $validated['teacher_user_id'], 'weekly_hours' => $validated['weekly_hours'], 'updated_at' => now()]);
+        return response()->json(['success' => true, 'data' => DB::table('class_subject')->where('id', $assignmentId)->first()]);
+    }
+
+    public function deleteSubjectAssignment(int $assignmentId): JsonResponse
+    {
+        abort_if(!DB::table('class_subject')->where('id', $assignmentId)->delete(), 404);
+        return response()->json(['success' => true]);
     }
 
     // 6. Raporti akademik i nxënësve për një kombinim Klasë-Lëndë (Notat, Pjesëmarrja)
@@ -191,6 +236,11 @@ class AcademicController extends Controller
             ->orderBy('slot_number')
             ->get();
 
+        $slots = $slots->map(function ($slot) {
+            $slot->setAttribute('day', (int) $slot->day_of_week);
+            return $slot;
+        });
+
         // 3. Kujdestarët e Ditës
         $supervisors = DaySupervisor::where('academic_year_id', $academicYearId)
             ->pluck('supervisor_names', 'day');
@@ -199,29 +249,60 @@ class AcademicController extends Controller
         $teacherAssignments = DB::table('class_subject')
             ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
             ->join('classes', 'class_subject.class_model_id', '=', 'classes.id')
+            ->where('classes.academic_year_id', $academicYearId)
             ->whereNotNull('class_subject.teacher_user_id')
             ->select(
                 'class_subject.teacher_user_id',
+                'users.name as teacher_name',
                 'class_subject.subject_id',
                 'subjects.name as subject_name',
                 'class_subject.class_model_id as class_id',
                 'classes.name as class_name',
                 'class_subject.weekly_hours'
             )
+            ->join('users', 'class_subject.teacher_user_id', '=', 'users.id')
             ->get();
+
+        $scheduledHours = DB::table('timetable_slots')
+            ->where('academic_year_id', $academicYearId)
+            ->select('teacher_user_id', DB::raw('count(*) as scheduled_weekly_hours'))
+            ->groupBy('teacher_user_id')
+            ->pluck('scheduled_weekly_hours', 'teacher_user_id');
 
         // Grupimi për çdo profesor
         $teacherStats = $teacherAssignments
             ->groupBy('teacher_user_id')
-            ->map(fn($assignments) => [
-                'total_weekly_hours' => $assignments->sum(fn($a) => (int) $a->weekly_hours),
-                'assignments' => $assignments->map(fn($a) => [
-                    'subject_id' => $a->subject_id,
-                    'subject_name' => $a->subject_name,
-                    'class_id' => $a->class_id,
-                    'class_name' => $a->class_name,
-                ])->values()
-            ]);
+            ->map(function ($assignments, $teacherId) use ($scheduledHours) {
+                $expected = $assignments->sum(fn($a) => (int) $a->weekly_hours);
+                $scheduled = (int) ($scheduledHours[$teacherId] ?? 0);
+                return [
+                    'teacher_name' => $assignments->first()->teacher_name,
+                    'total_weekly_hours' => $expected,
+                    'scheduled_weekly_hours' => $scheduled,
+                    'workload_difference' => $scheduled - $expected,
+                    'assignments' => $assignments->map(fn($a) => [
+                        'subject_id' => $a->subject_id,
+                        'subject_name' => $a->subject_name,
+                        'class_id' => $a->class_id,
+                        'class_name' => $a->class_name,
+                    ])->values(),
+                ];
+            });
+
+        $teacherSlots = $slots->groupBy('teacher_user_id');
+        $teachers = $teacherAssignments->groupBy('teacher_user_id')->map(function ($assignments, $teacherId) use ($teacherSlots) {
+            $totalHours = $assignments->sum(fn($assignment) => (int) $assignment->weekly_hours);
+            $assignedHours = $teacherSlots->get($teacherId, collect())->count();
+
+            return [
+                'id' => (int) $teacherId,
+                'name' => $assignments->first()->teacher_name,
+                'total_hours' => $totalHours,
+                'assigned_hours' => $assignedHours,
+                'remaining_hours' => max(0, $totalHours - $assignedHours),
+                'slots' => $teacherSlots->get($teacherId, collect())->values(),
+            ];
+        })->values();
 
         return response()->json([
             'success' => true,
@@ -229,6 +310,7 @@ class AcademicController extends Controller
                 'slots' => $slots,
                 'supervisors' => $supervisors,
                 'teacher_stats' => $teacherStats,
+                'teachers' => $teachers,
                 'active_academic_year_id' => $academicYearId
             ]
         ]);
@@ -267,28 +349,92 @@ class AcademicController extends Controller
     {
         $validated = $request->validate([
             'teacher_user_id' => 'required|exists:users,id',
-            'day' => 'required|string',
+            'day' => 'required|integer|min:1|max:5',
             'slot_number' => 'required|integer|min:1|max:7',
             'class_id' => 'required|exists:classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'academic_year_id' => 'required|exists:academic_years,id',
+            'slot_id' => 'nullable|integer|exists:timetable_slots,id',
         ]);
 
-        // Përdorim updateOrCreate për të zëvendësuar ose krijuar slot-in e këtij profesori në këtë ditë/orë
-        $slot = TimetableSlot::updateOrCreate(
-            [
-                'day' => $validated['day'],
+        $class = ClassModel::where('academic_year_id', $validated['academic_year_id'])->findOrFail($validated['class_id']);
+        $assignmentExists = DB::table('class_subject')
+            ->where('class_model_id', $class->id)
+            ->where('subject_id', $validated['subject_id'])
+            ->where('teacher_user_id', $validated['teacher_user_id'])
+            ->exists();
+        abort_unless($assignmentExists, 422, 'Ky profesor nuk është caktuar për këtë lëndë dhe klasë.');
+
+        $existingSlot = !empty($validated['slot_id'])
+            ? TimetableSlot::where('academic_year_id', $validated['academic_year_id'])->findOrFail($validated['slot_id'])
+            : null;
+
+        $teacherConflict = TimetableSlot::where('academic_year_id', $validated['academic_year_id'])
+            ->where('teacher_user_id', $validated['teacher_user_id'])
+            ->where('day_of_week', $validated['day'])
+            ->where('slot_number', $validated['slot_number'])
+            ->when($existingSlot, fn($query) => $query->where('id', '!=', $existingSlot->id))
+            ->exists();
+        abort_if($teacherConflict, 422, 'Ky profesor ka tashmë një orë në këtë kohë.');
+
+        $classConflict = TimetableSlot::where('academic_year_id', $validated['academic_year_id'])
+            ->where('class_id', $class->id)
+            ->where('day_of_week', $validated['day'])
+            ->where('slot_number', $validated['slot_number'])
+            ->when($existingSlot, fn($query) => $query->where('id', '!=', $existingSlot->id))
+            ->exists();
+        abort_if($classConflict, 422, 'Kjo klasë ka tashmë një lëndë në këtë kohë.');
+
+        $result = DB::transaction(function () use ($validated, $existingSlot, $class) {
+            User::whereKey($validated['teacher_user_id'])->lockForUpdate()->firstOrFail();
+
+            $totalHours = (int) DB::table('class_subject')
+                ->join('classes', 'class_subject.class_model_id', '=', 'classes.id')
+                ->where('classes.academic_year_id', $validated['academic_year_id'])
+                ->where('class_subject.teacher_user_id', $validated['teacher_user_id'])
+                ->sum('class_subject.weekly_hours');
+            $assignedHours = TimetableSlot::where('academic_year_id', $validated['academic_year_id'])
+                ->where('teacher_user_id', $validated['teacher_user_id'])
+                ->when($existingSlot, fn($query) => $query->where('id', '!=', $existingSlot->id))
+                ->count();
+            $sameTeacherEdit = $existingSlot && (int) $existingSlot->teacher_user_id === (int) $validated['teacher_user_id'];
+            if (!$sameTeacherEdit && $assignedHours >= $totalHours) {
+                return [
+                    'error' => [
+                        'total_hours' => $totalHours,
+                        'assigned_hours' => $assignedHours,
+                    ],
+                ];
+            }
+
+            $slot = $existingSlot ?: new TimetableSlot();
+            $slot->fill([
+                'day_of_week' => $validated['day'],
                 'slot_number' => $validated['slot_number'],
                 'teacher_user_id' => $validated['teacher_user_id'],
                 'academic_year_id' => $validated['academic_year_id'],
-            ],
-            [
-                'class_id' => $validated['class_id'],
+                'class_id' => $class->id,
                 'subject_id' => $validated['subject_id'],
-            ]
-        );
+            ]);
+            $slot->save();
 
-        $slot->load(['class', 'subject', 'teacher_user']);
+            return ['slot' => $slot];
+        });
+
+        if (isset($result['error'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ky profesor i ka plotësuar të gjitha orët javore të caktuara.',
+                'total_hours' => $result['error']['total_hours'],
+                'assigned_hours' => $result['error']['assigned_hours'],
+                'remaining_hours' => 0,
+            ], 422);
+        }
+
+        $slot = $result['slot'];
+
+        $slot->load(['class', 'subject', 'teacherUser']);
+        $slot->setAttribute('day', (int) $slot->day_of_week);
 
         return response()->json([
             'success' => true,
@@ -302,7 +448,8 @@ class AcademicController extends Controller
      */
     public function deleteTimetableSlot($id): JsonResponse
     {
-        $slot = TimetableSlot::findOrFail($id);
+        $academicYearId = AcademicYear::where('is_active', true)->value('id');
+        $slot = TimetableSlot::where('academic_year_id', $academicYearId)->findOrFail($id);
         $slot->delete();
 
         return response()->json([
@@ -412,6 +559,60 @@ class AcademicController extends Controller
         ]);
     }
 
+    public function previewPromotion(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'previous_academic_year_id' => 'nullable|exists:academic_years,id',
+            'new_grade10_classes' => 'nullable|integer|min:0|max:50',
+        ]);
+        $previousYear = $this->resolvePreviousYear($validated['previous_academic_year_id'] ?? null);
+        abort_if(!$previousYear, 422, 'Nuk ka vit paraprak të disponueshëm.');
+        $oldClasses = ClassModel::where('academic_year_id', $previousYear->id)
+            ->withCount(['students' => fn($query) => $query->where('status', 'Active')])
+            ->orderBy('name')->get(['id', 'name', 'section']);
+        $grade10Count = $validated['new_grade10_classes'] ?? $oldClasses->filter(fn($class) => $this->classGrade($class) === 10)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'previous_year' => $previousYear,
+                'promotions' => $oldClasses->map(function ($class) {
+                    $grade = $this->classGrade($class);
+                    return ['from' => $class->name, 'to' => $grade === 12 ? 'Diplomohen' : ($grade > 0 && $grade < 12 ? $this->promotedClassName($class) : null), 'students_count' => $class->students_count];
+                })->filter(fn($item) => $item['to'] !== null)->values(),
+                'new_grade10_classes' => collect($grade10Count > 0 ? range(1, $grade10Count) : [])->map(fn($number) => ['name' => '10/' . $number, 'students_count' => 0]),
+            ]
+        ]);
+    }
+
+    public function initializeAcademicYear(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'label' => 'required|string|max:255|unique:academic_years,label',
+            'previous_academic_year_id' => 'nullable|exists:academic_years,id',
+            'new_grade10_classes' => 'nullable|integer|min:0|max:50',
+            'copy_homeroom_teachers' => 'boolean',
+        ]);
+        $previousYear = $this->resolvePreviousYear($validated['previous_academic_year_id'] ?? null);
+        $grade10Count = $validated['new_grade10_classes'] ?? null;
+        $copyHomeroomTeachers = (bool) ($validated['copy_homeroom_teachers'] ?? false);
+
+        try {
+            $newYear = DB::transaction(function () use ($validated, $previousYear, $grade10Count, $copyHomeroomTeachers) {
+                $newYear = AcademicYear::create(['label' => $validated['label'], 'is_active' => false]);
+                if ($previousYear) {
+                    $this->initializeFromPreviousYear($previousYear, $newYear, $grade10Count, $copyHomeroomTeachers);
+                }
+                $newYear->forceFill(['promoted_at' => $previousYear ? now() : null])->save();
+                return $newYear;
+            });
+            $newYear->loadCount(['classes', 'feeStructures']);
+            return response()->json(['success' => true, 'data' => $newYear, 'message' => $previousYear ? 'Viti i ri u krijua dhe klasat u promovuan me sukses.' : 'Viti i ri u krijua me sukses.'], 201);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Krijimi i vitit dështoi: ' . $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Promovo nxënësit dhe klasat për vitin e ri akademik.
      *
@@ -423,101 +624,20 @@ class AcademicController extends Controller
     public function promoteAcademicYear(Request $request, int $newAcademicYearId): JsonResponse
     {
         $newYear = AcademicYear::findOrFail($newAcademicYearId);
-        $activeYear = AcademicYear::where('is_active', true)->first();
-
-        if (!$activeYear) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Nuk ka asnjë vit aktiv për të kryer promovimin.',
-            ], 400);
+        if ($newYear->promoted_at || ClassModel::where('academic_year_id', $newYear->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Ky vit akademik është inicializuar tashmë.'], 400);
         }
-
-        if ($activeYear->id === $newYear->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Viti i ri nuk mund të jetë i njëjtë me vitin aktiv.',
-            ], 400);
-        }
-
-        if ($newYear->promoted_at) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ky vit akademik është promovuar tashmë. Promovimi mund të bëhet vetëm një herë.',
-            ], 400);
-        }
-
-        // Parandalon promovimin e dyfishtë nëse viti ka tashmë klasa
-        if (ClassModel::where('academic_year_id', $newAcademicYearId)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ky vit akademik tashmë ka klasa. Promovimi mund të bëhet vetëm një herë.',
-            ], 400);
-        }
+        $previousYear = $this->resolvePreviousYear(null);
+        abort_if(!$previousYear || $previousYear->id === $newYear->id, 400, 'Nuk ka vit paraprak të vlefshëm.');
 
         try {
-            DB::transaction(function () use ($activeYear, $newYear) {
-                // 1. Merr të gjitha klasat nga viti aktiv (vetëm fushat e nevojshme)
-                $oldClasses = ClassModel::where('academic_year_id', $activeYear->id)
-                    ->select('id', 'name', 'homeroom_staff_id')
-                    ->with('students:id,class_id')
-                    ->get();
-
-                $twelfthGradeTeachers = [];
-
-                foreach ($oldClasses as $oldClass) {
-                    // Shkëput emrin: p.sh. "10/1" → ['10', '1']
-                    $parts = explode('/', $oldClass->name);
-                    $grade = (int) ($parts[0] ?? 0);
-                    $parallel = $parts[1] ?? '';
-
-                    if ($grade === 10) {
-                        // Klasa 10/X → 11/X
-                        $newName = '11/' . $parallel;
-                        $newClass = $this->createPromotedClass($newYear->id, $newName, $parallel, $oldClass->homeroom_staff_id);
-                        $this->moveStudentsToClass($oldClass->students, $newClass->id);
-
-                    } elseif ($grade === 11) {
-                        // Klasa 11/X → 12/X
-                        $newName = '12/' . $parallel;
-                        $newClass = $this->createPromotedClass($newYear->id, $newName, $parallel, $oldClass->homeroom_staff_id);
-                        $this->moveStudentsToClass($oldClass->students, $newClass->id);
-
-                    } elseif ($grade === 12) {
-                        // Nxënësit e klasës 12 marrin status 'Graduated'
-                        Student::whereIn('id', $oldClass->students->pluck('id'))
-                            ->update(['status' => 'Graduated']);
-
-                        // Ruaj kujdestarët për klasat e reja 10
-                        if ($oldClass->homeroom_staff_id) {
-                            $twelfthGradeTeachers[] = [
-                                'parallel' => $parallel,
-                                'homeroom_staff_id' => $oldClass->homeroom_staff_id,
-                            ];
-                        }
-                    }
-                }
-
-                // 3. Krijo klasat e reja 10/X me kujdestarët e ish-12
-                foreach ($twelfthGradeTeachers as $teacher) {
-                    $newName = '10/' . $teacher['parallel'];
-                    $this->createPromotedClass($newYear->id, $newName, $teacher['parallel'], $teacher['homeroom_staff_id']);
-                }
-
+            DB::transaction(function () use ($previousYear, $newYear) {
+                $this->initializeFromPreviousYear($previousYear, $newYear, null, true);
+                $newYear->forceFill(['promoted_at' => now()])->save();
             });
-
-            $newYear->loadCount(['classes', 'feeStructures']);
-
-            return response()->json([
-                'success' => true,
-                'data' => $newYear,
-                'message' => 'Viti i ri u promovua me sukses! Klasat 10→11, 11→12, 12→të diplomuar, 10-tat e reja u krijuan.',
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Promovimi dështoi: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['success' => true, 'data' => $newYear->fresh(), 'message' => 'Viti i ri u promovua me sukses.']);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Promovimi dështoi: ' . $e->getMessage()], 500);
         }
     }
 
@@ -525,6 +645,89 @@ class AcademicController extends Controller
      * Krijon një klasë të promovuar në vitin e ri.
      * Përdor firstOrCreate për të parandaluar duplikatet.
      */
+    private function resolvePreviousYear(?int $academicYearId): ?AcademicYear
+    {
+        return $academicYearId
+            ? AcademicYear::find($academicYearId)
+            : AcademicYear::where('is_active', true)->first();
+    }
+
+    private function classGrade(ClassModel $class): int
+    {
+        return (int) preg_replace('/[^0-9].*$/', '', (string) $class->name);
+    }
+
+    private function classParallel(ClassModel $class): string
+    {
+        $parts = explode('/', (string) $class->name, 2);
+        return $parts[1] ?? ($class->section ?: '');
+    }
+
+    private function promotedClassName(ClassModel $class): string
+    {
+        return ($this->classGrade($class) + 1) . '/' . $this->classParallel($class);
+    }
+
+    private function initializeFromPreviousYear(
+        AcademicYear $previousYear,
+        AcademicYear $newYear,
+        ?int $requestedGrade10Count,
+        bool $copyHomeroomTeachers
+    ): void {
+        $oldClasses = ClassModel::where('academic_year_id', $previousYear->id)
+            ->with(['students' => fn($query) => $query->where('status', 'Active')->select('students.id', 'students.class_id', 'students.status')])
+            ->orderBy('name')
+            ->get(['id', 'name', 'section', 'homeroom_staff_id']);
+
+        $grade10Classes = $oldClasses->filter(fn($class) => $this->classGrade($class) === 10);
+        $grade12Classes = $oldClasses->filter(fn($class) => $this->classGrade($class) === 12)->keyBy(fn($class) => $this->classParallel($class));
+        $grade10Count = $requestedGrade10Count ?? $grade10Classes->count();
+
+        foreach ($oldClasses as $oldClass) {
+            $grade = $this->classGrade($oldClass);
+            foreach ($oldClass->students as $student) {
+                StudentAcademicEnrollment::updateOrCreate(
+                    ['student_id' => $student->id, 'academic_year_id' => $previousYear->id],
+                    ['class_id' => $oldClass->id, 'status' => 'active']
+                );
+            }
+
+            if ($grade === 10 || $grade === 11) {
+                $newClass = $this->createPromotedClass(
+                    $newYear->id,
+                    $this->promotedClassName($oldClass),
+                    $this->classParallel($oldClass),
+                    $copyHomeroomTeachers ? $oldClass->homeroom_staff_id : null
+                );
+                foreach ($oldClass->students as $student) {
+                    StudentAcademicEnrollment::updateOrCreate(
+                        ['student_id' => $student->id, 'academic_year_id' => $newYear->id],
+                        ['class_id' => $newClass->id, 'status' => 'active']
+                    );
+                    $student->update(['class_id' => $newClass->id]);
+                }
+            } elseif ($grade === 12) {
+                foreach ($oldClass->students as $student) {
+                    StudentAcademicEnrollment::updateOrCreate(
+                        ['student_id' => $student->id, 'academic_year_id' => $previousYear->id],
+                        ['class_id' => $oldClass->id, 'status' => 'graduated']
+                    );
+                    $student->update(['class_id' => null, 'status' => 'Graduated']);
+                }
+            }
+        }
+
+        for ($parallel = 1; $parallel <= $grade10Count; $parallel++) {
+            $oldGrade12 = $grade12Classes->get((string) $parallel);
+            $this->createPromotedClass(
+                $newYear->id,
+                '10/' . $parallel,
+                (string) $parallel,
+                $copyHomeroomTeachers ? $oldGrade12?->homeroom_staff_id : null
+            );
+        }
+    }
+
     private function createPromotedClass(int $academicYearId, string $name, string $section, ?int $homeroomStaffId): ClassModel
     {
         return ClassModel::firstOrCreate(

@@ -23,6 +23,11 @@ class ClassModel extends Model
         return $this->hasMany(Student::class, 'class_id');
     }
 
+    public function academicEnrollments(): HasMany
+    {
+        return $this->hasMany(StudentAcademicEnrollment::class, 'class_id');
+    }
+
     public function timetableSlots(): HasMany
     {
         return $this->hasMany(TimetableSlot::class);
@@ -44,7 +49,7 @@ class ClassModel extends Model
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'class_subject', 'class_model_id', 'subject_id')
-            ->withPivot('teacher_user_id', 'weekly_hours');
+            ->withPivot('id', 'teacher_user_id', 'weekly_hours');
     }
 
     public function assignments(): HasMany
