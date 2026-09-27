@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, useEffect } from 'react'
+import { createContext, useContext, useMemo, useState, useEffect, useLayoutEffect } from 'react'
 import { api, authGetToken, authSetToken } from '@/lib/api'
 
 const AuthContext = createContext(null)
@@ -12,11 +12,9 @@ function getStoredTheme(user) {
 
   if (saved === 'light' || saved === 'dark') return saved
 
-  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark'
-  }
-
-  return 'dark'
+  // Tema e ditës është pamja fillestare; zgjedhja e ruajtur e përdoruesit
+  // vazhdon të respektohet.
+  return 'light'
 }
 
 function applyTheme(theme) {
@@ -39,13 +37,15 @@ export function AuthProvider({ children }) {
       return null
     }
   })
-  const [theme, setThemeState] = useState('dark')
+  const [theme, setThemeState] = useState(() => getStoredTheme(user))
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const token = authGetToken()
 
     if (!token) {
+      setUser(null)
+      localStorage.removeItem(USER_KEY)
       setLoading(false)
       return
     }
@@ -68,13 +68,13 @@ export function AuthProvider({ children }) {
       })
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const resolvedTheme = getStoredTheme(user)
     setThemeState(resolvedTheme)
     applyTheme(resolvedTheme)
   }, [user])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyTheme(theme)
   }, [theme])
 
@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
 
       return { ok: true }
     } catch (e) {
-      return { ok: false, error: 'Login failed' }
+      return { ok: false, error: 'Hyrja nuk u krye. Kontrolloni emailin, fjalëkalimin dhe lidhjen me serverin.' }
     }
   }
 
@@ -112,6 +112,14 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(USER_KEY)
   }
 
+  const refreshUser = async () => {
+    const res = await api.auth.me()
+    const me = res?.data || res
+    setUser(me)
+    localStorage.setItem(USER_KEY, JSON.stringify(me))
+    return me
+  }
+
   const setTheme = (nextTheme) => {
     const normalized = nextTheme === 'light' ? 'light' : 'dark'
     const storageKey = user?.id ? `${THEME_KEY_PREFIX}:${user.id}` : `${THEME_KEY_PREFIX}:guest`
@@ -122,7 +130,7 @@ export function AuthProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ user, login, logout, setTheme, theme, isAuthenticated: Boolean(user), loading }),
+    () => ({ user, login, logout, refreshUser, setTheme, theme, isAuthenticated: Boolean(user), loading }),
     [user, theme, loading],
   )
 
@@ -134,4 +142,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
 }
-

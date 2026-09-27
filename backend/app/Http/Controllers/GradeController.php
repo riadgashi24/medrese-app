@@ -13,19 +13,25 @@ class GradeController extends Controller
     /**
      * Merr pasqyrën e notave për një klasë të caktuar
      */
-    public function getClassGrades($classId)
+    public function getClassGrades(Request $request, $classId)
     {
         $class = ClassModel::with('academicYear')->findOrFail($classId);
+        $this->authorizeClass($request, $class);
         $academicYearId = $class->academic_year_id;
 
         // 1. Nxirr lëndët e klasës të grupuara sipas kategorisë
         $subjects = \DB::table('class_subject')
             ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
             ->where('class_subject.class_model_id', $classId)
-            ->select('subjects.id', 'subjects.name', 'subjects.category')
+            ->select('subjects.id', 'subjects.name', 'subjects.category', 'class_subject.teacher_user_id')
             ->orderBy('subjects.category')
             ->orderBy('subjects.name')
             ->get();
+
+        $subjects->each(function ($subject) use ($request) {
+            $subject->can_edit = $request->user()->role === 'director'
+                || ($request->user()->role === 'teacher' && (int) $subject->teacher_user_id === $request->user()->id);
+        });
 
         // 2. Grupo lëndët sipas kategorive
         $groupedSubjects = $subjects->groupBy('category');
@@ -45,7 +51,7 @@ class GradeController extends Controller
 
         // Formatojmë matricën përfundimtare për Frontend
         $formattedStudents = $students->map(function ($student) use ($grades, $subjects) {
-            $studentGrades = $grades->get($student->id, collect());
+            $studentGrades = $grades->get($student->id, collect())->keyBy('subject_id');
 
             $gradesMap = [];
             $sumT1 = 0;
@@ -56,7 +62,7 @@ class GradeController extends Controller
             $countNP = 0;
 
             foreach ($subjects as $subject) {
-                $g = $studentGrades->firstWhere('subject_id', $subject->id);
+                $g = $studentGrades->get($subject->id);
 
                 $t1 = $g ? $g->term_1_grade : null;
                 $t2 = $g ? $g->term_2_grade : null;
@@ -87,7 +93,7 @@ class GradeController extends Controller
             return [
                 'id' => $student->id,
                 'full_name' => $student->first_name . ' ' . $student->last_name,
-                'gender' => $student->gender === 'Male' ? 'M' : 'F',
+                'gender' => match ($student->gender) { 'Male' => 'M', 'Female' => 'F', default => '-' },
                 'grades' => $gradesMap,
                 'overall_averages' => [
                     't1' => $countT1 > 0 ? round($sumT1 / $countT1, 2) : '-',
@@ -119,6 +125,7 @@ class GradeController extends Controller
 
         $grades = Grade::with('subject')
             ->where('student_id', $student->id)
+            ->where('academic_year_id', $student->class?->academic_year_id)
             ->get()
             ->map(fn($g) => [
                 'id' => $g->id,
@@ -148,12 +155,22 @@ class GradeController extends Controller
         ]);
 
         $class = ClassModel::findOrFail($classId);
+        $this->authorizeClass($request, $class);
+        abort_unless(in_array($request->user()->role, ['director', 'teacher']), 403);
+        abort_unless(\App\Models\Student::whereKey($request->student_id)->where('class_id', $class->id)->exists(), 422, 'Nxënësi nuk i përket kësaj klase.');
+        $assignment = \DB::table('class_subject')->where('class_model_id', $class->id)
+            ->where('subject_id', $request->subject_id)->first();
+        abort_unless($assignment, 422, 'Lënda nuk i përket kësaj klase.');
+        abort_unless($request->user()->role === 'director' || (int) $assignment->teacher_user_id === $request->user()->id, 403);
 
-        $grade = Grade::firstOrNew([
+        return \DB::transaction(function () use ($request, $class) {
+        $grade = Grade::firstOrCreate([
             'student_id' => $request->student_id,
             'subject_id' => $request->subject_id,
             'academic_year_id' => $class->academic_year_id,
         ]);
+
+        $grade = Grade::whereKey($grade->id)->lockForUpdate()->firstOrFail();
 
         if ($request->term === 't1') {
             $grade->term_1_grade = $request->value;
@@ -175,5 +192,18 @@ class GradeController extends Controller
             'message' => 'Nota u ruajt me sukses!',
             'grade' => $grade
         ]);
+        }, 3);
+    }
+
+    private function authorizeClass(Request $request, ClassModel $class): void
+    {
+        $user = $request->user();
+        if (in_array($user->role, ['director', 'secretary'])) {
+            return;
+        }
+        abort_unless($user->role === 'teacher', 403);
+        $assigned = \DB::table('class_subject')->where('class_model_id', $class->id)
+            ->where('teacher_user_id', $user->id)->exists();
+        abort_unless($assigned || ($user->staff && $user->staff->id === $class->homeroom_staff_id), 403);
     }
 }

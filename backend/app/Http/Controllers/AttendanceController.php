@@ -235,12 +235,13 @@ class AttendanceController extends Controller
         }
 
         $records = AttendanceRecord::where('student_id', $student->id)
+            ->where('class_id', $student->class_id)
             ->latest('date')
             ->get();
 
-        $totalAbsent = $records->where('status', 'Absent')->count();
+        $totalAbsent = $records->whereIn('status', ['Absent', 'Excused'])->count();
         $totalLate = $records->where('status', 'Late')->count();
-        $totalExcused = $records->whereIn('status', ['Absent', 'Late'])->where('absence_type', 'Excused')->count();
+        $totalExcused = $records->filter(fn ($r) => $r->status === 'Excused' || $r->absence_type === 'Excused')->count();
 
         return response()->json([
             'success' => true,

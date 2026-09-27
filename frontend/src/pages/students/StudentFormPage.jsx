@@ -295,7 +295,9 @@ export function StudentFormPage({ mode = 'create', studentData: propStudentData 
                       <Label>Statusi</Label>
                       <Select value={status} onChange={(e) => setStatus(e.target.value)}>
                         <option value="Active">Aktiv</option>
-                        <option value="Inactive">Joaktiv</option>
+                        <option value="Graduated">I diplomuar</option>
+                        <option value="Transferred">I transferuar</option>
+                        <option value="Withdrawn">I çregjistruar</option>
                       </Select>
                     </div>
                   </div>

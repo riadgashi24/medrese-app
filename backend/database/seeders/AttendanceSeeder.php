@@ -15,21 +15,25 @@ class AttendanceSeeder extends Seeder
     {
         $statuses = ['Absent', 'Late', 'Excused'];
         $recordedByUser = User::where('role', 'teacher')->first();
-        $students = Student::all();
+        $students = Student::where('status', 'Active')->whereNotNull('class_id')->get();
+        if (!$recordedByUser) {
+            $this->command?->warn('Nuk ka mësimdhënës për regjistrimin e mungesave demo.');
+            return;
+        }
 
         // 1. Mungesat historike për 30 ditët e kaluara
         for ($d = 30; $d >= 1; $d--) {
             $date = Carbon::today()->subDays($d);
 
-            if ($date->isWeekend()) {
+            if ($date->isWeekend() || in_array($date->month, [7, 8])) {
                 continue;
             }
 
             foreach ($students as $student) {
-                if (rand(1, 100) <= 12) {
-                    $status = $statuses[array_rand($statuses)];
+                if (($student->id + $date->dayOfYear) % 9 === 0) {
+                    $status = $statuses[($student->id + $date->dayOfYear) % 3];
 
-                    AttendanceRecord::updateOrCreate(
+                    AttendanceRecord::firstOrCreate(
                         [
                             'class_id' => $student->class_id,
                             'student_id' => $student->id,
@@ -46,19 +50,20 @@ class AttendanceSeeder extends Seeder
         }
 
         // 2. Mungesat e sotme
+        if (Carbon::today()->isWeekend() || in_array(Carbon::today()->month, [7, 8])) return;
         $todayStr = Carbon::today()->toDateString();
         $classes = ClassModel::all();
 
         foreach ($classes as $classObj) {
-            $classStudents = Student::where('class_id', $classObj->id)->get();
+            $classStudents = $students->where('class_id', $classObj->id);
 
             if ($classStudents->count() > 0) {
-                $randomClassStudents = $classStudents->random(min(3, $classStudents->count()));
+                $randomClassStudents = $classStudents->take(3);
 
                 foreach ($randomClassStudents as $index => $student) {
                     $status = $statuses[$index % 3];
 
-                    AttendanceRecord::updateOrCreate(
+                    AttendanceRecord::firstOrCreate(
                         [
                             'class_id' => $classObj->id,
                             'student_id' => $student->id,

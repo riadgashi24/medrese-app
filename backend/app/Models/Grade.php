@@ -19,6 +19,11 @@ class Grade extends Model
         'is_final_overridden',
     ];
 
+    protected function casts(): array
+    {
+        return ['term_1_grade' => 'integer', 'term_2_grade' => 'integer', 'final_grade' => 'integer', 'is_final_overridden' => 'boolean'];
+    }
+
     public function student()
     {
         return $this->belongsTo(Student::class);

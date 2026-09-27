@@ -1,5 +1,4 @@
-export const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
-// export const API_BASE_URL = 'http://192.168.1.52:8000/api/v1'
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1').replace(/\/$/, '')
 
 const TOKEN_KEY = 'medrese-token'
 
@@ -31,7 +30,7 @@ function buildHeaders(extraHeaders = {}) {
 }
 
 async function request(path, { method = 'GET', body, query, headers } = {}) {
-  const url = new URL(`${API_BASE_URL}${path}`)
+  const url = new URL(`${API_BASE_URL}${path}`, window.location.origin)
   if (query) {
     Object.entries(query).forEach(([k, v]) => {
       if (v === undefined || v === null || v === '') return
@@ -43,6 +42,7 @@ async function request(path, { method = 'GET', body, query, headers } = {}) {
     method,
     headers: buildHeaders(headers),
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(20000),
   })
 
   // Laravel json errors are already consistent, but also handle non-json
@@ -71,6 +71,27 @@ export const api = {
       request('/auth/login', { method: 'POST', body: { email, password } }),
     logout: () => request('/auth/logout', { method: 'POST' }),
     me: () => request('/auth/me', { method: 'GET' }),
+  },
+
+  profile: {
+    show: () => request('/profile', { method: 'GET' }),
+    update: (payload) => request('/profile', { method: 'PUT', body: payload }),
+    updateEmail: (payload) => request('/profile/email', { method: 'PUT', body: payload }),
+    updatePassword: (payload) => request('/profile/password', { method: 'PUT', body: payload }),
+    uploadPhoto: async (file) => {
+      const body = new FormData()
+      body.append('photo', file)
+      const token = authGetToken()
+      const res = await fetch(`${API_BASE_URL}/profile/photo`, {
+        method: 'POST',
+        headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body,
+      })
+      const data = await res.json()
+      if (!res.ok) throw data
+      return data
+    },
+    deletePhoto: () => request('/profile/photo', { method: 'DELETE' }),
   },
 
   students: {
@@ -126,6 +147,25 @@ export const api = {
 
   staff: {
     index: (params) => request('/staff', { method: 'GET', query: params }),
+    show: (id) => request(`/staff/${id}`, { method: 'GET' }),
+    store: (payload) => request('/staff', { method: 'POST', body: payload }),
+    update: (id, payload) => request(`/staff/${id}`, { method: 'PUT', body: payload }),
+    destroy: (id) => request(`/staff/${id}`, { method: 'DELETE' }),
+    import: (rows) => request('/staff/import', { method: 'POST', body: { rows } }),
+    uploadPhoto: async (id, file) => {
+      const body = new FormData()
+      body.append('photo', file)
+      const token = authGetToken()
+      const res = await fetch(`${API_BASE_URL}/staff/${id}/photo`, {
+        method: 'POST',
+        headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body,
+      })
+      const data = await res.json()
+      if (!res.ok) throw data
+      return data
+    },
+    deletePhoto: (id) => request(`/staff/${id}/photo`, { method: 'DELETE' }),
   },
 
   academic: {

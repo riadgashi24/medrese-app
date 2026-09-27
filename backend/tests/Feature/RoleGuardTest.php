@@ -29,6 +29,9 @@ class RoleGuardTest extends TestCase
         ])->postJson('/api/v1/students', [
             'student_id' => 'STD-2025-9999',
             'first_name' => 'Test',
+            'parent_name' => 'Prind testues',
+            'parent_phone' => '000000000',
+            'municipality' => 'Prishtinë',
             'last_name' => 'Student',
             'class_id' => 1,
             'type' => 'Regular',
@@ -73,8 +76,11 @@ class RoleGuardTest extends TestCase
         ])->postJson('/api/v1/students', [
             'student_id' => 'STD-2025-9999',
             'first_name' => 'Test',
+            'municipality' => 'Prishtinë',
             'last_name' => 'Student',
             'class_id' => $class->id,
+            'parent_name' => 'Prind testues',
+            'parent_phone' => '000000000',
             'type' => 'Regular',
         ]);
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GraduationCap, CheckCircle, ListChecks, CreditCard, BookOpen, Bed, Trophy, AlertTriangle } from 'lucide-react'
+import { GraduationCap, CheckCircle, ListChecks, BookOpen, Bed, Trophy, AlertTriangle } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -8,26 +8,24 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/context/AuthContext'
 import { api } from '@/lib/api'
-import { formatCurrency, formatDate } from '@/lib/utils'
 
 export function StudentDashboard({ isBoarding = false }) {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [finance, setFinance] = useState(null)
   const [grades, setGrades] = useState([])
   const [attendance, setAttendance] = useState(null)
   const [dorm, setDorm] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showAllGrades, setShowAllGrades] = useState(false)
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [financeRes, gradesRes, attendanceRes] = await Promise.all([
-          api.studentPortal.finance().catch(() => null),
-          api.studentPortal.grades().catch(() => null),
-          api.studentPortal.attendance().catch(() => null),
+        const [gradesRes, attendanceRes] = await Promise.all([
+          api.studentPortal.grades(),
+          api.studentPortal.attendance(),
         ])
-        setFinance(financeRes?.data ?? null)
         setGrades(gradesRes?.data ?? [])
         setAttendance(attendanceRes?.data ?? null)
 
@@ -35,7 +33,7 @@ export function StudentDashboard({ isBoarding = false }) {
           api.dormitory.myRoom().then(r => setDorm(r?.data ?? null)).catch(() => {})
         }
       } catch (err) {
-        console.error('Failed to load student data:', err)
+        setError('Të dhënat nuk u ngarkuan. Rifreskoni faqen për të provuar përsëri.')
       } finally {
         setLoading(false)
       }
@@ -43,13 +41,10 @@ export function StudentDashboard({ isBoarding = false }) {
     loadData()
   }, [isBoarding])
 
-  const avgGrade = grades.length > 0
-    ? Math.round(grades.reduce((sum, g) => sum + (g.final || g.term_2 || 0), 0) / grades.length * 100) / 100
-    : null
-
-  const attendanceRate = attendance
-    ? Math.round((1 - ((attendance.total_unexcused || 0) / Math.max((attendance.total_unexcused || 0) + 20, 1))) * 100)
-    : null
+  const availableGrades = grades.map(g => g.final ?? g.term_2 ?? g.term_1).filter(g => g != null).map(Number)
+  const avgGrade = availableGrades.length ? availableGrades.reduce((a, b) => a + b, 0) / availableGrades.length : null
+  if (loading) return <p role="status" className="p-6 text-surface-300">Duke ngarkuar të dhënat tuaja…</p>
+  if (error) return <p role="alert" className="p-6 text-red-400">{error}</p>
 
   return (
     <div>
@@ -70,24 +65,16 @@ export function StudentDashboard({ isBoarding = false }) {
           trend={avgGrade && avgGrade >= 3 ? 'up' : 'down'}
         />
         <StatCard
-          label="Prezenca"
-          value={attendanceRate ? `${attendanceRate}%` : '-'}
-          hint={attendance ? `${attendance.total_absences || 0} mungesa` : 'Nuk ka të dhëna'}
+          label="Mungesa dhe vonesa"
+          value={attendance ? (attendance.total_absences + attendance.total_late) : '-'}
+          hint={attendance ? `${attendance.total_excused || 0} të arsyetuara` : 'Nuk ka të dhëna'}
           icon={CheckCircle}
-          trend={attendanceRate && attendanceRate >= 80 ? 'up' : 'down'}
         />
         <StatCard
-          label="Detyrat"
-          value={3}
-          hint="Gjatë kësaj jave"
+          label="Lëndë me nota"
+          value={availableGrades.length}
+          hint="Në vitin shkollor të klasës"
           icon={ListChecks}
-        />
-        <StatCard
-          label="Bilanci"
-          value={finance?.balance ? formatCurrency(finance.balance) : '€0'}
-          hint={isBoarding ? 'Përfshirë konviktin' : 'I pastër'}
-          icon={CreditCard}
-          trend={finance?.balance > 0 ? 'down' : 'up'}
         />
       </div>
 
@@ -96,12 +83,12 @@ export function StudentDashboard({ isBoarding = false }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base font-body font-medium">Notat e Fundit</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              Shiko të gjitha
+            <Button variant="ghost" size="sm" onClick={() => setShowAllGrades(v => !v)}>
+              {showAllGrades ? "Shiko më pak" : "Shiko të gjitha"}
             </Button>
           </CardHeader>
           <CardContent className="space-y-0">
-            {grades.slice(0, 5).map((g) => (
+            {(showAllGrades ? grades : grades.slice(0, 5)).map((g) => (
               <div key={g.id} className="flex items-center gap-3 py-2.5 border-b border-white/5 text-sm">
                 <BookOpen className="h-4 w-4 text-surface-500 shrink-0" />
                 <span className="flex-1 text-surface-300">{g.subject || 'Lëndë'}</span>
@@ -168,32 +155,21 @@ export function StudentDashboard({ isBoarding = false }) {
               </Button>
             </CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-body font-medium">Pagesat e Fundit</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              {finance?.payments?.slice(0, 4).map((p) => (
-                <div key={p.id} className="flex items-center justify-between py-2.5 border-b border-white/5 text-sm">
-                  <div>
-                    <span className="text-surface-300">{p.type || 'Pagesë'}</span>
-                    <p className="text-[10px] text-surface-500">{p.date ? formatDate(p.date) : ''}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono text-surface-100">{formatCurrency(p.amount)}</span>
-                    <Badge variant={p.status === 'Completed' ? 'success' : 'warning'} className="ml-2">{p.status}</Badge>
-                  </div>
-                </div>
-              ))}
-              {(!finance?.payments || finance.payments.length === 0) && (
-                <p className="text-sm text-surface-400 py-4 text-center">Nuk ka pagesa të regjistruara.</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        ) : null}
       </div>
 
+      <Card className="mb-6" id="my-attendance">
+        <CardHeader><CardTitle>Mungesat e mia</CardTitle></CardHeader>
+        <CardContent>
+          {attendance?.records?.length ? attendance.records.slice(0, 20).map(record => (
+            <div key={record.id} className="flex justify-between gap-3 border-b border-white/5 py-2 text-sm">
+              <span>{new Date(record.date).toLocaleDateString('sq-AL')}</span>
+              <span>{record.status === 'Late' ? 'Vonesë' : 'Mungesë'} — {record.status === 'Excused' || record.absence_type === 'Excused' ? 'E arsyetuar' : record.absence_type === 'Unexcused' ? 'E paarsyetuar' : 'Në shqyrtim'}</span>
+            </div>
+          )) : <p className="text-sm text-surface-400">Nuk ka mungesa të regjistruara.</p>}
+          {attendance?.records?.length > 20 && <p className="mt-2 text-xs text-surface-400">Shfaqen 20 regjistrimet më të fundit.</p>}
+        </CardContent>
+      </Card>
       {/* Quick Actions */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         <Button variant="secondary" className="h-auto py-3 flex-col gap-1" onClick={() => navigate('/timetable')}>
@@ -204,11 +180,7 @@ export function StudentDashboard({ isBoarding = false }) {
           <AlertTriangle className="h-5 w-5" />
           <span className="text-[10px] font-normal">Disiplina</span>
         </Button>
-        <Button variant="secondary" className="h-auto py-3 flex-col gap-1" onClick={() => navigate('/finance/pay')}>
-          <CreditCard className="h-5 w-5" />
-          <span className="text-[10px] font-normal">Pagesat</span>
-        </Button>
-        <Button variant="secondary" className="h-auto py-3 flex-col gap-1" onClick={() => navigate('/attendance/reports')}>
+        <Button variant="secondary" className="h-auto py-3 flex-col gap-1" onClick={() => document.getElementById('my-attendance')?.scrollIntoView({ behavior: 'smooth' })}>
           <CheckCircle className="h-5 w-5" />
           <span className="text-[10px] font-normal">Prezenca</span>
         </Button>

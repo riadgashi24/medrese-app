@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -18,9 +18,24 @@ export function SubjectDetailPage() {
     const [subjectForm, setSubjectForm] = useState({ name: '', category: '', level: 10, description: '' })
     const [assignmentForm, setAssignmentForm] = useState({ class_id: '', teacher_user_id: '', weekly_hours: 2 })
     const [saving, setSaving] = useState(false)
+    const [assignmentJobs, setAssignmentJobs] = useState({})
+    const activeAssignments = useRef(new Set())
+    const loadedScope = useRef('')
+    const hasPendingAssignments = Object.values(assignmentJobs).some(job => job.status === 'pending')
 
     useEffect(() => {
+        const warn = event => {
+            if (activeAssignments.current.size) { event.preventDefault(); event.returnValue = '' }
+        }
+        window.addEventListener('beforeunload', warn)
+        return () => window.removeEventListener('beforeunload', warn)
+    }, [])
+
+    useEffect(() => {
+        if (loadedScope.current === `${id}:${selectedYearId}`) return
+        let cancelled = false
         async function fetchDetails() {
+            setState(current => ({ ...current, loading: true }))
             try {
                 const [detailsRes, yearsRes, optionsRes, userRes] = await Promise.all([
                     api.academic.showSubjectDetails(id, selectedYearId ? { academic_year_id: selectedYearId } : undefined),
@@ -32,7 +47,9 @@ export function SubjectDetailPage() {
                 const years = yearsRes?.data || yearsRes || []
                 const optionsPayload = optionsRes?.data || optionsRes || {}
                 const user = userRes?.data || userRes
+                if (cancelled) return
                 if (payload) {
+                    loadedScope.current = `${id}:${selectedYearId || optionsPayload.academic_year_id || ''}`
                     setState({
                         subject: payload.subject || null,
                         classes: payload.classes || [],
@@ -51,20 +68,22 @@ export function SubjectDetailPage() {
                     setCanManage(['director', 'secretary'].includes(user?.role))
                 }
             } catch (err) {
+                if (cancelled) return
                 console.error(err)
                 setState({ subject: null, classes: [], loading: false, error: 'Detajet e kësaj lënde nuk u ngarkuan.' })
             }
         }
         fetchDetails()
+        return () => { cancelled = true }
     }, [id, selectedYearId])
 
     async function saveSubject(e) {
         e.preventDefault()
         setSaving(true)
         try {
-            await api.academic.updateSubject(id, subjectForm)
+            const response = await api.academic.updateSubject(id, subjectForm)
+            setState(current => ({ ...current, subject: response?.data || response }))
             setShowSubjectEditor(false)
-            window.location.reload()
         } catch (err) {
             alert('Gabim gjatë ruajtjes së lëndës.')
         } finally {
@@ -72,39 +91,77 @@ export function SubjectDetailPage() {
         }
     }
 
-    async function saveAssignment(e) {
-        e.preventDefault()
-        setSaving(true)
+    async function persistAssignment(job) {
+        const key = String(job.payload.class_id)
+        if (activeAssignments.current.has(key)) return
+        activeAssignments.current.add(key)
+        setAssignmentJobs(current => ({ ...current, [key]: { ...job, status: 'pending' } }))
         try {
-            if (editingAssignment?.assignment_id) {
-                await api.academic.updateSubjectAssignment(editingAssignment.assignment_id, {
-                    teacher_user_id: Number(assignmentForm.teacher_user_id),
-                    weekly_hours: Number(assignmentForm.weekly_hours),
-                })
-            } else {
-                await api.academic.assignSubjectToClass({
-                    academic_year_id: Number(selectedYearId || options.academic_year_id),
-                    subject_id: Number(id),
-                    class_id: Number(assignmentForm.class_id),
-                    teacher_user_id: Number(assignmentForm.teacher_user_id),
-                    weekly_hours: Number(assignmentForm.weekly_hours),
-                })
-            }
-            setShowAssignmentEditor(false)
-            setEditingAssignment(null)
-            window.location.reload()
-        } catch (err) {
-            alert('Gabim gjatë ruajtjes së caktimit.')
+            const response = job.assignmentId
+                ? await api.academic.updateSubjectAssignment(job.assignmentId, job.payload)
+                : await api.academic.assignSubjectToClass(job.payload)
+            const saved = response?.data || response
+            setState(current => {
+                const previous = current.classes.find(item => Number(item.class_id) === job.payload.class_id)
+                const row = {
+                    ...previous,
+                    assignment_id: saved.id,
+                    class_id: job.payload.class_id,
+                    class_name: previous?.class_name || job.className,
+                    teacher_user_id: Number(saved.teacher_user_id),
+                    teacher_name: job.teacherName,
+                    weekly_hours: Number(saved.weekly_hours),
+                    students_count: previous?.students_count ?? job.studentsCount,
+                    academic_year_id: job.payload.academic_year_id,
+                }
+                return { ...current, classes: [...current.classes.filter(item => Number(item.class_id) !== job.payload.class_id), row].sort((a, b) => a.class_name.localeCompare(b.class_name)) }
+            })
+            setAssignmentJobs(current => ({ ...current, [key]: { ...job, status: 'saved' } }))
+        } catch {
+            setAssignmentJobs(current => ({ ...current, [key]: { ...job, status: 'error' } }))
         } finally {
-            setSaving(false)
+            activeAssignments.current.delete(key)
         }
     }
+
+    function saveAssignment(e) {
+        e.preventDefault()
+        const classId = Number(assignmentForm.class_id)
+        if (activeAssignments.current.has(String(classId))) return
+        const classItem = options.classes.find(item => Number(item.id) === classId)
+        const teacher = options.teachers.find(item => Number(item.id) === Number(assignmentForm.teacher_user_id))
+        const job = {
+            assignmentId: editingAssignment?.assignment_id,
+            payload: { academic_year_id: Number(selectedYearId || options.academic_year_id), subject_id: Number(id), class_id: classId, teacher_user_id: Number(assignmentForm.teacher_user_id), weekly_hours: Number(assignmentForm.weekly_hours) },
+            className: classItem?.name || editingAssignment?.class_name || '',
+            teacherName: teacher?.name || '',
+            studentsCount: classItem?.students_count ?? 0,
+        }
+        void persistAssignment(job)
+        setEditingAssignment(null)
+        setAssignmentForm(current => ({ ...current, class_id: '' }))
+    }
+
+    const assignmentStatus = Object.keys(assignmentJobs).length > 0 && (
+        <div className="max-h-40 overflow-y-auto space-y-2 text-xs" aria-live="polite">
+            {Object.entries(assignmentJobs).map(([key, job]) => <p key={key} className={job.status === 'error' ? 'text-red-400' : 'text-surface-300'}>
+                {job.className} · {job.teacherName}: {job.status === 'pending' ? 'Duke ruajtur…' : job.status === 'saved' ? 'U ruajt' : 'Nuk u ruajt.'}
+                {job.status === 'error' && <button type="button" onClick={() => persistAssignment(job)} className="ml-2 underline">Provo përsëri</button>}
+            </p>)}
+        </div>
+    )
 
     async function removeAssignment(assignmentId) {
         if (!confirm('A jeni të sigurt që dëshironi ta hiqni këtë caktim?')) return
         try {
             await api.academic.deleteSubjectAssignment(assignmentId)
-            window.location.reload()
+            setState(current => ({ ...current, classes: current.classes.filter(item => item.assignment_id !== assignmentId) }))
+            const removed = state.classes.find(item => item.assignment_id === assignmentId)
+            setAssignmentJobs(current => {
+                const next = { ...current }
+                if (removed) delete next[removed.class_id]
+                return next
+            })
         } catch (err) {
             alert('Gabim gjatë heqjes së caktimit.')
         }
@@ -132,11 +189,12 @@ export function SubjectDetailPage() {
 
             <div className="flex flex-wrap items-center gap-3">
                 <label className="text-xs text-surface-400">Viti akademik</label>
-                <select value={selectedYearId} onChange={(e) => setSelectedYearId(e.target.value)} className="rounded-lg bg-surface-900 border border-white/10 px-3 py-2 text-xs text-surface-100">
+                <select disabled={hasPendingAssignments} value={selectedYearId} onChange={(e) => { setAssignmentJobs({}); setSelectedYearId(e.target.value) }} className="rounded-lg bg-surface-900 border border-white/10 px-3 py-2 text-xs text-surface-100">
                     {academicYears.map((year) => <option key={year.id} value={year.id}>{year.label}{year.is_active ? ' (Aktiv)' : ''}</option>)}
                 </select>
             </div>
 
+            {!showAssignmentEditor && assignmentStatus}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Planprogrami */}
                 <Card className="p-4 space-y-3 lg:col-span-1 bg-surface-900 border border-white/10">
@@ -184,8 +242,8 @@ export function SubjectDetailPage() {
                                         <td className="p-3 text-center font-mono text-surface-300">{c.weekly_hours} orë</td>
                                         <td className="p-3 text-center font-mono text-surface-400">{c.students_count} nxënës</td>
                                         {canManage && <td className="p-3 text-right whitespace-nowrap">
-                                            <button onClick={() => { setEditingAssignment(c); setAssignmentForm({ class_id: c.class_id, teacher_user_id: c.teacher_user_id, weekly_hours: c.weekly_hours }); setShowAssignmentEditor(true) }} className="text-brand-400 hover:underline mr-2">Modifiko</button>
-                                            <button onClick={() => removeAssignment(c.assignment_id)} className="text-rose-400 hover:underline">Fshij</button>
+                                            <button disabled={assignmentJobs[c.class_id]?.status === 'pending'} onClick={() => { setEditingAssignment(c); setAssignmentForm({ class_id: c.class_id, teacher_user_id: c.teacher_user_id, weekly_hours: c.weekly_hours }); setShowAssignmentEditor(true) }} className="text-brand-400 hover:underline mr-2">Modifiko</button>
+                                            <button disabled={assignmentJobs[c.class_id]?.status === 'pending'} onClick={() => removeAssignment(c.assignment_id)} className="text-rose-400 hover:underline">Fshij</button>
                                         </td>}
                                     </tr>
                                 ))
@@ -219,10 +277,12 @@ export function SubjectDetailPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
                     <Card className="w-full max-w-md p-6 bg-surface-900 border border-white/10 space-y-4">
                         <h3 className="text-sm font-bold text-surface-100">{editingAssignment ? 'Modifiko caktimin' : 'Shto klasë'}</h3>
+                        <p className="text-xs text-surface-400">Pas ruajtjes mund të vazhdoni menjëherë me klasën tjetër.</p>
+                        {assignmentStatus}
                         <form onSubmit={saveAssignment} className="space-y-3 text-xs">
                             <select required disabled={Boolean(editingAssignment)} value={assignmentForm.class_id} onChange={(e) => setAssignmentForm({ ...assignmentForm, class_id: e.target.value })} className="w-full rounded-lg bg-surface-950 border border-white/10 p-2.5 text-surface-100">
                                 <option value="">Zgjidh klasën</option>
-                                {options.classes.map((classItem) => <option key={classItem.id} value={classItem.id}>{classItem.name} ({classItem.students_count} nxënës)</option>)}
+                                {options.classes.filter(classItem => Number(classItem.level) === Number(subject?.level)).map((classItem) => <option disabled={assignmentJobs[classItem.id]?.status === 'pending'} key={classItem.id} value={classItem.id}>{classItem.name} ({classItem.students_count} nxënës)</option>)}
                             </select>
                             <select required value={assignmentForm.teacher_user_id} onChange={(e) => setAssignmentForm({ ...assignmentForm, teacher_user_id: e.target.value })} className="w-full rounded-lg bg-surface-950 border border-white/10 p-2.5 text-surface-100">
                                 <option value="">Zgjidh profesorin</option>
@@ -231,7 +291,7 @@ export function SubjectDetailPage() {
                             <input required type="number" min="1" max="40" value={assignmentForm.weekly_hours} onChange={(e) => setAssignmentForm({ ...assignmentForm, weekly_hours: e.target.value })} placeholder="Orë në javë" className="w-full rounded-lg bg-surface-950 border border-white/10 p-2.5 text-surface-100" />
                             <div className="flex justify-end gap-2 pt-2">
                                 <button type="button" onClick={() => setShowAssignmentEditor(false)} className="px-3 py-2 rounded-lg bg-surface-800 text-surface-300">Anulo</button>
-                                <button disabled={saving} className="px-4 py-2 rounded-lg bg-brand-600 text-white">{saving ? 'Duke ruajtur...' : 'Ruaj'}</button>
+                                <button disabled={!assignmentForm.class_id || assignmentJobs[assignmentForm.class_id]?.status === 'pending'} className="px-4 py-2 rounded-lg bg-brand-600 text-white">Ruaj dhe vazhdo</button>
                             </div>
                         </form>
                     </Card>

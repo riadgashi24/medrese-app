@@ -1,10 +1,12 @@
 import { ROLES } from '@/data/mockData'
-import { DirectorDashboard } from './DirectorDashboard'
-import { SecretaryDashboard } from './SecretaryDashboard'
-import { CashierDashboard } from './CashierDashboard'
-import { TeacherDashboard } from './TeacherDashboard'
-import { EducatorDashboard } from './EducatorDashboard'
-import { StudentDashboard } from './StudentDashboard'
+import { lazy } from 'react'
+
+const DirectorDashboard = lazy(() => import('./DirectorDashboard').then(m => ({ default: m.DirectorDashboard })))
+const SecretaryDashboard = lazy(() => import('./SecretaryDashboard').then(m => ({ default: m.SecretaryDashboard })))
+const CashierDashboard = lazy(() => import('./CashierDashboard').then(m => ({ default: m.CashierDashboard })))
+const TeacherDashboard = lazy(() => import('./TeacherDashboard').then(m => ({ default: m.TeacherDashboard })))
+const EducatorDashboard = lazy(() => import('./EducatorDashboard').then(m => ({ default: m.EducatorDashboard })))
+const StudentDashboard = lazy(() => import('./StudentDashboard').then(m => ({ default: m.StudentDashboard })))
 
 export function DashboardPage({ role }) {
   switch (role) {
@@ -22,6 +24,6 @@ export function DashboardPage({ role }) {
     case ROLES.BOARDING:
       return <StudentDashboard isBoarding={role === ROLES.BOARDING} />
     default:
-      return <DirectorDashboard />
+      return <p role="alert">Llogaria nuk ka rol të njohur. Kontaktoni administratorin.</p>
   }
 }

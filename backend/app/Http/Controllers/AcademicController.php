@@ -32,9 +32,9 @@ class AcademicController extends Controller
         $user = auth()->user();
 
         // Nëse është student, kthejmë vetëm lëndët që i takojnë klasës së tij
-        if ($user && $user->role === 'student') {
-            $subjects = \App\Models\Subject::whereHas('schoolClasses', function ($query) use ($user) {
-                $query->where('school_classes.id', $user->school_class_id);
+        if ($user && in_array($user->role, ['student', 'boarding'])) {
+            $subjects = \App\Models\Subject::whereHas('classes', function ($query) use ($user) {
+                $query->where('classes.id', $user->student?->class_id);
             })->get();
         } else {
             // Për të tjerët kthehen të gjitha lëndët e rreshtuara sipas klasës dhe kategorisë
@@ -142,7 +142,7 @@ class AcademicController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'classes' => $classes->map(fn($class) => ['id' => $class->id, 'name' => $class->name . ($class->section ? ' - ' . $class->section : ''), 'students_count' => ($class->academic_students_count ?? 0) > 0 ? $class->academic_students_count : $class->students_count, 'academic_year_id' => $class->academic_year_id]),
+                'classes' => $classes->map(fn($class) => ['id' => $class->id, 'level' => $class->level, 'name' => $class->name . ($class->section ? ' - ' . $class->section : ''), 'students_count' => ($class->academic_students_count ?? 0) > 0 ? $class->academic_students_count : $class->students_count, 'academic_year_id' => $class->academic_year_id]),
                 'teachers' => User::where('role', 'teacher')->orderBy('name')->get(['id', 'name']),
                 'assignments' => $assignments,
                 'academic_year_id' => $academicYearId,
@@ -159,6 +159,8 @@ class AcademicController extends Controller
             'weekly_hours' => 'required|integer|min:1|max:40',
         ]);
         $class = ClassModel::where('academic_year_id', $validated['academic_year_id'])->findOrFail($validated['class_id']);
+        $subject = Subject::findOrFail($validated['subject_id']);
+        abort_unless($class->level === (int) $subject->level, 422, 'Lënda mund të caktohet vetëm në klasat e nivelit të saj.');
         User::where('role', 'teacher')->findOrFail($validated['teacher_user_id']);
         DB::table('class_subject')->updateOrInsert(
             ['class_model_id' => $class->id, 'subject_id' => $validated['subject_id']],
@@ -171,7 +173,10 @@ class AcademicController extends Controller
     {
         $validated = $request->validate(['teacher_user_id' => 'required|exists:users,id', 'weekly_hours' => 'required|integer|min:1|max:40']);
         User::where('role', 'teacher')->findOrFail($validated['teacher_user_id']);
-        DB::table('class_subject')->where('id', $assignmentId)->firstOrFail();
+        $assignment = DB::table('class_subject')->where('id', $assignmentId)->firstOrFail();
+        $class = ClassModel::findOrFail($assignment->class_model_id);
+        $subject = Subject::findOrFail($assignment->subject_id);
+        abort_unless($class->level === (int) $subject->level, 422, 'Lënda mund të caktohet vetëm në klasat e nivelit të saj.');
         DB::table('class_subject')->where('id', $assignmentId)->update(['teacher_user_id' => $validated['teacher_user_id'], 'weekly_hours' => $validated['weekly_hours'], 'updated_at' => now()]);
         return response()->json(['success' => true, 'data' => DB::table('class_subject')->where('id', $assignmentId)->first()]);
     }
@@ -226,12 +231,21 @@ class AcademicController extends Controller
 
         // 2. Marrja e KREJT orarit për të gjithë shkollën (Pa pagination)
         // Marrëveshja: Selektojmë vetëm fushat e nevojshme te relacioni për të kursyer RAM me mijëra rreshta
-        $slots = TimetableSlot::with([
+        $slotsQuery = TimetableSlot::with([
             'class:id,name',
             'subject:id,name',
             'teacherUser:id,name'
         ])
-            ->where('academic_year_id', $academicYearId)
+            ->where('academic_year_id', $academicYearId);
+
+        $user = $request->user();
+        if (in_array($user->role, ['student', 'boarding'], true)) {
+            $slotsQuery->where('class_id', $user->student?->class_id ?? 0);
+        } elseif ($user->role === 'teacher') {
+            $slotsQuery->where('teacher_user_id', $user->id);
+        }
+
+        $slots = $slotsQuery
             ->orderBy('day_of_week')
             ->orderBy('slot_number')
             ->get();
@@ -290,13 +304,17 @@ class AcademicController extends Controller
             });
 
         $teacherSlots = $slots->groupBy('teacher_user_id');
-        $teachers = $teacherAssignments->groupBy('teacher_user_id')->map(function ($assignments, $teacherId) use ($teacherSlots) {
+        $assignmentsByTeacher = $teacherAssignments->groupBy('teacher_user_id');
+        $teachers = User::where('role', 'teacher')->with('staff:id,user_id,gender')->orderBy('name')->get(['id', 'name'])->map(function ($teacher) use ($teacherSlots, $assignmentsByTeacher) {
+            $teacherId = $teacher->id;
+            $assignments = $assignmentsByTeacher->get($teacherId, collect());
             $totalHours = $assignments->sum(fn($assignment) => (int) $assignment->weekly_hours);
             $assignedHours = $teacherSlots->get($teacherId, collect())->count();
 
             return [
                 'id' => (int) $teacherId,
-                'name' => $assignments->first()->teacher_name,
+                'name' => $teacher->name,
+                'gender' => $teacher->staff?->gender,
                 'total_hours' => $totalHours,
                 'assigned_hours' => $assignedHours,
                 'remaining_hours' => max(0, $totalHours - $assignedHours),

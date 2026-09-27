@@ -17,6 +17,7 @@ use App\Http\Controllers\GradeController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::put('/profile/email', [ProfileController::class, 'updateEmail']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
+    Route::post('/profile/photo', [ProfileController::class, 'photo']);
+    Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto']);
+
     // Students (Menaxhimi nga drejtori/sekretari)
     Route::middleware('role:director,secretary')->group(function () {
         Route::post('/students', [StudentsController::class, 'store']);
@@ -49,11 +57,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/students', [StudentsController::class, 'index']);
     Route::get('/students/{id}', [StudentsController::class, 'show']);
-    Route::get('/students/{studentId}/pay', [StudentsController::class, 'payInfo'])
-        ->middleware('role:director,cashier,secretary');
+    if (config('medrese.features.finance')) {
+        Route::get('/students/{studentId}/pay', [StudentsController::class, 'payInfo'])
+            ->middleware('role:director,cashier,secretary');
+    }
 
-    // Staff directory
-    Route::apiResource('staff', StaffController::class);
+    // Staff directory: staff is global; profile self-edit is handled in the controller.
+    Route::get('/staff', [StaffController::class, 'index']);
+    Route::get('/staff/{staff}', [StaffController::class, 'show']);
+    Route::post('/staff', [StaffController::class, 'store'])->middleware('role:director,secretary');
+    Route::put('/staff/{staff}', [StaffController::class, 'update']);
+    Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->middleware('role:director,secretary');
+    Route::post('/staff/import', [StaffController::class, 'import'])->middleware('role:director,secretary');
+    Route::post('/staff/{staff}/photo', [StaffController::class, 'photo']);
+    Route::delete('/staff/{staff}/photo', [StaffController::class, 'deletePhoto']);
 
     // Approvals
     Route::apiResource('approval', ApprovalController::class);
@@ -105,22 +122,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:secretary')->get('/dashboard/secretary', [DashboardController::class, 'secretary']);
     Route::middleware('role:director,principal')->get('/dashboard/principal', [DashboardController::class, 'principal']);
 
-    // Finance
-    Route::middleware('role:director,cashier,secretary')->group(function () {
-        Route::get('/finance/overview', [FinanceController::class, 'overview']);
-        Route::get('/outstanding', [FinanceController::class, 'outstanding']);
-        Route::get('/finance/reports', [FinanceController::class, 'reports']);
-        Route::get('/payments', [FinanceController::class, 'payments']);
-        Route::get('/fee-structures', [FinanceController::class, 'feeStructures']);
-        Route::get('/invoices', [FinanceController::class, 'invoices']);
-    });
+    // Finance: intentionally disabled until the school approves this module.
+    if (config('medrese.features.finance')) {
+        Route::middleware('role:director,cashier,secretary')->group(function () {
+            Route::get('/finance/overview', [FinanceController::class, 'overview']);
+            Route::get('/outstanding', [FinanceController::class, 'outstanding']);
+            Route::get('/finance/reports', [FinanceController::class, 'reports']);
+            Route::get('/payments', [FinanceController::class, 'payments']);
+            Route::get('/fee-structures', [FinanceController::class, 'feeStructures']);
+            Route::get('/invoices', [FinanceController::class, 'invoices']);
+        });
 
-    Route::middleware('role:director,cashier')->group(function () {
-        Route::post('/payments', [FinanceController::class, 'storePayment']);
-        Route::post('/fee-structures', [FinanceController::class, 'storeFeeStructure']);
-        Route::put('/fee-structures/{id}', [FinanceController::class, 'updateFeeStructure']);
-        Route::post('/invoices/generate', [FinanceController::class, 'generateInvoice']);
-    });
+        Route::middleware('role:director,cashier')->group(function () {
+            Route::post('/payments', [FinanceController::class, 'storePayment']);
+            Route::post('/fee-structures', [FinanceController::class, 'storeFeeStructure']);
+            Route::put('/fee-structures/{id}', [FinanceController::class, 'updateFeeStructure']);
+            Route::post('/invoices/generate', [FinanceController::class, 'generateInvoice']);
+        });
+    }
 
     // Attendance
     Route::get('/attendance', [AttendanceController::class, 'index']);
@@ -160,8 +179,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dormitory/leaderboard', [DormitoryController::class, 'leaderboard']);
     Route::get('/dormitory/my-room', [DormitoryController::class, 'myRoom'])->middleware('role:student,boarding,educator');
 
-    // Student portal - financial data
-    Route::get('/student/finance', [FinanceController::class, 'studentFinance'])->middleware('role:student,boarding');
+    if (config('medrese.features.finance')) {
+        Route::get('/student/finance', [FinanceController::class, 'studentFinance'])->middleware('role:student,boarding');
+    }
     Route::get('/student/grades', [GradeController::class, 'studentGrades'])->middleware('role:student,boarding');
     Route::get('/student/attendance', [AttendanceController::class, 'studentAttendance'])->middleware('role:student,boarding');
 

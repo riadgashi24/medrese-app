@@ -9,19 +9,27 @@ class Staff extends Model
 {
     protected $fillable = [
         'user_id',
+        'role',
         'first_name',
         'last_name',
         'personal_number',
+        'employee_number',
         'gender',
         'birth_date',
+        'place_of_birth',
         'phone',
+        'personal_phone',
         'email',
         'position',
         'department',
+        'education',
+        'qualification',
+        'specialization',
         'hire_date',
         'status',
         'photo',
         'address',
+        'city',
         'notes',
     ];
 
@@ -33,6 +41,11 @@ class Staff extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 
     public function getFullNameAttribute()

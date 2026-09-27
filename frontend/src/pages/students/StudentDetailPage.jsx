@@ -11,7 +11,6 @@ import {
   CalendarDays,
   MapPin,
   Mail,
-  Wallet,
 } from 'lucide-react'
 
 import { api } from '@/lib/api'
@@ -19,7 +18,6 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
 function getInitials(name = '') {
@@ -228,12 +226,6 @@ export function StudentDetailPage() {
                 <p className="mt-1 font-semibold text-surface-100">
                   {student.type === 'Boarding' ? 'Konviktor' : 'Ditor'}
                 </p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-surface-900/50 p-3 col-span-2">
-                <span className="text-surface-400 flex items-center gap-1">
-                  <Wallet className="h-3 w-3" /> Balanca financiare
-                </span>
-                <p className="mt-1 text-sm font-bold text-surface-100">{formatCurrency(student.balance)}</p>
               </div>
             </div>
           </CardContent>

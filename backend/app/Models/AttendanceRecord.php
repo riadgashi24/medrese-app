@@ -13,6 +13,10 @@ class AttendanceRecord extends Model
         'kind',
         'student_id',
         'status',
+        'note',
+        'absence_type',
+        'excused_by_user_id',
+        'excused_at',
         'recorded_by_user_id',
     ];
 

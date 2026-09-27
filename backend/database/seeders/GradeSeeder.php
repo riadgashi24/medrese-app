@@ -16,7 +16,7 @@ class GradeSeeder extends Seeder
     public function run(): void
     {
         // 1. Marrim të gjithë nxënësit që janë caktuar në një klasë
-        $students = Student::whereNotNull('class_id')
+        $students = Student::with('class.subjects')->whereNotNull('class_id')
             ->where('status', 'Active')
             ->get();
 
@@ -29,26 +29,24 @@ class GradeSeeder extends Seeder
 
         foreach ($students as $student) {
             // Marrim klasën e studentit për të gjetur viti akademik dhe lëndët përkatëse
-            $class = ClassModel::find($student->class_id);
+            $class = $student->class;
 
             if (!$class || !$class->academic_year_id) {
                 continue;
             }
 
             // Marrim lëndët e lidhura me këtë klasë nga tabela `class_subject`
-            $subjectIds = DB::table('class_subject')
-                ->where('class_model_id', $class->id)
-                ->pluck('subject_id');
+            $subjectIds = $class->subjects->pluck('id');
 
             foreach ($subjectIds as $subjectId) {
                 // Gjenerojmë nota me mundësi më të lartë për nota kaluese (2 - 5)
-                $t1 = rand(2, 5);
-                $t2 = rand(2, 5);
+                $t1 = 2 + (($student->id + $subjectId) % 4);
+                $t2 = 2 + (($student->id * 3 + $subjectId) % 4);
 
                 // Llogarisim NP me rrumbullakim (2.5 -> 3, 3.5 -> 4, etj.)
                 $finalGrade = Grade::calculateFinalGrade($t1, $t2);
 
-                Grade::updateOrCreate(
+                Grade::firstOrCreate(
                     [
                         'student_id' => $student->id,
                         'subject_id' => $subjectId,

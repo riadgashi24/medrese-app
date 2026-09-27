@@ -7,6 +7,8 @@ use App\Models\FeeStructure;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Service class for student management.
@@ -102,30 +104,26 @@ class StudentService
      */
     public function createStudent(array $data): Student
     {
-        // Auto-determine type based on municipality
-        if (isset($data['municipality']) && $data['municipality'] !== 'Prishtinë') {
-            $data['type'] = 'Boarding';
-        }
-        $data['status'] = $data['status'] ?? 'Active';
+        return DB::transaction(function () use ($data) {
+            if (isset($data['municipality']) && $data['municipality'] !== 'Prishtinë') {
+                $data['type'] = 'Boarding';
+            }
+            $data['status'] = $data['status'] ?? 'Active';
 
-        // Create student
-        $student = Student::create($data);
+            $student = Student::create($data);
+            if (!$student->user_id) {
+                $email = $student->student_email ?: "student-{$student->id}@medrese.local";
+                $user = \App\Models\User::create([
+                    'name' => $student->full_name,
+                    'email' => $email,
+                    'role' => 'student',
+                    'password' => Hash::make(config('medrese.default_student_password', 'medrese2026')),
+                ]);
+                $student->update(['user_id' => $user->id]);
+            }
 
-        // Automatically create a User for the student if email provided and no user attached
-        if (!$student->user_id && !empty($data['student_email'])) {
-            $user = \App\Models\User::create([
-                'name' => $student->full_name,
-                'email' => $data['student_email'],
-                'role' => 'student',
-                'password' => \Illuminate\Support\Facades\Hash::make(
-                    config('medrese.default_student_password', 'medrese2026')
-                ),
-            ]);
-            $student->user_id = $user->id;
-            $student->save();
-        }
-
-        return $student->load(['class', 'user']);
+            return $student->load(['class', 'user']);
+        });
     }
 
     /**
@@ -137,20 +135,27 @@ class StudentService
      */
     public function updateStudent(int $id, array $data): Student
     {
-        $student = Student::findOrFail($id);
+        return DB::transaction(function () use ($id, $data) {
+            $student = Student::findOrFail($id);
+            $student->update($data);
 
-        // Update student
-        $student->update($data);
+            if (!$student->user) {
+                $user = \App\Models\User::create([
+                    'name' => $student->full_name,
+                    'email' => $student->student_email ?: "student-{$student->id}@medrese.local",
+                    'role' => 'student',
+                    'password' => Hash::make(config('medrese.default_student_password', 'medrese2026')),
+                ]);
+                $student->update(['user_id' => $user->id]);
+            } else {
+                $student->user->update([
+                    'email' => $student->student_email ?: $student->user->email,
+                    'name' => $student->full_name,
+                ]);
+            }
 
-        // Update associated user if email changed
-        if ($student->user && !empty($data['student_email'])) {
-            $student->user->update([
-                'email' => $data['student_email'],
-                'name' => $student->full_name,
-            ]);
-        }
-
-        return $student->load(['class', 'user']);
+            return $student->load(['class', 'user']);
+        });
     }
 
     /**
@@ -189,7 +194,7 @@ class StudentService
                 }
             }
 
-            $student = Student::create([
+            $student = $this->createStudent([
                 'student_id' => $row['student_id'] ?? null,
                 'first_name' => $row['first_name'] ?? null,
                 'last_name' => $row['last_name'] ?? null,

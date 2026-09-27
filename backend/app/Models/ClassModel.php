@@ -13,6 +13,14 @@ class ClassModel extends Model
 
     protected $fillable = ['name', 'section', 'academic_year_id', 'homeroom_staff_id'];
 
+    public function getLevelAttribute(): ?int
+    {
+        if (preg_match('/^(10|11|12|XII|XI|X)(?=$|[^0-9IVX])/i', trim($this->name), $matches)) {
+            return ['X' => 10, 'XI' => 11, 'XII' => 12][strtoupper($matches[1])] ?? (int) $matches[1];
+        }
+        return null;
+    }
+
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);

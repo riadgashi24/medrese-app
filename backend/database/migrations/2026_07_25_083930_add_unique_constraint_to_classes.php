@@ -11,6 +11,9 @@ return new class extends Migration
     {
         // Pastro duplikatet para se të shtojmë unique constraint
         // Përdor JOIN në vend të subquery për të shmangur errorin MySQL 1093
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('DELETE FROM classes WHERE id NOT IN (SELECT MIN(id) FROM classes GROUP BY academic_year_id, name)');
+        } else {
         DB::statement('
             DELETE c1 FROM classes c1
             INNER JOIN classes c2
@@ -18,6 +21,7 @@ return new class extends Migration
             AND c1.academic_year_id = c2.academic_year_id
             AND c1.name = c2.name
         ');
+        }
 
         Schema::table('classes', function (Blueprint $table) {
             // Unique constraint për të parandaluar duplikatet në nivel databaze

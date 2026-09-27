@@ -45,7 +45,7 @@ export const DEMO_USERS = [
   },
   {
     id: '4',
-    email: 'teacher@medrese.edu',
+    email: 'jakupÇunaku@medrese.edu',
     password: 'demo123',
     name: 'Mehmet Kaya',
     role: ROLES.TEACHER,

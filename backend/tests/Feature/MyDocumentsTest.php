@@ -42,6 +42,9 @@ class MyDocumentsTest extends TestCase
         $student = Student::create([
             'student_id' => 'STD-2025-0001',
             'first_name' => 'Test',
+            'municipality' => 'Prishtinë',
+            'parent_name' => 'Prind testues',
+            'parent_phone' => '000000000',
             'last_name' => 'Student',
             'class_id' => $class->id,
             'type' => 'Regular',

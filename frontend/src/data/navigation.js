@@ -60,17 +60,6 @@ export const NAV_BY_ROLE = {
     },
 
     {
-      label: 'Financat',
-      icon: DollarSign,
-      children: [
-        { label: 'Përmbledhje', path: '/finance' },
-        { label: 'Pagesat', path: '/finance/payments' },
-        { label: 'Borxhet', path: '/finance/outstanding' },
-        { label: 'Raportet', path: '/finance/reports' },
-      ],
-    },
-
-    {
       label: 'Konvikti',
       icon: Building2,
       children: [
@@ -101,7 +90,6 @@ export const NAV_BY_ROLE = {
       icon: BarChart3,
       children: [
         { label: 'Akademike', path: '/reports' },
-        { label: 'Financiare', path: '/reports' },
         { label: 'Prezenca', path: '/reports' },
         { label: 'Disiplina', path: '/reports' },
       ],
@@ -109,6 +97,7 @@ export const NAV_BY_ROLE = {
 
     { label: 'Njoftimet', path: '/announcements', icon: Megaphone },
 
+    { label: 'Profili', path: '/profile', icon: Users },
     { label: 'Cilësimet', path: '/settings', icon: Settings },
   ],
   [ROLES.SECRETARY]: [
@@ -131,24 +120,14 @@ export const NAV_BY_ROLE = {
       ],
     },
     { label: 'Stafi', path: '/staff', icon: Users },
-    { label: 'Raportet financiare', path: '/finance/reports', icon: PieChart, badge: 'Vetem lexim' },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
     { label: 'Profili', path: '/profile', icon: Users },
   ],
   [ROLES.CASHIER]: [
-    { label: 'Paneli financiar', path: '/dashboard', icon: LayoutDashboard },
-    {
-      label: 'Pagesat',
-      icon: Receipt,
-      children: [
-        { label: 'Regjistro pagese', path: '/finance/payments/new' },
-        { label: 'Historiku i pagesave', path: '/finance/payments' },
-      ],
-    },
-    { label: 'Faturat', path: '/finance/invoices', icon: FileText },
-    { label: 'Borxhet', path: '/finance/outstanding', icon: AlertCircle },
-    { label: 'Raportet', path: '/finance/reports', icon: PieChart },
-    { label: 'Tarifat', path: '/settings/fee-structure', icon: Settings },
+    { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
   ],
   [ROLES.TEACHER]: [
     { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },
@@ -157,6 +136,8 @@ export const NAV_BY_ROLE = {
     { label: 'Notat', path: '/classes', icon: NotebookPen },
     { label: 'Nxenesit', path: '/students', icon: Users },
     { label: 'Mbikeqyrja', path: '/discipline', icon: Shield },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
   ],
   [ROLES.EDUCATOR]: [
     { label: 'Paneli', path: '/dashboard', icon: LayoutDashboard },
@@ -186,6 +167,8 @@ export const NAV_BY_ROLE = {
       ],
     },
     { label: 'Raporte', path: '/reports', icon: FileText },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
   ],
   [ROLES.STUDENT]: [
     { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
@@ -194,8 +177,9 @@ export const NAV_BY_ROLE = {
     { label: 'Prezenca ime', path: '/attendance/reports', icon: CheckSquare },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
     { label: 'Dokumentet', path: '/documents/my-documents', icon: Download },
-    { label: 'Gjendja e pagesave', path: '/finance/pay', icon: CreditCard },
     { label: 'Disiplina', path: '/discipline/my-record', icon: Gavel },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
   ],
   [ROLES.BOARDING]: [
     { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
@@ -204,19 +188,22 @@ export const NAV_BY_ROLE = {
     { label: 'Prezenca ime', path: '/attendance/reports', icon: CheckSquare },
     { label: 'Njoftime', path: '/announcements', icon: Megaphone },
     { label: 'Dokumentet', path: '/documents/my-documents', icon: Download },
-    { label: 'Gjendja e pagesave', path: '/finance/pay', icon: CreditCard },
     { label: 'Disiplina', path: '/discipline/my-record', icon: Gavel },
     { label: 'Dhoma ime', path: '/dormitory/my-room', icon: Home },
-    { label: 'Paguaj konviktin', path: '/finance/pay', icon: Wallet },
     { label: 'Raportet e pastertise', path: '/dormitory/inspections', icon: Sparkles },
     { label: 'Oret e mesimit', path: '/dormitory/rooms', icon: BookOpen },
     { label: 'Prezenca ne sabah', path: '/dormitory/rooms', icon: Sun },
     { label: 'Verejtjet e edukatorit', path: '/discipline/my-record', icon: Gavel },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
   ],
 }
 
 export function getNavForRole(role) {
-  return NAV_BY_ROLE[role] || []
+  return NAV_BY_ROLE[role] || [
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+    { label: 'Profili', path: '/profile', icon: Users },
+  ]
 }
 
 export function canAccessRoute(role, path) {

@@ -9,7 +9,7 @@ import { Input, Label, Select } from '@/components/ui/Input'
 import { api } from '@/lib/api'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
-import { Plus, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, Loader2, Bell, Monitor, ShieldCheck, Accessibility, KeyRound, RotateCcw } from 'lucide-react'
 
 function useApiData(load, fallback = []) {
   const [data, setData] = useState(fallback)
@@ -784,77 +784,182 @@ export function GenericListPage({ title, description, loader, columns, mapRow = 
   )
 }
 
+const SETTINGS_KEY_PREFIX = 'medrese-settings'
+const defaultSettings = { compact: false, reducedMotion: false, largeText: false, highContrast: false, inAppNotifications: true, emailNotifications: true, desktopNotifications: false, confirmChanges: true }
+
+function settingsStorageKey(user) {
+  return `${SETTINGS_KEY_PREFIX}:${user?.id || 'guest'}`
+}
+
+function ToggleRow({ title, description, enabled, onChange }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 border-b border-white/5 last:border-0">
+      <div><p className="text-sm font-medium text-surface-100">{title}</p><p className="mt-0.5 text-xs text-surface-400">{description}</p></div>
+      <button type="button" role="switch" aria-label={title} aria-checked={enabled} onClick={() => onChange(!enabled)} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${enabled ? 'bg-brand-600' : 'bg-surface-700'}`}>
+        <span className={`absolute left-0 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+      </button>
+    </div>
+  )
+}
+
 export function SettingsPage() {
-  const { theme, setTheme } = useAuth()
+  const { theme, setTheme, user } = useAuth()
+  const navigate = useNavigate()
+  const [settings, setSettings] = useState(() => {
+    try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem(settingsStorageKey(user)) || '{}') } } catch { return defaultSettings }
+  })
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    try { localStorage.setItem(settingsStorageKey(user), JSON.stringify(settings)) } catch { /* local storage may be unavailable */ }
+    document.documentElement.classList.toggle('reduce-motion', settings.reducedMotion)
+    document.documentElement.classList.toggle('large-text', settings.largeText)
+    document.documentElement.classList.toggle('high-contrast', settings.highContrast)
+    document.documentElement.setAttribute('data-density', settings.compact ? 'compact' : 'comfortable')
+  }, [settings, user])
+
+  const updateSetting = async (key, value) => {
+    if (key === 'desktopNotifications' && value && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') { setNotice('Njoftimet e shfletuesit nuk u lejuan. Mund t’i aktivizoni nga cilësimet e shfletuesit.'); return }
+    }
+    setSettings((current) => ({ ...current, [key]: value }))
+    setNotice('Cilësimet u ruajtën automatikisht.')
+  }
+
+  const resetSettings = () => {
+    setSettings(defaultSettings)
+    setTheme('light')
+    setNotice('Cilësimet personale u rikthyen në vlerat fillestare.')
+  }
 
   return (
-    <div>
-      <PageHeader title="Cilësimet" description="Konfigurimet e preferencave të aplikacionit" />
+    <div className="space-y-6">
+      <PageHeader title="Cilësimet" description="Personalizo përvojën, njoftimet dhe sigurinë e llogarisë tënde" />
+      {notice && <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 px-4 py-3 text-sm text-brand-200">{notice}</div>}
 
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Tema e aplikacionit</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-surface-300">
-              Zgjidh mënyrën e preferuar të dukjes së aplikacionit. Përzgjedhja ruhet për llogarinë tuaj.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                type="button"
-                variant={theme === 'light' ? 'default' : 'secondary'}
-                onClick={() => setTheme('light')}
-              >
-                Ditor
-              </Button>
-              <Button
-                type="button"
-                variant={theme === 'dark' ? 'default' : 'secondary'}
-                onClick={() => setTheme('dark')}
-              >
-                Natën
-              </Button>
-            </div>
-            <p className="text-xs text-surface-400">
-              Tema aktuale: <span className="font-medium text-surface-100">{theme === 'light' ? 'Ditor' : 'Natën'}</span>
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base font-body font-medium"><Monitor className="h-5 w-5 text-brand-400" /> Pamja</CardTitle></CardHeader><CardContent className="space-y-3">
+          <p className="text-sm text-surface-300">Zgjidh pamjen që të përshtatet më shumë. Tema ruhet për llogarinë tënde.</p>
+          <div className="flex flex-wrap gap-2"><Button type="button" variant={theme === 'light' ? 'default' : 'secondary'} onClick={() => setTheme('light')}>Ditor</Button><Button type="button" variant={theme === 'dark' ? 'default' : 'secondary'} onClick={() => setTheme('dark')}>Natën</Button></div>
+          <ToggleRow title="Pamje kompakte" description="Zvogëlon hapësirat për të shfaqur më shumë përmbajtje." enabled={settings.compact} onChange={(value) => updateSetting('compact', value)} />
+        </CardContent></Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Preferencat</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-lg border border-white/8 bg-surface-900/30 p-3 text-sm text-surface-300">
-              Tema ndryshohet menjëherë dhe do të mbahet edhe kur hapni aplikacionin përsëri.
-            </div>
-            <div className="rounded-lg border border-white/8 bg-surface-900/30 p-3 text-sm text-surface-300">
-              Në të ardhmen mund të shtohen edhe njoftime, siguri dhe preferenca të tjera të sistemit.
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base font-body font-medium"><Accessibility className="h-5 w-5 text-brand-400" /> Aksesueshmëria</CardTitle></CardHeader><CardContent>
+          <ToggleRow title="Tekst më i madh" description="Rrit pak madhësinë e tekstit në të gjithë aplikacionin." enabled={settings.largeText} onChange={(value) => updateSetting('largeText', value)} />
+          <ToggleRow title="Kontrast i lartë" description="Forcon dallimin ndërmjet tekstit, kufijve dhe sfondit." enabled={settings.highContrast} onChange={(value) => updateSetting('highContrast', value)} />
+          <ToggleRow title="Redukto animacionet" description="Zvogëlon lëvizjet dhe efektet e ndërfaqes." enabled={settings.reducedMotion} onChange={(value) => updateSetting('reducedMotion', value)} />
+        </CardContent></Card>
+
+        <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base font-body font-medium"><Bell className="h-5 w-5 text-brand-400" /> Njoftimet</CardTitle></CardHeader><CardContent>
+          <ToggleRow title="Njoftime brenda aplikacionit" description="Shfaq njoftime të reja në hapësirën e njoftimeve." enabled={settings.inAppNotifications} onChange={(value) => updateSetting('inAppNotifications', value)} />
+          <ToggleRow title="Përmbledhje me email" description="Lejo dërgimin e përmbledhjeve dhe përditësimeve në email." enabled={settings.emailNotifications} onChange={(value) => updateSetting('emailNotifications', value)} />
+          <ToggleRow title="Njoftime në pajisje" description="Kërkon leje nga shfletuesi për njoftime në desktop." enabled={settings.desktopNotifications} onChange={(value) => updateSetting('desktopNotifications', value)} />
+        </CardContent></Card>
+
+        <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base font-body font-medium"><ShieldCheck className="h-5 w-5 text-brand-400" /> Privatësia dhe siguria</CardTitle></CardHeader><CardContent>
+          <ToggleRow title="Konfirmo ndryshimet" description="Kërko konfirmim shtesë para veprimeve të rëndësishme." enabled={settings.confirmChanges} onChange={(value) => updateSetting('confirmChanges', value)} />
+          <div className="pt-4"><p className="text-sm font-medium text-surface-100">Emaili dhe fjalëkalimi</p><p className="mt-1 text-xs text-surface-400">Për arsye sigurie, këto menaxhohen nga faqja e profilit.</p><Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => navigate('/profile')}><KeyRound className="h-3.5 w-3.5" /> Menaxho llogarinë</Button></div>
+        </CardContent></Card>
       </div>
+
+      <Card><CardHeader><CardTitle className="text-base font-body font-medium">Të dhënat e aplikacionit</CardTitle></CardHeader><CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm text-surface-200">Cilësimet e tua ruhen vetëm për këtë llogari në këtë pajisje.</p><p className="mt-1 text-xs text-surface-400">Medrese SMS · Versioni 1.0</p></div><Button type="button" variant="secondary" onClick={resetSettings}><RotateCcw className="h-4 w-4" /> Rikthe cilësimet</Button></CardContent></Card>
     </div>
   )
 }
 
 export function ProfilePage() {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
+  const [profile, setProfile] = useState(user)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [security, setSecurity] = useState(null)
+  const [photo, setPhoto] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    api.profile.show().then((res) => setProfile(res?.data || res)).catch(() => setError('Nuk mundëm t\'i ngarkojmë të dhënat e profilit.')).finally(() => setLoading(false))
+  }, [])
+
+  async function saveProfile(payload) {
+    setSaving(true); setMessage('')
+    try { const res = await api.profile.update(payload); const next = res?.data || res; setProfile(next); await refreshUser(); setEditing(false); setMessage('Të dhënat u përditësuan me sukses.') } catch (err) { setMessage(err?.message || 'Të dhënat nuk u ruajtën.') } finally { setSaving(false) }
+  }
+
+  async function uploadPhoto() {
+    if (!photo) return
+    setSaving(true)
+    try { const res = await api.profile.uploadPhoto(photo); setProfile(res?.data || res); await refreshUser(); setPhoto(null); setMessage('Fotografia u përditësua me sukses.') } catch (err) { setMessage(err?.message || 'Fotografia nuk u ruajt.') } finally { setSaving(false) }
+  }
+
+  async function removePhoto() {
+    setSaving(true)
+    try { const res = await api.profile.deletePhoto(); setProfile(res?.data || res); await refreshUser(); setMessage('Fotografia u hoq.') } catch (err) { setMessage(err?.message || 'Fotografia nuk u hoq.') } finally { setSaving(false) }
+  }
+
+  if (loading) return <Card><CardContent className="py-12 text-center text-surface-400">Duke ngarkuar profilin...</CardContent></Card>
+  if (error) return <Card><CardContent className="py-12 text-center text-red-400">{error}</CardContent></Card>
+  if (!profile) return null
+  const roleLabels = { director: 'Drejtor', secretary: 'Sekretar', teacher: 'Profesor', educator: 'Edukator', cashier: 'Arkatar', student: 'Nxënës', boarding: 'Nxënës', other: 'Të tjerë' }
+  const initials = (profile.name || '?').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()
+  const fields = [['Gjinia', { Male: 'Mashkull', Female: 'Femër' }[profile.gender]], ['Data e lindjes', profileDateValue(profile.birth_date).split('-').reverse().join('.')], ['Vendi i lindjes', profile.place_of_birth], ['Telefon', profile.phone], ['Adresa', profile.address], ['Qyteti', profile.city]]
+  const teacherAcademic = profile.academic
   return (
-    <div>
-      <PageHeader title="Profili" description="Te dhenat e llogarise tende" />
-      <Card className="max-w-md">
-        <CardContent className="space-y-3">
-          <div><p className="text-xs text-surface-300">Emri</p><p className="text-surface-100">{user?.name}</p></div>
-          <div><p className="text-xs text-surface-300">Email</p><p className="font-mono text-sm">{user?.email}</p></div>
-          <div><p className="text-xs text-surface-300">Roli</p><Badge>{user?.role}</Badge></div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <PageHeader title="Profili" description="Menaxho të dhënat personale dhe llogarinë tënde" />
+      {message && <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 px-4 py-3 text-sm text-brand-200">{message}</div>}
+      <Card><CardContent className="flex flex-wrap items-center gap-5"><div className="relative">{profile.photo_url ? <img src={profile.photo_url} alt={profile.name} className="h-24 w-24 rounded-full object-cover border border-white/10" /> : <div className="h-24 w-24 rounded-full bg-brand-500/15 flex items-center justify-center text-2xl font-semibold text-brand-300">{initials || '?'}</div>}</div><div className="flex-1"><h1 className="text-2xl font-semibold text-surface-100">{profile.name}</h1><p className="text-surface-400">{roleLabels[profile.role] || 'Të tjerë'}</p><p className="text-sm text-surface-500">{profile.email}</p><Badge variant="success" className="mt-2">{profile.status === 'Active' ? 'Aktiv' : profile.status}</Badge></div><div className="flex flex-wrap gap-2"><label className="cursor-pointer"><span className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-xs text-surface-200">Ndrysho foton</span><input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { setPhoto(e.target.files?.[0] || null) }} /></label>{photo && <Button onClick={uploadPhoto} disabled={saving}>Ruaj foton</Button>}{profile.photo_url && <Button variant="ghost" onClick={removePhoto} disabled={saving}>Hiq</Button>}</div></CardContent></Card>
+      <div className="grid gap-4 lg:grid-cols-2"><Card><CardContent><div className="flex justify-between items-center mb-4"><h2 className="text-sm font-semibold text-surface-100">Të dhënat personale</h2><Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Modifiko të dhënat</Button></div><div className="grid gap-3 sm:grid-cols-2">{fields.map(([label, value]) => <div key={label}><p className="text-xs text-surface-500">{label}</p><p className="text-sm text-surface-200">{value || '-'}</p></div>)}</div>{profile.role === 'student' || profile.role === 'boarding' ? <div className="mt-4 border-t border-white/10 pt-3 grid gap-3 sm:grid-cols-2"><div><p className="text-xs text-surface-500">Klasa</p><p className="text-sm text-surface-200">{profile.class_name || '-'}</p></div><div><p className="text-xs text-surface-500">Numri i nxënësit</p><p className="text-sm text-surface-200">{profile.student_id || '-'}</p></div><div><p className="text-xs text-surface-500">Prindi/Kujdestari</p><p className="text-sm text-surface-200">{profile.parent_name || '-'}</p></div></div> : null}</CardContent></Card><Card><CardContent className="space-y-3"><h2 className="text-sm font-semibold text-surface-100">Llogaria</h2><InfoRow label="Email" value={profile.email} /><InfoRow label="Roli" value={roleLabels[profile.role] || 'Të tjerë'} /><InfoRow label="Statusi" value={profile.status === 'Active' ? 'Aktiv' : profile.status} /><div className="pt-2"><Button size="sm" variant="secondary" onClick={() => setSecurity('email')}>Ndrysho emailin</Button></div></CardContent></Card></div>
+      {(profile.position || profile.education || teacherAcademic) && <Card><CardContent><h2 className="text-sm font-semibold text-surface-100 mb-3">{profile.role === 'teacher' ? 'Informata profesionale' : 'Informata shtesë'}</h2><div className="grid gap-3 sm:grid-cols-2"><InfoRow label="Pozita" value={profile.position} /><InfoRow label="Shkollimi" value={profile.education} /><InfoRow label="Kualifikimi" value={profile.qualification} /><InfoRow label="Specializimi" value={profile.specialization} /></div>{teacherAcademic && <div className="mt-4 border-t border-white/10 pt-3"><p className="text-xs text-surface-500">Angazhimi mësimor · {teacherAcademic.academic_year?.label}</p><p className="text-lg font-mono text-brand-300">{teacherAcademic.total_hours || 0} orë/javë</p>{teacherAcademic.assignments?.map((item, index) => <p key={`${item.class_name}-${index}`} className="text-sm text-surface-300">{item.subject_name} — {item.class_name} · {item.weekly_hours} orë</p>)}</div>}</CardContent></Card>}
+      <Card><CardContent className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-surface-100">Siguria</h2><p className="text-xs text-surface-500">Ndrysho fjalëkalimin e llogarisë</p></div><Button variant="secondary" onClick={() => setSecurity('password')}>Ndrysho fjalëkalimin</Button></CardContent></Card>
+      {editing && <ProfileEditDialog profile={profile} saving={saving} onClose={() => setEditing(false)} onSave={saveProfile} />}
+      {security && <SecurityDialog mode={security} saving={saving} onClose={() => setSecurity(null)} onSave={async (payload) => { setSaving(true); try { if (security === 'email') { const res = await api.profile.updateEmail(payload); setProfile(res?.data || res); await refreshUser(); setMessage('Email-i u përditësua me sukses.') } else { await api.profile.updatePassword(payload); setMessage('Fjalëkalimi u ndryshua me sukses.') } setSecurity(null) } catch (err) { setMessage(err?.message || 'Veprimi dështoi.') } finally { setSaving(false) } }} />}
     </div>
   )
 }
+
+function InfoRow({ label, value }) { return <div><p className="text-xs text-surface-500">{label}</p><p className="text-sm text-surface-200">{value || '-'}</p></div> }
+function profileDateValue(value) {
+  return typeof value === 'string' ? value.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || '' : ''
+}
+
+function ProfileEditDialog({ profile, saving, onClose, onSave }) {
+  const [form, setForm] = useState({
+    name: profile.name || '', gender: profile.gender || '',
+    birth_date: profileDateValue(profile.birth_date), phone: profile.phone || '',
+    address: profile.address || '', city: profile.city || '', education: profile.education || '',
+    qualification: profile.qualification || '', specialization: profile.specialization || '', notes: profile.notes || '',
+  })
+  const labels = { name: 'Emri dhe mbiemri', gender: 'Gjinia', birth_date: 'Data e lindjes', phone: 'Telefoni', address: 'Adresa', city: 'Qyteti', education: 'Shkollimi', qualification: 'Kualifikimi', specialization: 'Specializimi', notes: 'Shënime' }
+  const set = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+  return (
+    <Dialog title="Modifiko të dhënat" onClose={onClose}>
+      <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="space-y-3 max-h-[70vh] overflow-y-auto">
+        {Object.entries(form).map(([key, value]) => (
+          <div key={key} className="space-y-1">
+            <Label htmlFor={`profile-${key}`}>{labels[key]}</Label>
+            {key === 'gender' ? (
+              <Select id={`profile-${key}`} value={value} onChange={(e) => set(key, e.target.value)}>
+                <option value="">Zgjidh gjininë</option>
+                <option value="Male">Mashkull</option>
+                <option value="Female">Femër</option>
+              </Select>
+            ) : key === 'notes' ? (
+              <textarea id={`profile-${key}`} value={value} onChange={(e) => set(key, e.target.value)} rows={3} className="w-full rounded-lg border border-white/10 bg-surface-950 p-3 text-sm text-surface-100" />
+            ) : (
+              <Input id={`profile-${key}`} type={key === 'birth_date' ? 'date' : 'text'} value={value} onChange={(e) => set(key, e.target.value)} />
+            )}
+          </div>
+        ))}
+        <div className="flex justify-end gap-2"><Button type="button" variant="secondary" onClick={onClose}>Anulo</Button><Button disabled={saving}>{saving ? 'Duke ruajtur...' : 'Ruaj'}</Button></div>
+      </form>
+    </Dialog>
+  )
+}
+function SecurityDialog({ mode, saving, onClose, onSave }) { const [form, setForm] = useState(mode === 'email' ? { email: '', current_password: '' } : { current_password: '', password: '', password_confirmation: '' }); const set = (key, value) => setForm((current) => ({ ...current, [key]: value })); return <Dialog title={mode === 'email' ? 'Ndrysho emailin' : 'Ndrysho fjalëkalimin'} onClose={onClose}><form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="space-y-3">{Object.entries(form).map(([key, value]) => <Input key={key} type={key.includes('password') ? 'password' : 'email'} required value={value} onChange={(e) => set(key, e.target.value)} placeholder={key === 'current_password' ? 'Fjalëkalimi aktual' : key === 'password_confirmation' ? 'Konfirmo fjalëkalimin' : key === 'password' ? 'Fjalëkalimi i ri' : 'Email i ri'} />)}<div className="flex justify-end gap-2"><Button type="button" variant="secondary" onClick={onClose}>Anulo</Button><Button disabled={saving}>{saving ? 'Duke ruajtur...' : 'Ruaj'}</Button></div></form></Dialog> }
+function Dialog({ title, onClose, children }) { return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><Card className="w-full max-w-lg bg-surface-900 border border-white/10"><CardContent className="space-y-4"><div className="flex items-center justify-between"><h3 className="text-base font-semibold text-surface-100">{title}</h3><button onClick={onClose} className="text-surface-400">✕</button></div>{children}</CardContent></Card></div> }
 
 export function AbsenceApprovalPage() {
   const [absences, setAbsences] = useState([])
@@ -1232,4 +1337,3 @@ export function LeaderboardPage() {
     </div>
   )
 }
-

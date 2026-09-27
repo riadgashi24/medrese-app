@@ -11,15 +11,6 @@ const LoginPage = lazyNamed(() => import('@/pages/auth/LoginPage'), 'LoginPage')
 const DashboardPage = lazyNamed(() => import('@/pages/dashboard/DashboardPage'), 'DashboardPage')
 const UsersManagementPage = lazy(() => import('@/pages/users/UsersManagement'))
 const StudentImportPage = lazyNamed(() => import('@/pages/students/StudentImportPage'), 'StudentImportPage')
-const FinancePages = () => import('@/pages/finance/FinancePages')
-const FinanceOverviewPage = lazyNamed(FinancePages, 'FinanceOverviewPage')
-const PaymentsPage = lazyNamed(FinancePages, 'PaymentsPage')
-const RecordPaymentPage = lazyNamed(FinancePages, 'RecordPaymentPage')
-const OutstandingPage = lazyNamed(FinancePages, 'OutstandingPage')
-const FinanceReportsPage = lazyNamed(FinancePages, 'FinanceReportsPage')
-const StudentPayPage = lazyNamed(FinancePages, 'StudentPayPage')
-const FeeStructurePage = lazyNamed(FinancePages, 'FeeStructurePage')
-const InvoicesPage = lazyNamed(FinancePages, 'InvoicesPage')
 const AttendancePages = () => import('@/pages/modules/AcademicModules/Attendance/AttendancePages')
 const FajrAttendancePage = lazyNamed(AttendancePages, 'FajrAttendancePage')
 const StudyHoursPage = lazyNamed(AttendancePages, 'StudyHoursPage')
@@ -38,6 +29,10 @@ const MyDisciplinePage = lazyNamed(ModulePages, 'MyDisciplinePage')
 const ExtracurricularPage = lazyNamed(ModulePages, 'ExtracurricularPage')
 const AnnouncementsPage = lazyNamed(ModulePages, 'AnnouncementsPage')
 const GenericListPage = lazyNamed(ModulePages, 'GenericListPage')
+const StaffPages = () => import('@/pages/staff/StaffPages')
+const StaffPage = lazyNamed(StaffPages, 'StaffPage')
+const StaffFormPage = lazyNamed(StaffPages, 'StaffFormPage')
+const StaffDetailPage = lazyNamed(StaffPages, 'StaffDetailPage')
 const SettingsPage = lazyNamed(ModulePages, 'SettingsPage')
 const ProfilePage = lazyNamed(ModulePages, 'ProfilePage')
 const GradesPage = lazy(() => import('@/pages/modules/AcademicModules/GradesPage'))
@@ -120,7 +115,10 @@ function AppRoutes() {
           <Route path="/students/import" element={<StudentImportPage />} />
 
           {/* Staff lists */}
-          <Route path="/staff" element={<GenericListPage title="Stafi" description="Lista e stafit" loader={() => api.staff.index()} columns={staffColumns} mapRow={mapStaffRow} />} />
+          <Route path="/staff" element={<StaffPage />} />
+          <Route path="/staff/new" element={<StaffFormPage />} />
+          <Route path="/staff/:id" element={<StaffDetailPage />} />
+          <Route path="/staff/:id/edit" element={<StaffFormPage />} />
 
           {/* Academic */}
           <Route path="/timetable" element={<TimetablePage />} />
@@ -136,15 +134,6 @@ function AppRoutes() {
           <Route path="/classes/:classId/students/:id/edit" element={<StudentFormPage mode="edit" />} />
           <Route path="/classes/new" element={<ClassFormPage mode="create" />} />
           <Route path="/classes/:id/edit" element={<ClassFormPage mode="edit" />} />
-
-          {/* Finance */}
-          <Route path="/finance" element={<FinanceOverviewPage />} />
-          <Route path="/finance/payments" element={<PaymentsPage />} />
-          <Route path="/finance/payments/new" element={<RecordPaymentPage />} />
-          <Route path="/finance/invoices" element={<InvoicesPage />} />
-          <Route path="/finance/outstanding" element={<OutstandingPage />} />
-          <Route path="/finance/reports" element={<FinanceReportsPage />} />
-          <Route path="/finance/pay" element={<StudentPayPage />} />
 
           {/* Dormitory */}
           <Route path="/dormitory" element={<DormitoryPage />} />
@@ -180,12 +169,11 @@ function AppRoutes() {
           <Route path="/extracurricular" element={<ExtracurricularPage />} />
           <Route path="/extracurricular/hifz" element={<ExtracurricularPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
-          <Route path="/reports" element={<FinanceReportsPage />} />
+          <Route path="/reports" element={<Navigate to="/dashboard" replace />} />
           {/* <Route path="/documents" element={<DocumentsPage />} /> */}
           <Route path="/documents/my-documents" element={<GenericListPage title="Dokumentet e mia" description="Certifikatat dhe dokumentet e tua" loader={api.documents.myDocuments} columns={documentColumns} mapRow={(row) => row.document || row} />} />
           {/* <Route path="/assignments" element={<AssignmentsPage />} /> */}
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/settings/fee-structure" element={<FeeStructurePage />} />
           <Route path="/users" element={<UsersManagementPage />} />
         </Route>
 

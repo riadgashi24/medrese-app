@@ -12,14 +12,18 @@ function NavItem({ item, collapsed, onNavigate }) {
     item.children?.some((c) => location.pathname.startsWith(c.path)) ?? false,
   )
   const Icon = item.icon
+  const [flyoutTop, setFlyoutTop] = useState(null)
 
   if (item.children) {
     return (
-      <div>
+      <div onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFlyoutTop(null) }} onKeyDown={(event) => { if (event.key === 'Escape') setFlyoutTop(null) }}>
         <button
           type="button"
-          onClick={() => setOpen(!open)}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-surface-300 hover:bg-white/5 hover:text-surface-100"
+          aria-label={item.label}
+          title={collapsed ? item.label : undefined}
+          aria-expanded={collapsed ? flyoutTop !== null : open}
+          onClick={(event) => collapsed ? setFlyoutTop(flyoutTop === null ? Math.min(event.currentTarget.getBoundingClientRect().top, window.innerHeight - 280) : null) : setOpen(!open)}
+          className={cn('flex w-full items-center rounded-lg text-sm text-surface-300 hover:bg-white/5 hover:text-surface-100', collapsed ? 'h-11 justify-center p-0' : 'gap-2 px-3 py-2')}
         >
           {Icon && <Icon className="h-4 w-4 shrink-0" />}
           {!collapsed && (
@@ -29,6 +33,12 @@ function NavItem({ item, collapsed, onNavigate }) {
             </>
           )}
         </button>
+        {collapsed && flyoutTop !== null && (
+          <div className="fixed left-[76px] z-[60] w-52 rounded-xl border border-surface-700 bg-surface-950 p-2 shadow-xl" style={{ top: Math.max(8, flyoutTop) }}>
+            <p className="px-3 py-2 text-sm font-semibold text-surface-100">{item.label}</p>
+            {item.children.map(child => <NavLink key={child.path} to={child.path} onClick={() => { setFlyoutTop(null); onNavigate?.() }} className={({ isActive }) => cn('block rounded-lg px-3 py-2 text-sm', isActive ? 'bg-brand-500/12 text-brand-400' : 'text-surface-300 hover:bg-brand-500/10')}>{child.label}</NavLink>)}
+          </div>
+        )}
         {open && !collapsed && (
           <div className="ml-4 mt-1 space-y-0.5 border-l border-white/8 pl-3">
             {item.children.map((child) => (
@@ -57,10 +67,13 @@ function NavItem({ item, collapsed, onNavigate }) {
   return (
     <NavLink
       to={item.path}
+      aria-label={item.label}
+      title={collapsed ? item.label : undefined}
       onClick={onNavigate}
       className={({ isActive }) =>
         cn(
           'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+          collapsed && 'h-11 justify-center !p-0',
           isActive
             ? 'bg-brand-500/12 text-brand-400'
             : 'text-surface-300 hover:bg-white/5 hover:text-surface-100',
@@ -86,13 +99,13 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
 
   const content = (
     <>
-      <div className="flex items-center gap-0 px-3 py-4 mb-2 ml-3">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          {collapsed && <img src={logo} alt="Logo" className="h-10 w-full" />}
+      <div className={cn('flex items-center py-5 mb-2', collapsed ? 'justify-center px-1' : 'px-4')}>
+        <Link to="/dashboard" aria-label="Medreseja Alauddin, paneli" className="flex items-center gap-2">
+          {collapsed && <img src={logo} alt="Medreseja Alauddin" className="h-16 w-16 object-contain" />}
 
           {!collapsed && (
             <>
-              <img src={logo} alt="Logo" className="h-15 w-20" />
+              <img src={logo} alt="Medreseja Alauddin" className="h-16 w-16 shrink-0 object-contain" />
               <span className="font-display text-lg text-surface-50 leading-4 mu-2 ">
                 MEDRESEJA <span className="text-brand-400 ">ALAUDDIN</span>
               </span>
@@ -122,7 +135,7 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
       )}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/8 bg-surface-950/95 backdrop-blur-xl transition-transform lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col border-r border-white/8 bg-surface-950 transition-transform lg:static lg:transform-none',
           collapsed ? 'w-[72px]' : 'w-[260px]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
@@ -160,15 +173,21 @@ export function TopBar({ onMenuClick, collapsed, onToggleCollapse }) {
         </button>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden sm:block text-right">
-          <div className="text-sm font-medium text-surface-100">{user?.name}</div>
-          <div className="text-[10px] font-mono text-surface-300 capitalize">
-            {user?.role?.replace('_', ' ')}
+        <Link to="/profile" aria-label="Hap profilin" className="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+          <div className="hidden sm:block text-right">
+            <div className="text-sm font-medium text-surface-100">{user?.name}</div>
+            <div className="text-[10px] font-mono text-surface-300 capitalize">
+              {user?.role?.replace('_', ' ')}
+            </div>
           </div>
-        </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500/20 text-xs font-bold text-brand-400">
-          {user?.initials}
-        </div>
+          {user?.photo_url ? (
+            <img src={user.photo_url} alt="Hap profilin" className="h-8 w-8 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/20 text-xs font-bold text-brand-400">
+              {user?.name?.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U'}
+            </div>
+          )}
+        </Link>
         <button
           type="button"
           onClick={logout}

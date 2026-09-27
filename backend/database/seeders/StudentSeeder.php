@@ -20,11 +20,16 @@ class StudentSeeder extends Seeder
 
         foreach ($classes as $classObj) {
             for ($i = 1; $i <= 15; $i++) {
-                $fn = $firstNames[array_rand($firstNames)];
-                $ln = $lastNames[array_rand($lastNames)];
+                $existingId = 'STD-2025-' . str_pad($studentCounter, 4, '0', STR_PAD_LEFT);
+                if (Student::where('student_id', $existingId)->exists()) {
+                    $studentCounter++;
+                    continue;
+                }
+                $fn = $firstNames[($studentCounter - 1) % count($firstNames)];
+                $ln = $lastNames[($studentCounter - 1) % count($lastNames)];
                 $email = strtolower($fn . '.' . $ln . $studentCounter . '@medrese.edu');
 
-                $studentUser = User::updateOrCreate(
+                $studentUser = User::firstOrCreate(
                     ['email' => $email],
                     [
                         'name' => $fn . ' ' . $ln,
@@ -33,7 +38,7 @@ class StudentSeeder extends Seeder
                     ]
                 );
 
-                Student::updateOrCreate(
+                Student::firstOrCreate(
                     ['student_id' => 'STD-2025-' . str_pad($studentCounter, 4, '0', STR_PAD_LEFT)],
                     [
                         'first_name' => $fn,

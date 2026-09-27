@@ -17,6 +17,7 @@ export function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
     setLoading(true)
     const result = await login(email, password)
     if (!result.ok) setError(result.error)
@@ -24,10 +25,15 @@ export function LoginPage() {
   }
 
 
-  const quickLogin = (user) => {
+  const quickLogin = async (user) => {
+    if (loading) return
+    setError('')
+    setLoading(true)
     setEmail(user.email)
     setPassword(user.password)
-    login(user.email, user.password)
+    const result = await login(user.email, user.password)
+    if (!result.ok) setError(result.error)
+    setLoading(false)
   }
 
   return (
@@ -82,6 +88,7 @@ export function LoginPage() {
               <button
                 key={user.id}
                 type="button"
+                disabled={loading}
                 onClick={() => quickLogin(user)}
                 className="rounded-lg border border-white/8 bg-surface-900/40 px-3 py-2 text-left text-xs hover:border-brand-500/30 hover:bg-brand-500/5 transition-colors"
               >
