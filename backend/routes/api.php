@@ -119,6 +119,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/academic-years/{id}/promote', [AcademicController::class, 'promoteAcademicYear'])->middleware('role:director,secretary');
 
     // Dashboard
+    Route::middleware('role:student,boarding')->group(function () {
+        Route::get('/student/portal', [\App\Http\Controllers\StudentPortalController::class, 'show']);
+        Route::get('/student/notifications', [\App\Http\Controllers\StudentPortalController::class, 'inbox']);
+        Route::post('/student/notifications/read', [\App\Http\Controllers\StudentPortalController::class, 'markRead']);
+    });
+    Route::middleware('role:director,secretary,teacher')->group(function () {
+        Route::get('/portal/entries', [\App\Http\Controllers\StudentPortalController::class, 'manage']);
+        Route::post('/portal/entries', [\App\Http\Controllers\StudentPortalController::class, 'store']);
+        Route::delete('/portal/entries/{entry}', [\App\Http\Controllers\StudentPortalController::class, 'destroy']);
+    });
     Route::middleware('role:secretary')->get('/dashboard/secretary', [DashboardController::class, 'secretary']);
     Route::middleware('role:director,principal')->get('/dashboard/principal', [DashboardController::class, 'principal']);
 
@@ -160,6 +170,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/classes/{classId}/grades', [GradeController::class, 'updateGrade']);
 
     // Teacher dashboard - weekly schedule & lesson cards
+    Route::middleware('role:teacher')->prefix('teacher/workspace')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TeacherWorkspaceController::class, 'index']);
+        Route::get('/classes/{classId}/subjects/{subjectId}', [\App\Http\Controllers\TeacherWorkspaceController::class, 'show']);
+        Route::put('/classes/{classId}/subjects/{subjectId}/grades', [\App\Http\Controllers\TeacherWorkspaceController::class, 'grade']);
+        Route::post('/classes/{classId}/subjects/{subjectId}/publications', [\App\Http\Controllers\TeacherWorkspaceController::class, 'publish']);
+        Route::patch('/classes/{classId}/subjects/{subjectId}/assignments/{assignment}', [\App\Http\Controllers\TeacherWorkspaceController::class, 'completeAssignment']);
+        Route::post('/classes/{classId}/subjects/{subjectId}/lessons', [\App\Http\Controllers\TeacherWorkspaceController::class, 'saveLesson']);
+        Route::put('/classes/{classId}/subjects/{subjectId}/lessons/{lessonId}', [\App\Http\Controllers\TeacherWorkspaceController::class, 'saveLesson']);
+    });
     Route::get('/teacher/schedule', [DashboardController::class, 'teacherSchedule']);
     Route::get('/teacher/today', [DashboardController::class, 'teacherToday']);
 

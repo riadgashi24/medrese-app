@@ -5,6 +5,9 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
+// Keep storage credentials outside the legacy tracked .env file.
+Dotenv\Dotenv::create(Illuminate\Support\Env::getRepository(), dirname(__DIR__), '.env.r2')->safeLoad();
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

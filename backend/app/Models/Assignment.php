@@ -15,12 +15,14 @@ class Assignment extends Model
         'file_url',
         'class_id',
         'subject_id',
+        'completed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'due_date' => 'date',
+            'completed_at' => 'datetime',
         ];
     }
 

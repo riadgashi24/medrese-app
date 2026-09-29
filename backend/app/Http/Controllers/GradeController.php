@@ -23,6 +23,7 @@ class GradeController extends Controller
         $subjects = \DB::table('class_subject')
             ->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')
             ->where('class_subject.class_model_id', $classId)
+            ->when($request->user()->role === 'teacher', fn ($q) => $q->where('class_subject.teacher_user_id', $request->user()->id))
             ->select('subjects.id', 'subjects.name', 'subjects.category', 'class_subject.teacher_user_id')
             ->orderBy('subjects.category')
             ->orderBy('subjects.name')
@@ -123,16 +124,27 @@ class GradeController extends Controller
             return response()->json(['success' => false, 'message' => 'No student profile.'], 404);
         }
 
+        $periodGrades = \App\Models\PeriodGrade::with('subject')->where('student_id', $student->id)
+            ->where('academic_year_id', $student->class?->academic_year_id)->orderBy('period')->get()->groupBy('subject_id');
         $grades = Grade::with('subject')
             ->where('student_id', $student->id)
             ->where('academic_year_id', $student->class?->academic_year_id)
-            ->get()
-            ->map(fn($g) => [
-                'id' => $g->id,
+            ->get();
+        foreach ($periodGrades as $subjectId => $rows) {
+            if (!$grades->contains('subject_id', $subjectId)) {
+                $grade = new Grade(['subject_id' => $subjectId]);
+                $grade->setRelation('subject', $rows->first()->subject);
+                $grades->push($grade);
+            }
+        }
+        $grades = $grades->map(fn($g) => [
+                'id' => $g->id ?? 'period-'.$g->subject_id,
                 'subject' => $g->subject?->name,
                 'term_1' => $g->term_1_grade,
                 'term_2' => $g->term_2_grade,
                 'final' => $g->final_grade,
+                'period_grades' => $periodGrades->get($g->subject_id, collect())->map(fn ($p) => ['period' => $p->period, 'label' => \App\Models\PeriodGrade::PERIODS[$p->period], 'grade' => $p->grade])->values(),
+                'period_average' => $periodGrades->has($g->subject_id) ? round($periodGrades[$g->subject_id]->avg('grade'), 2) : null,
             ]);
 
         return response()->json([

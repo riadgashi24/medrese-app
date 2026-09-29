@@ -33,6 +33,9 @@ class ClassController extends Controller
         if ($academicYearId) {
             $query->where('academic_year_id', $academicYearId);
         }
+        if ($request->user()->role === 'teacher') {
+            $query->whereHas('subjects', fn ($q) => $q->where('class_subject.teacher_user_id', $request->user()->id));
+        }
 
         $classes = $query->paginate(
             $request->integer('per_page', 35)
@@ -83,8 +86,11 @@ class ClassController extends Controller
     /**
      * Display the specified class.
      */
-    public function show(ClassModel $class): JsonResponse
+    public function show(Request $request, ClassModel $class): JsonResponse
     {
+        if ($request->user()->role === 'teacher') {
+            abort_unless($class->subjects()->wherePivot('teacher_user_id', $request->user()->id)->exists(), 403);
+        }
         // Ngarkojmë relacionet dhe numërimin e nxënësve
         $class->load(['academicYear', 'homeroomStaff'])->loadCount('students');
 

@@ -12,6 +12,9 @@ class AnnouncementsController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Announcement::with('author')->latest('published_at');
+        if (in_array($request->user()->role, ['student', 'boarding'], true)) {
+            $query->whereNotNull('published_at')->where('published_at', '<=', now());
+        }
 
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);

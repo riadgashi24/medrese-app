@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useLocation, Link } from 'react-router-dom'
-import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react'
+import { Bell, ChevronDown, ChevronRight, Menu, X } from 'lucide-react'
+import { useInbox } from '@/lib/studentPortal'
 import { cn } from '@/lib/utils'
 import { getNavForRole } from '@/data/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -93,6 +94,12 @@ function NavItem({ item, collapsed, onNavigate }) {
   )
 }
 
+function StudentNotificationBell() {
+  const { data, isError } = useInbox()
+  const unread = data?.filter(n => !n.read).length || 0
+  return <Link to="/student/notifications" aria-label={isError ? 'Njoftimet nuk u ngarkuan' : `Njoftime: ${unread} të palexuara`} className="relative rounded-lg p-2 text-surface-300 hover:bg-white/5"><Bell className="h-5 w-5" />{unread > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-brand-600 px-1.5 text-[10px] text-white">{unread > 99 ? '99+' : unread}</span>}</Link>
+}
+
 export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
   const { user } = useAuth()
   const navItems = getNavForRole(user?.role)
@@ -157,6 +164,7 @@ export function TopBar({ onMenuClick, collapsed, onToggleCollapse }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/8 bg-surface-950/80 px-4 backdrop-blur-xl md:px-6">
       <div className="flex items-center gap-3">
+        {['student', 'boarding'].includes(user?.role) && <StudentNotificationBell />}
         <button
           type="button"
           onClick={onMenuClick}

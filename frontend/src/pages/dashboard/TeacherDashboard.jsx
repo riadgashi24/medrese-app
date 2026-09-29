@@ -1,183 +1,41 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BookOpen, CalendarCheck, NotebookPen, TrendingUp, Clock, ArrowRight, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { BookOpen, CalendarDays, GraduationCap, Users } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
-
-const DAYS_AL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const DAYS_SQ = { Monday: 'E Hënë', Tuesday: 'E Martë', Wednesday: 'E Mërkurë', Thursday: 'E Enjte', Friday: 'E Premte', Saturday: 'E Shtunë' }
-
-const periodTimes = [
-  '07:30', '08:20', '09:10', '10:00', '10:50', '11:40', '12:30'
-]
+import { useTeacherWorkspace, coursePath } from '@/pages/teachers/TeacherWorkspace'
 
 export function TeacherDashboard() {
   const { user } = useAuth()
-  const navigate = useNavigate()
-  const [schedule, setSchedule] = useState([])
-  const [todaySlots, setTodaySlots] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [scheduleRes, todayRes] = await Promise.all([
-          api.teacher.schedule(),
-          api.teacher.today(),
-        ])
-        setSchedule(scheduleRes?.data ?? [])
-        setTodaySlots(todayRes?.data ?? [])
-      } catch (err) {
-        console.error('Failed to load teacher data:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadData()
-  }, [])
-
-  const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' })
-  const todaySQ = DAYS_SQ[todayName] || todayName
-
-  const lessonCount = todaySlots.length
-
-  return (
-    <div>
-      <PageHeader
-        title="Paneli i Mësuesit"
-        description={`${user?.name || 'Mësues'} — ${lessonCount} orë sot`}
-      />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Orët Sot" value={lessonCount} hint={todaySQ} icon={BookOpen} />
-        <StatCard label="Klasat" value={schedule.length || '-'} hint="Gjithsej gjatë javës" icon={CalendarCheck} />
-        <StatCard label="Orët Java" value={schedule.reduce((sum, d) => sum + d.slots.length, 0)} hint="Totali Javor" icon={NotebookPen} />
-        <StatCard label="Orari Javor" value="7 Perioda" hint="Nga e hëna në të shtunë" icon={TrendingUp} />
+  const query = useTeacherWorkspace()
+  const classes = query.data?.classes || []
+  const schedule = query.data?.schedule || []
+  const today = schedule.filter(s => s.day_of_week === (new Date().getDay() || 7))
+  return <div className="space-y-6">
+    <PageHeader title={`Përshëndetje, ${user?.name || 'Profesor'}!`} description="Klasat, lëndët dhe orët e tua në një vend" />
+    {query.isError && <div role="alert"><p className="mb-3 text-sm text-red-400">Të dhënat nuk u ngarkuan.</p><Button variant="secondary" onClick={() => query.refetch()}>Provo përsëri</Button></div>}
+    {query.isPending ? <p role="status">Duke ngarkuar…</p> : query.data && <>
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <Link to="/classes"><StatCard label="Klasat e mia" value={classes.length} hint="Në vitin aktiv shkollor" icon={GraduationCap} /></Link>
+        <StatCard label="Lëndë në klasa" value={classes.reduce((sum, c) => sum + c.subjects.length, 0)} hint="Caktimet e mia" icon={BookOpen} />
+        <Link to="/timetable"><StatCard label="Orë sot" value={today.length} hint="Sipas orarit mësimor" icon={CalendarDays} /></Link>
+        <StatCard label="Nxënës" value={classes.reduce((sum, c) => sum + c.students_count, 0)} hint="Në klasat ku ligjëron" icon={Users} />
       </div>
-
-      <div className="grid lg:grid-cols-2 gap-4 mb-6">
-        {/* Today's Schedule */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Orët e Sotme — {todaySQ}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-0">
-            {loading ? (
-              <div className="flex items-center justify-center py-8 text-surface-400 gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Duke ngarkuar...
-              </div>
-            ) : todaySlots.length === 0 ? (
-              <p className="text-sm text-surface-400 py-4 text-center">Sot nuk keni orë mësimi.</p>
-            ) : (
-              todaySlots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="flex items-center gap-3 py-3 border-b border-white/5 text-sm group hover:bg-white/3 rounded-lg px-2 -mx-2 transition-colors cursor-pointer"
-                  onClick={() => {
-                    if (slot.class_id) {
-                      navigate(`/classes/${slot.class_id}`)
-                    }
-                  }}
-                >
-                  <div className="flex flex-col items-center w-14 shrink-0">
-                    <span className="font-mono text-[10px] text-brand-400">{periodTimes[slot.slot_number - 1] || slot.slot_number}</span>
-                    <span className="font-mono text-[9px] text-surface-500">Perioda {slot.slot_number}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-surface-100 font-medium truncate">{slot.subject_name || 'Lëndë'}</p>
-                    <p className="text-[11px] text-surface-400">{slot.class_name || 'Klasa'}</p>
-                  </div>
-                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/classes/${slot.class_id}/attendance/take`) }}>
-                      Prezenca
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/classes/${slot.class_id}/grades`) }}>
-                      Notat
-                    </Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Weekly Schedule Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-body font-medium">Orari Javor</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8 text-surface-400 gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Duke ngarkuar...
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {DAYS_AL.map((day) => {
-                  const dayData = schedule.find(d => d.day === day)
-                  const slots = dayData?.slots ?? []
-                  return (
-                    <div key={day} className="flex items-center gap-3 text-sm">
-                      <span className={`w-20 text-xs font-mono shrink-0 ${day === todayName ? 'text-brand-400' : 'text-surface-500'}`}>
-                        {DAYS_SQ[day]}
-                      </span>
-                      <div className="flex-1 flex gap-1 flex-wrap">
-                        {Array.from({ length: 7 }, (_, i) => i + 1).map(period => {
-                          const hasSlot = slots.some(s => s.slot_number === period)
-                          return (
-                            <div
-                              key={period}
-                              className={`w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-mono transition-colors ${
-                                hasSlot
-                                  ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30'
-                                  : 'bg-surface-800/50 text-surface-600 border border-white/5'
-                              }`}
-                              title={hasSlot ? `${slots.find(s => s.slot_number === period)?.subject_name || 'Lëndë'} - ${slots.find(s => s.slot_number === period)?.class_name || 'Klasa'}` : 'Bosh'}
-                            >
-                              {period}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base">Orët e sotme</CardTitle><Link to="/timetable" className="text-xs text-brand-400">Orari i plotë →</Link></CardHeader><CardContent>
+          {today.map(slot => <Link key={slot.id} to={coursePath(slot.class_id, slot.subject_id)} className="flex items-center gap-5 border-b border-white/10 py-4 hover:text-brand-400">
+            <div className="w-20 text-xs text-surface-400"><p>Ora {slot.slot_number}</p>{slot.start_time && <p className="mt-1">{slot.start_time.slice(0, 5)}{slot.end_time ? `–${slot.end_time.slice(0, 5)}` : ''}</p>}</div>
+            <div><p className="text-xl font-medium">{slot.class?.name}</p><p className="mt-1 text-xs text-surface-400">{slot.subject?.name}</p></div>
+          </Link>)}
+          {!today.length && <p className="py-5 text-sm text-surface-400">Sot nuk ka orë në orarin tënd.</p>}
+        </CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base">Klasat e mia</CardTitle><Link to="/classes" className="text-xs text-brand-400">Hap klasat →</Link></CardHeader><CardContent>
+          {classes.map(c => <Link key={c.id} to={`/classes/${c.id}`} className="flex items-center justify-between gap-4 border-b border-white/10 py-4"><div><p className="font-medium">{c.name}</p><p className="mt-1 text-xs text-surface-400">{c.subjects.map(s => s.name).join(' · ')}</p></div><span className="text-xs text-brand-400">{c.students_count} nxënës →</span></Link>)}
+          {!classes.length && <p className="py-5 text-sm text-surface-400">Administrata ende nuk të ka caktuar lëndë në vitin aktiv.</p>}
+        </CardContent></Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-body font-medium">Veprime të Shpejta</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button variant="secondary" className="h-auto py-4 flex-col gap-1" onClick={() => navigate('/timetable')}>
-              <Clock className="h-5 w-5" />
-              <span className="text-xs font-normal">Orari i Plotë</span>
-            </Button>
-            <Button variant="secondary" className="h-auto py-4 flex-col gap-1" onClick={() => navigate('/subjects')}>
-              <BookOpen className="h-5 w-5" />
-              <span className="text-xs font-normal">Lëndët</span>
-            </Button>
-            <Button variant="secondary" className="h-auto py-4 flex-col gap-1" onClick={() => navigate('/students')}>
-              <NotebookPen className="h-5 w-5" />
-              <span className="text-xs font-normal">Nxënësit</span>
-            </Button>
-            <Button variant="secondary" className="h-auto py-4 flex-col gap-1" onClick={() => navigate('/classes')}>
-              <ArrowRight className="h-5 w-5" />
-              <span className="text-xs font-normal">Klasat e Mia</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    </>}
+  </div>
 }

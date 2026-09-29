@@ -66,6 +66,14 @@ async function request(path, { method = 'GET', body, query, headers } = {}) {
 }
 
 export const api = {
+  teacherWorkspace: {
+    index: () => request('/teacher/workspace'),
+    course: (classId, subjectId) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}`),
+    grade: (classId, subjectId, body) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/grades`, { method: 'PUT', body }),
+    publish: (classId, subjectId, body) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/publications`, { method: 'POST', body }),
+    completeAssignment: (classId, subjectId, id, completed) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/assignments/${id}`, { method: 'PATCH', body: { completed } }),
+    saveLesson: (classId, subjectId, body, id) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/lessons${id ? `/${id}` : ''}`, { method: id ? 'PUT' : 'POST', body }),
+  },
   auth: {
     login: (email, password) =>
       request('/auth/login', { method: 'POST', body: { email, password } }),
@@ -202,6 +210,12 @@ export const api = {
   },
 
   studentPortal: {
+    overview: () => request('/student/portal'),
+    notifications: () => request('/student/notifications'),
+    markRead: (keys) => request('/student/notifications/read', { method: 'POST', body: { keys } }),
+    manage: () => request('/portal/entries'),
+    publish: (body) => request('/portal/entries', { method: 'POST', body }),
+    remove: (id) => request(`/portal/entries/${id}`, { method: 'DELETE' }),
     finance: () => request('/student/finance', { method: 'GET' }),
     grades: () => request('/student/grades', { method: 'GET' }),
     attendance: () => request('/student/attendance', { method: 'GET' }),

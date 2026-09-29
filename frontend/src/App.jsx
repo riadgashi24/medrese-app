@@ -51,6 +51,27 @@ const AttendancePage = lazyNamed(() => import('./pages/modules/AcademicModules/A
 const AcademicYearsPage = lazy(() => import('./pages/modules/AcademicModules/AcademicYearsPage'))
 
 const queryClient = new QueryClient()
+const StudentPortalPage = lazyNamed(() => import('@/pages/students/StudentPortal'), 'StudentPortalPage')
+const PortalPublishingPage = lazyNamed(() => import('@/pages/students/PortalPublishingPage'), 'PortalPublishingPage')
+const TeacherPages = () => import('@/pages/teachers/TeacherWorkspace')
+const TeacherClassesPage = lazyNamed(TeacherPages, 'TeacherClassesPage')
+const TeacherClassPage = lazyNamed(TeacherPages, 'TeacherClassPage')
+const TeacherCoursePage = lazyNamed(TeacherPages, 'TeacherCoursePage')
+const TeacherSchedulePage = lazyNamed(TeacherPages, 'TeacherSchedulePage')
+const TeacherHomeroomPage = lazyNamed(TeacherPages, 'TeacherHomeroomPage')
+
+function ClassesRoute() {
+  const { user } = useAuth()
+  return user?.role === 'teacher' ? <TeacherClassesPage /> : <ClassesPage />
+}
+function ClassRoute() {
+  const { user } = useAuth()
+  return user?.role === 'teacher' ? <TeacherClassPage /> : <ClassDetailPage />
+}
+function TimetableRoute() {
+  const { user } = useAuth()
+  return user?.role === 'teacher' ? <TeacherSchedulePage /> : <TimetablePage />
+}
 
 const staffColumns = [
   { key: 'name', label: 'Emri' },
@@ -105,6 +126,10 @@ function AppRoutes() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardRoute />} />
+          <Route path="/student/:section" element={<StudentPortalPage />} />
+          <Route path="/portal/publish" element={<PortalPublishingPage />} />
+          <Route path="/teacher/classes/:classId/subjects/:subjectId" element={<TeacherCoursePage />} />
+          <Route path="/teacher/homeroom" element={<TeacherHomeroomPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
           {/* Students */}
@@ -121,14 +146,14 @@ function AppRoutes() {
           <Route path="/staff/:id/edit" element={<StaffFormPage />} />
 
           {/* Academic */}
-          <Route path="/timetable" element={<TimetablePage />} />
+          <Route path="/timetable" element={<TimetableRoute />} />
           <Route path="/subjects" element={<SubjectsPage />} />
           <Route path="/subjects/:id" element={<SubjectDetailPage />} />
           <Route path="/subjects/:subjectId/class/:classId" element={<ClassSubjectReportPage />} />
 
           <Route path="/academic-years" element={<AcademicYearsPage />} />
-          <Route path="/classes" element={<ClassesPage />} />
-          <Route path="/classes/:id" element={<ClassDetailPage />} />
+          <Route path="/classes" element={<ClassesRoute />} />
+          <Route path="/classes/:id" element={<ClassRoute />} />
           <Route path="/classes/:classId/students" element={<ClassStudentsPage />} />
           <Route path="/classes/:classId/students/:id" element={<StudentDetailPage />} />
           <Route path="/classes/:classId/students/:id/edit" element={<StudentFormPage mode="edit" />} />

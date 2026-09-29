@@ -242,14 +242,21 @@ class AttendanceController extends Controller
         $totalAbsent = $records->whereIn('status', ['Absent', 'Excused'])->count();
         $totalLate = $records->where('status', 'Late')->count();
         $totalExcused = $records->filter(fn ($r) => $r->status === 'Excused' || $r->absence_type === 'Excused')->count();
+        $lessonRecords = \App\Models\LessonAttendance::with('lessonSession.subject')
+            ->where('student_id', $student->id)->whereIn('status', ['Absent', 'Late'])
+            ->whereHas('lessonSession', fn ($q) => $q->where('class_id', $student->class_id ?? 0))->get();
 
         return response()->json([
             'success' => true,
             'data' => [
-                'total_absences' => $totalAbsent,
-                'total_late' => $totalLate,
+                'total_absences' => $totalAbsent + $lessonRecords->where('status', 'Absent')->count(),
+                'total_late' => $totalLate + $lessonRecords->where('status', 'Late')->count(),
                 'total_excused' => $totalExcused,
-                'total_unexcused' => ($totalAbsent + $totalLate) - $totalExcused,
+                'total_unexcused' => ($totalAbsent + $totalLate) - $totalExcused + $lessonRecords->count(),
+                'lesson_records' => $lessonRecords->sortByDesc(fn ($r) => $r->lessonSession->lesson_date->format('Y-m-d').sprintf('%02d', $r->lessonSession->slot_number))->values()->map(fn ($r) => [
+                    'id' => $r->id, 'date' => $r->lessonSession->lesson_date->format('Y-m-d'), 'slot_number' => $r->lessonSession->slot_number,
+                    'subject' => $r->lessonSession->subject?->name, 'title' => $r->lessonSession->title, 'status' => $r->status,
+                ]),
                 'records' => $records->map(fn($r) => [
                     'id' => $r->id,
                     'date' => $r->date,

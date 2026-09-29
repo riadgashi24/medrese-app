@@ -78,12 +78,13 @@ class DashboardController extends Controller
         $slots = \App\Models\TimetableSlot::with(['class:id,name', 'subject:id,name'])
             ->where('teacher_user_id', $user->id)
             ->where('academic_year_id', $academicYearId)
-            ->orderBy('day')
+            ->orderBy('day_of_week')
             ->orderBy('slot_number')
             ->get();
 
-        $grouped = $slots->groupBy('day')->map(fn($daySlots) => [
-            'day' => $daySlots->first()->day,
+        $dayNames = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+        $grouped = $slots->groupBy('day_of_week')->map(fn($daySlots) => [
+            'day' => $dayNames[$daySlots->first()->day_of_week],
             'slots' => $daySlots->map(fn($slot) => [
                 'id' => $slot->id,
                 'slot_number' => $slot->slot_number,
@@ -103,12 +104,12 @@ class DashboardController extends Controller
     public function teacherToday(Request $request): JsonResponse
     {
         $user = $request->user();
-        $today = now()->format('l');
+        $today = now()->dayOfWeekIso;
         $academicYearId = \App\Models\AcademicYear::where('is_active', true)->value('id');
 
         $slots = \App\Models\TimetableSlot::with(['class:id,name', 'subject:id,name'])
             ->where('teacher_user_id', $user->id)
-            ->where('day', $today)
+            ->where('day_of_week', $today)
             ->where('academic_year_id', $academicYearId)
             ->orderBy('slot_number')
             ->get()

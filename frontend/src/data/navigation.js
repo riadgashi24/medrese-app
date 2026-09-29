@@ -200,6 +200,38 @@ export const NAV_BY_ROLE = {
 }
 
 export function getNavForRole(role) {
+  if (role === ROLES.TEACHER) return [
+    { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Klasat e mia', path: '/classes', icon: GraduationCap },
+    { label: 'Orari mësimor', path: '/timetable', icon: Calendar },
+    { label: 'Njoftimet', path: '/announcements', icon: Megaphone },
+    { label: 'Kujdestari', path: '/teacher/homeroom', icon: Users, badge: 'Në plan' },
+    { label: 'Materiale dhe publikime', path: '/portal/publish', icon: BookOpen },
+    { label: 'Profili', path: '/profile', icon: Users },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+  ]
+  if ([ROLES.STUDENT, ROLES.BOARDING].includes(role)) return [
+    { label: 'Paneli im', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Mësimet aktuale', path: '/student/lessons', icon: BookOpen },
+    { label: 'Detyrat e mia', path: '/student/assignments', icon: ClipboardList },
+    { label: 'Kalendari', path: '/student/calendar', icon: Calendar },
+    { label: 'Orari mësimor', path: '/student/timetable', icon: Calendar },
+    { label: 'Notat dhe suksesi', path: '/student/grades', icon: BarChart3 },
+    { label: 'Prezenca ime', path: '/student/attendance', icon: CheckSquare },
+    { label: 'Njoftimet e mia', path: '/student/notifications', icon: Megaphone },
+    { label: 'Njoftimet e klasës', path: '/student/announcements', icon: Megaphone },
+    { label: 'Materiale dhe dokumente', path: '/student/materials', icon: FileText },
+    { label: 'Grupet dhe aktivitetet', path: '/student/groups', icon: Users },
+    { label: 'Njoftimet e shkollës', path: '/announcements', icon: Megaphone },
+    { label: 'Disiplina', path: '/discipline/my-record', icon: Gavel },
+    ...(role === ROLES.BOARDING ? [{ label: 'Dhoma ime', path: '/dormitory/my-room', icon: Home }] : []),
+    { label: 'Kuize online', path: '/student/quizzes', icon: Sparkles, badge: 'Në plan' },
+    { label: 'Profili', path: '/profile', icon: Users },
+    { label: 'Cilësimet', path: '/settings', icon: Settings },
+  ]
+  if ([ROLES.DIRECTOR, ROLES.SECRETARY, ROLES.TEACHER].includes(role)) return [
+    ...NAV_BY_ROLE[role], { label: 'Publikime për nxënësit', path: '/portal/publish', icon: BookOpen },
+  ]
   return NAV_BY_ROLE[role] || [
     { label: 'Cilësimet', path: '/settings', icon: Settings },
     { label: 'Profili', path: '/profile', icon: Users },
@@ -207,6 +239,7 @@ export function getNavForRole(role) {
 }
 
 export function canAccessRoute(role, path) {
+  if (role === ROLES.TEACHER && path.startsWith('/teacher/classes/')) return true
   const nav = getNavForRole(role)
   const paths = []
 

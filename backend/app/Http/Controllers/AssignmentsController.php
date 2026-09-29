@@ -12,6 +12,9 @@ class AssignmentsController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Assignment::with(['class', 'subject']);
+        if (in_array($request->user()->role, ['student', 'boarding'], true)) {
+            $query->where('class_id', $request->user()->student?->class_id ?? 0);
+        }
 
         if ($request->filled('class_id')) {
             $query->where('class_id', $request->class_id);
