@@ -1,0 +1,3686 @@
+{
+  "source": "Fotografia e orarit 2026/2027, 31 profesorë. E premte: 6 orë.",
+  "rows": [
+    {
+      "teacher": "Shemsi Rrahimi",
+      "subject": "Gjuhë turke",
+      "reference_hours": 10,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "12/3",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "12/2",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "12/1",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "12/5",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "12/4",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "12/3",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "12/5",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "12/2",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "12/1",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "12/4",
+          "subject": "Gjuhë turke",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Xh Rusinovci",
+      "subject": "Gjuhë angleze",
+      "reference_hours": 20,
+      "slots": [
+        {
+          "day": 1,
+          "period": 5,
+          "class": "12/5",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "12/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "12/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "11/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "10/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "11/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "10/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "11/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "12/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "12/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "12/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "12/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "10/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "11/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "12/5",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "12/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "12/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "10/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "11/2",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "11/1",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "M Tërnava",
+      "subject": "Akaid",
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "12/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "11/3",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "12/3",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "11/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "12/1",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "12/2",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "12/5",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "12/3",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "11/2",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "11/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "11/1",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "11/3",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "10/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "12/1",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "11/2",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "10/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "12/4",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "11/1",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "12/2",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "11/2",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "12/5",
+          "subject": "Akaid",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Samir Ahmeti",
+      "subject": "Histori",
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "10/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "12/5",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "11/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "12/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "12/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "11/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "11/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "11/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "12/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "12/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "12/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "12/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "12/5",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "11/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "11/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "11/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "11/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "10/4",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "12/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "12/5",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "12/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Shkelzen Hoxha",
+      "subject": "Gjuhë arabe",
+      "reference_hours": 22,
+      "slots": [
+        {
+          "day": 1,
+          "period": 3,
+          "class": "12/5",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "11/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "11/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "12/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "12/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "11/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "11/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "11/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "12/5",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "11/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "11/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "11/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "12/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "12/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "11/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "12/5",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "12/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "12/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "11/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "11/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "11/3",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "11/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Besnik Jaha",
+      "subject": "Gjuhë amtare",
+      "reference_hours": 13,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "12/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "11/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "12/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "11/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "12/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "11/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "11/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "11/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "12/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "11/1",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "12/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "11/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "12/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Safet Avdiu",
+      "subject": "Gjeografi",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 2,
+          "period": 1,
+          "class": "10/2",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "10/1",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "10/2",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "10/1",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Nexhat Berisha",
+      "subject": "Biologji",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 3,
+          "period": 1,
+          "class": "10/1",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "10/2",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "10/2",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "10/1",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Dëfrim Brajshori",
+      "subject": "Matematikë",
+      "reference_hours": 14,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "12/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "11/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "10/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "10/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "12/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "11/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "11/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "10/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "10/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "12/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "12/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "10/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "10/1",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "11/2",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Islam Sejdiu",
+      "subject": "TIK",
+      "reference_hours": 12,
+      "slots": [
+        {
+          "day": 3,
+          "period": 2,
+          "class": "12/4",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "12/5",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "12/1",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "11/1",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "10/1",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "10/2",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "11/2",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "11/2",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "12/2",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "10/2",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "11/1",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "10/1",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Adem Sahiti",
+      "subject": {
+        "11": "Psikologji",
+        "12": "Sociologji"
+      },
+      "reference_hours": 8,
+      "slots": [
+        {
+          "day": 2,
+          "period": 4,
+          "class": "12/2",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "11/1",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "11/2",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "12/1",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "11/1",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "12/1",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "12/2",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "11/2",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Valon Brajshori",
+      "subject": "Ed. Fizike, sporte",
+      "reference_hours": 6,
+      "slots": [
+        {
+          "day": 3,
+          "period": 4,
+          "class": "11/1",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "12/2",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "10/2",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "10/1",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "11/2",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "12/1",
+          "subject": "Ed. Fizike, sporte",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Shaha Memishi",
+      "subject": "Gjuhë amtare",
+      "reference_hours": 27,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "10/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "12/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "11/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "10/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "12/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "10/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "11/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "11/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "12/5",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "10/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "12/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "10/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "10/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "10/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "11/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "10/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "12/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "11/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "10/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "12/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "11/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "10/4",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "12/5",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "10/1",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "10/2",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "12/5",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "12/3",
+          "subject": "Gjuhë amtare",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Saranda Kamberi",
+      "subject": "Matematikë",
+      "reference_hours": 17,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "10/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "12/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "10/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "11/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "12/5",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "10/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "11/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "12/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "10/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "12/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "10/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "12/5",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "10/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "10/3",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "11/3",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "11/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "12/4",
+          "subject": "Matematikë",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Liriana Gërvalla",
+      "subject": {
+        "11": "Psikologji",
+        "12": "Sociologji"
+      },
+      "reference_hours": 10,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "11/3",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "11/4",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "12/5",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "12/4",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "12/4",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "12/3",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "12/3",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "12/5",
+          "subject": "Sociologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "11/4",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "11/3",
+          "subject": "Psikologji",
+          "activity_label": null,
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Granita Zenuni",
+      "subject": "Fizikë",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 5,
+          "period": 1,
+          "class": "11/4",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "11/3",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "10/4",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "10/3",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Samire Dragusha",
+      "subject": "TIK",
+      "reference_hours": 9,
+      "slots": [
+        {
+          "day": 2,
+          "period": 2,
+          "class": "10/4",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "10/3",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "11/3",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "11/4",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "11/3",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "12/3",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "11/4",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "10/3",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "10/4",
+          "subject": "TIK",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Shkurte Gashi",
+      "subject": "Biologji",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 2,
+          "period": 1,
+          "class": "10/4",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "10/3",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "10/4",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "10/3",
+          "subject": "Biologji",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Shpresa Zeqaj",
+      "subject": "Gjuhë angleze",
+      "reference_hours": 6,
+      "slots": [
+        {
+          "day": 1,
+          "period": 4,
+          "class": "11/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "10/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "10/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "10/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "10/4",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "11/3",
+          "subject": "Gjuhë angleze",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Zejnepe Abdyli",
+      "subject": "Gjeografi",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 1,
+          "period": 4,
+          "class": "10/3",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "10/3",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "10/4",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "10/4",
+          "subject": "Gjeografi",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Sumeje Hashani",
+      "subject": "Etikë (Ahlak)",
+      "reference_hours": 12,
+      "slots": [
+        {
+          "day": 2,
+          "period": 1,
+          "class": "11/3",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "11/4",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "10/3",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "10/4",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "11/1",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "11/4",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "11/3",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "10/4",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "11/1",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "11/4",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "11/3",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "12/3",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Antigona Krasniqi",
+      "subject": "Fizikë",
+      "reference_hours": 4,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "11/1",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "10/2",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "11/2",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "10/1",
+          "subject": "Fizikë",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Kosovare Jashari",
+      "subject": "Kimi",
+      "reference_hours": 8,
+      "slots": [
+        {
+          "day": 2,
+          "period": 5,
+          "class": "10/4",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "10/2",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "10/4",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "10/3",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "10/1",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "10/3",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "10/1",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "10/2",
+          "subject": "Kimi",
+          "activity_label": null,
+          "is_provisional": false
+        }
+      ]
+    },
+    {
+      "teacher": "Jakup Çunaku",
+      "subject_candidates": [
+        "Kuran",
+        "Hadith"
+      ],
+      "reference_hours": 20,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "11/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "10/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "10/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "11/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "10/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "12/5",
+          "subject": "Komentimi i Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "12/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "12/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "10/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "11/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "12/5",
+          "subject": "Komentimi i Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "11/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "11/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "12/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "10/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "11/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "10/2",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "12/2",
+          "subject": "Komentimi i Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "11/1",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "11/2",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Rrahim Aliu",
+      "subject_candidates": [
+        "Hadith",
+        "Histori"
+      ],
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "10/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "10/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "10/1",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "11/4",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "11/2",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "10/1",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "10/4",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "11/3",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "10/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "11/1",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "11/3",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "11/4",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "10/4",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "11/1",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "10/3",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "12/2",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "10/2",
+          "subject": "Histori",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "11/2",
+          "subject": "Shkencat e Hadithit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "10/2",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "10/1",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "10/2",
+          "subject": "Hadith",
+          "activity_label": null,
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Adnan Simnica",
+      "subject_candidates": [
+        "Shkencat e Kuranit",
+        "Komentimi i Kuranit"
+      ],
+      "reference_hours": 22,
+      "slots": [
+        {
+          "day": 1,
+          "period": 3,
+          "class": "11/2",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "12/2",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "11/3",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "12/4",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "12/3",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "11/3",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "12/5",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "11/4",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "12/1",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "12/3",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "12/2",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "12/1",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "10/1",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "11/2",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "11/1",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "12/2",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "12/1",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "12/3",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "12/4",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "12/4",
+          "subject": "Komentimi i Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "11/1",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "11/4",
+          "subject": "Shkencat e Kuranit",
+          "activity_label": null,
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Driton Arifi",
+      "subject_candidates": [
+        "Fikh",
+        "Usuli fikh"
+      ],
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 4,
+          "class": "12/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 5,
+          "class": "10/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "12/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "12/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "12/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "12/1",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "12/3",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "12/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "12/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "12/3",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "12/5",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "12/3",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "12/2",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "12/5",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "12/1",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "12/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "10/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "12/3",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "12/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "12/2",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "12/1",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "12/2",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Muhamed Stublla",
+      "subject_candidates": [
+        "Kuran",
+        "Fikh",
+        "Usuli fikh"
+      ],
+      "reference_hours": 22,
+      "slots": [
+        {
+          "day": 1,
+          "period": 2,
+          "class": "12/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "11/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "11/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "12/5",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "10/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "11/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "12/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "10/1",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "12/5",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "10/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "12/4",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "12/5",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "10/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "12/1",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "10/2",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "10/1",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "11/1",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "12/4",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "12/1",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "12/4",
+          "subject": "Usuli fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "12/5",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "12/1",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Kujtim Jashanica",
+      "subject_candidates": [
+        "Gjuhë arabe",
+        "Etikë (Ahlak)"
+      ],
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 5,
+          "class": "10/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 6,
+          "class": "12/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 2,
+          "class": "10/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "11/2",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "12/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "12/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "10/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "10/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 1,
+          "class": "10/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 2,
+          "class": "10/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "11/2",
+          "subject": "Etikë (Ahlak)",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "10/4",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "10/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "12/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 6,
+          "class": "10/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "10/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "10/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 2,
+          "class": "12/2",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "12/3",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "10/1",
+          "subject": "Gjuhë arabe",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "10/2",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Hatixhe Jashanica",
+      "subject_candidates": [
+        "Fikh",
+        "Kuran"
+      ],
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "12/5",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "10/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "12/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "12/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 1,
+          "class": "10/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "12/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "12/4",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 6,
+          "class": "12/5",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "10/2",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "11/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "10/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "11/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 1,
+          "class": "11/3",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 2,
+          "class": "11/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "12/4",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "10/4",
+          "subject": "Fikh",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "10/2",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 1,
+          "class": "12/5",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "12/5",
+          "subject": null,
+          "activity_label": "Përsëritje · Fikh",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "12/4",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        }
+      ]
+    },
+    {
+      "teacher": "Valbona Asllani",
+      "subject_candidates": [
+        "Kuran",
+        "Etikë (Ahlak)"
+      ],
+      "reference_hours": 21,
+      "slots": [
+        {
+          "day": 1,
+          "period": 1,
+          "class": "11/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 2,
+          "class": "10/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 3,
+          "class": "10/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 1,
+          "period": 4,
+          "class": "12/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 3,
+          "class": "10/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 4,
+          "class": "11/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 5,
+          "class": "10/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 2,
+          "period": 7,
+          "class": "12/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 3,
+          "class": "10/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 4,
+          "class": "12/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 5,
+          "class": "11/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 6,
+          "class": "11/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 3,
+          "period": 7,
+          "class": "10/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 3,
+          "class": "11/3",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 4,
+          "class": "10/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 5,
+          "class": "11/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 4,
+          "period": 7,
+          "class": "11/4",
+          "subject": null,
+          "activity_label": "Kujdestari",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 3,
+          "class": "10/4",
+          "subject": "Kuran",
+          "activity_label": null,
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 4,
+          "class": "12/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 5,
+          "class": "11/3",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        },
+        {
+          "day": 5,
+          "period": 6,
+          "class": "11/4",
+          "subject": null,
+          "activity_label": "Përsëritje · Kuran",
+          "is_provisional": true
+        }
+      ]
+    }
+  ],
+  "allocation_note": "Ndarje demonstrimi e autorizuar nga përdoruesi. Për profesorët me disa lëndë, lëndët u ndanë sipas radhës së orëve. Orët shtesë u shënuan si përsëritje ose kujdestari. Këto nuk janë lëndë me notë. Duhet konfirmuar ndarja përfundimtare."
+}

@@ -1,3 +1,4 @@
+import { formatDate } from '../../lib/date.js'
 import { useEffect, useState } from 'react'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import {
@@ -55,7 +56,7 @@ export function StudentDetailPage() {
         setClassId(extractedClassId)
 
         const rawDob = data.date_of_birth || ''
-        const formattedDob = typeof rawDob === 'string' ? rawDob.split('T')[0] : '-'
+        const formattedDob = formatDate(rawDob)
 
         setStudent({
           id: data.id,

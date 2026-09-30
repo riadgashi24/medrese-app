@@ -58,7 +58,7 @@ const TeacherClassesPage = lazyNamed(TeacherPages, 'TeacherClassesPage')
 const TeacherClassPage = lazyNamed(TeacherPages, 'TeacherClassPage')
 const TeacherCoursePage = lazyNamed(TeacherPages, 'TeacherCoursePage')
 const TeacherSchedulePage = lazyNamed(TeacherPages, 'TeacherSchedulePage')
-const TeacherHomeroomPage = lazyNamed(TeacherPages, 'TeacherHomeroomPage')
+const TeacherHomeroomPage = lazyNamed(() => import('@/pages/teachers/Homeroom'), 'TeacherHomeroomPage')
 
 function ClassesRoute() {
   const { user } = useAuth()

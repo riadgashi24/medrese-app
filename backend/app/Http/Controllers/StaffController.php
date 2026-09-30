@@ -25,7 +25,9 @@ class StaffController extends Controller
                 ->where('classes.academic_year_id', $yearId)->select('teacher_user_id', DB::raw('SUM(weekly_hours) as total_hours'))
                 ->groupBy('teacher_user_id')->pluck('total_hours', 'teacher_user_id')
             : collect();
-        $query = Staff::with('user')->latest();
+        $activities = DB::table('timetable_slots')->where('academic_year_id', $yearId)->whereNull('subject_id')->select('teacher_user_id', DB::raw('COUNT(*) as hours'))->groupBy('teacher_user_id')->pluck('hours', 'teacher_user_id');
+        foreach ($activities as $teacherId => $hours) $workload[$teacherId] = ($workload[$teacherId] ?? 0) + $hours;
+        $query = Staff::with('user')->orderByRaw("CASE WHEN gender = 'Female' THEN 1 ELSE 0 END")->orderBy('first_name')->orderBy('last_name');
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
             $query->where(fn($builder) => $builder->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%")->orWhere('employee_number', 'like', "%{$search}%"));
@@ -37,7 +39,7 @@ class StaffController extends Controller
         return response()->json(['success' => true, 'data' => $query->get()->map(fn(Staff $staff) => $this->serializeStaff($staff, $workload, $request))]);
     }
 
-    public function show(Staff $staff): JsonResponse
+    public function show(Request $request, Staff $staff): JsonResponse
     {
         $yearId = AcademicYear::where('is_active', true)->value('id');
         $staff->load('user');
@@ -45,7 +47,7 @@ class StaffController extends Controller
         $timetable = collect();
         if ($yearId && $staff->user_id) {
             $assignments = DB::table('class_subject')->join('classes', 'class_subject.class_model_id', '=', 'classes.id')->join('subjects', 'class_subject.subject_id', '=', 'subjects.id')->where('classes.academic_year_id', $yearId)->where('teacher_user_id', $staff->user_id)->select('classes.id as class_id', 'classes.name as class_name', 'subjects.id as subject_id', 'subjects.name as subject_name', 'weekly_hours')->orderBy('classes.name')->get();
-            $timetable = DB::table('timetable_slots')->join('classes', 'timetable_slots.class_id', '=', 'classes.id')->join('subjects', 'timetable_slots.subject_id', '=', 'subjects.id')->where('timetable_slots.academic_year_id', $yearId)->where('timetable_slots.teacher_user_id', $staff->user_id)->select('timetable_slots.id', 'day_of_week as day', 'slot_number as lesson_hour', 'classes.name as class_name', 'subjects.name as subject_name')->orderBy('day')->orderBy('lesson_hour')->get();
+            $timetable = DB::table('timetable_slots')->join('classes', 'timetable_slots.class_id', '=', 'classes.id')->leftJoin('subjects', 'timetable_slots.subject_id', '=', 'subjects.id')->where('timetable_slots.academic_year_id', $yearId)->where('timetable_slots.teacher_user_id', $staff->user_id)->select('timetable_slots.id', 'day_of_week as day', 'slot_number as lesson_hour', 'classes.name as class_name', 'subjects.name as subject_name', 'activity_label')->orderBy('day')->orderBy('lesson_hour')->get();
         }
         $data = $this->serializeStaff($staff, collect(), $request);
         $data['academic_year_id'] = $yearId;
@@ -204,7 +206,7 @@ class StaffController extends Controller
             : ($staff->role ?: $this->roleFromPosition($staff->position));
         $photoUrl = $staff->photo ? $request->getSchemeAndHttpHost() . '/storage/' . ltrim($staff->photo, '/') : null;
         $total = (int) ($workload[$staff->user_id] ?? 0);
-        return array_merge($staff->toArray(), ['name' => $staff->name, 'email' => $staff->email ?: $staff->user?->email, 'role' => $role, 'photo_url' => $photoUrl, 'total_hours' => $role === 'teacher' ? $total : null]);
+        return array_merge($staff->toArray(), ['birth_date' => $staff->birth_date?->format('Y-m-d'), 'hire_date' => $staff->hire_date?->format('Y-m-d'), 'name' => $staff->name, 'email' => $staff->email ?: $staff->user?->email, 'role' => $role, 'photo_url' => $photoUrl, 'total_hours' => $role === 'teacher' ? $total : null]);
     }
 
     private function roleFromPosition(?string $position): string

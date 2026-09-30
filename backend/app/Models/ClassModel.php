@@ -38,7 +38,7 @@ class ClassModel extends Model
 
     public function timetableSlots(): HasMany
     {
-        return $this->hasMany(TimetableSlot::class);
+        return $this->hasMany(TimetableSlot::class, 'class_id');
     }
 
     public function homeroomTeacher(): BelongsTo

@@ -904,7 +904,7 @@ export function ProfilePage() {
   if (!profile) return null
   const roleLabels = { director: 'Drejtor', secretary: 'Sekretar', teacher: 'Profesor', educator: 'Edukator', cashier: 'Arkatar', student: 'Nxënës', boarding: 'Nxënës', other: 'Të tjerë' }
   const initials = (profile.name || '?').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()
-  const fields = [['Gjinia', { Male: 'Mashkull', Female: 'Femër' }[profile.gender]], ['Data e lindjes', profileDateValue(profile.birth_date).split('-').reverse().join('.')], ['Vendi i lindjes', profile.place_of_birth], ['Telefon', profile.phone], ['Adresa', profile.address], ['Qyteti', profile.city]]
+  const fields = [['Gjinia', { Male: 'Mashkull', Female: 'Femër' }[profile.gender]], ['Data e lindjes', formatDate(profile.birth_date)], ['Vendi i lindjes', profile.place_of_birth], ['Telefon', profile.phone], ['Adresa', profile.address], ['Qyteti', profile.city]]
   const teacherAcademic = profile.academic
   return (
     <div className="space-y-6">

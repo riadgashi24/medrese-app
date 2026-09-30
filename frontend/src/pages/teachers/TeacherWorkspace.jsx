@@ -1,3 +1,5 @@
+import { formatDate } from '../../lib/date.js'
+import { QuickGrades } from './QuickGrades'
 import { useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -16,7 +18,7 @@ const localDate = () => {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 }
-const displayDate = value => value ? String(value).slice(0, 10).split('-').reverse().join('.') : 'Pa datë'
+const displayDate = value => value ? formatDate(value) : 'Pa datë'
 export const coursePath = (classId, subjectId) => `/teacher/classes/${classId}/subjects/${subjectId}`
 const studentName = student => `${student.first_name} ${student.last_name}`
 
@@ -97,44 +99,6 @@ export function TeacherClassPage() {
       </div>}
     </QueryState>
   </div>
-}
-
-function PeriodGrades({ data, refresh }) {
-  const [editing, setEditing] = useState(null)
-  const [value, setValue] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [saved, setSaved] = useState('')
-  function edit(student, period) {
-    const current = data.grades.find(g => g.student_id === student.id && g.period === period.id)
-    setEditing({ student, period }); setValue(current?.grade ?? ''); setError(''); setSaved('')
-  }
-  async function save(e) {
-    e.preventDefault(); setBusy(true); setError('')
-    try {
-      await api.teacherWorkspace.grade(data.class.id, data.subject.id, { student_id: editing.student.id, period: editing.period.id, grade: Number(value) })
-      await refresh(); setSaved(`Nota e ${studentName(editing.student)} u ruajt.`); setEditing(null)
-    } catch (err) { setError(errorMessage(err)) } finally { setBusy(false) }
-  }
-  return <Section title="Notat dymujore">
-    <p className="mb-5 text-sm text-surface-400">Një notë nga 1 deri në 5 për secilën periudhë. Kliko një qelizë për ta shtuar ose korrigjuar. Këto nota shfaqen edhe te nxënësi; nota përfundimtare regjistrohet veçmas.</p>
-    {saved && <p role="status" className="mb-4 text-sm text-brand-400">{saved}</p>}
-    {editing && <form onSubmit={save} className="mb-5 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
-      <p className="mb-3 text-sm font-medium">{studentName(editing.student)} · {editing.period.label}</p>
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="text-sm">Nota<Select autoFocus aria-label="Nota për periudhën" required value={value} onChange={e => setValue(e.target.value)} className="mt-1 w-32"><option value="">Zgjidh</option>{[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}</Select></label>
-        <Button type="submit" disabled={busy}>Ruaj notën</Button><Button type="button" variant="ghost" disabled={busy} onClick={() => setEditing(null)}>Anulo</Button>
-      </div><ErrorNotice error={error} />
-    </form>}
-    <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm">
-      <thead><tr className="border-b border-white/10"><th className="p-3">Nxënësi</th>{data.periods.map(p => <th key={p.id} className="p-3 text-center text-xs font-medium">{p.label}</th>)}</tr></thead>
-      <tbody>{data.students.map(s => <tr key={s.id} className="border-b border-white/5"><th className="p-3 font-normal">{studentName(s)}</th>{data.periods.map(p => {
-        const grade = data.grades.find(g => g.student_id === s.id && g.period === p.id)
-        return <td key={p.id} className="p-2 text-center"><button disabled={busy} onClick={() => edit(s, p)} aria-label={`${studentName(s)}, ${p.label}, ${grade?.grade ?? 'pa notë'}`} className={`h-10 w-14 rounded-lg border hover:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500 ${grade ? 'border-brand-500/20 bg-brand-500/10 text-brand-400' : 'border-white/10 text-surface-400'}`}>{grade?.grade ?? '+'}</button></td>
-      })}</tr>)}</tbody>
-    </table></div>
-    {!data.students.length && <Empty>Nuk ka nxënës aktivë në këtë klasë.</Empty>}
-  </Section>
 }
 
 function Publications({ data, kind, refresh }) {
@@ -225,7 +189,7 @@ export function TeacherCoursePage() {
   if (user?.role !== 'teacher') return <Navigate to="/dashboard" replace />
   async function refresh() {
     await client.invalidateQueries({ queryKey: ['teacher-course', user?.id, classId, subjectId] })
-    await Promise.all(['student-portal', 'student-inbox', 'student'].map(key => client.invalidateQueries({ queryKey: [key] })))
+    await Promise.all(['student-portal', 'student-inbox', 'student', 'homeroom', 'class-grades'].map(key => client.invalidateQueries({ queryKey: [key] })))
   }
   const data = query.data
   return <div className="space-y-5">
@@ -233,7 +197,7 @@ export function TeacherCoursePage() {
     <PageHeader title={data ? `${data.class.name} · ${data.subject.name}` : 'Hapësira e lëndës'} description={data ? `${data.class.academic_year?.label || ''} · ${data.students.length} nxënës` : ''} />
     <QueryState query={query}>{data && <>
       <nav aria-label="Seksionet e lëndës" className="flex flex-wrap gap-2">{[['grades', 'Notat', GraduationCap], ['announcements', 'Njoftimet', CalendarDays], ['assignments', 'Detyrat', ClipboardList], ['lessons', 'Orët', BookOpen]].map(([key, label, Icon]) => <Button key={key} variant={tab === key ? 'default' : 'secondary'} aria-pressed={tab === key} onClick={() => setSearchParams({ tab: key })}><Icon size={16} />{label}</Button>)}</nav>
-      {tab === 'grades' && <PeriodGrades key={`${classId}-${subjectId}`} data={data} refresh={refresh} />}
+      <div hidden={tab !== 'grades'}><QuickGrades key={`${classId}-${subjectId}`} data={data} refresh={refresh} /></div>
       {tab === 'announcements' && <Publications key={`announcement-${classId}-${subjectId}`} data={data} kind="announcement" refresh={refresh} />}
       {tab === 'assignments' && <Publications key={`assignment-${classId}-${subjectId}`} data={data} kind="assignment" refresh={refresh} />}
       {tab === 'lessons' && <Lessons key={`${classId}-${subjectId}`} data={data} refresh={refresh} />}
@@ -254,14 +218,9 @@ export function TeacherSchedulePage() {
       <thead><tr><th className="w-20 p-3 text-xs text-surface-400">Ora</th>{visibleDays.map(d => <th key={d.day} className={`p-3 text-sm font-medium ${d.day === (new Date().getDay() || 7) ? 'text-brand-400' : ''}`}>{d.label}</th>)}</tr></thead>
       <tbody>{periods.map(period => <tr key={period} className="border-t border-white/10"><th className="p-3 text-sm font-medium">{period}</th>{visibleDays.map(d => {
         const slot = slots.find(s => s.slot_number === period && s.day_of_week === d.day)
-        return <td key={d.day} className="p-2 align-top">{slot ? <Link to={coursePath(slot.class_id, slot.subject_id)} className="block min-h-28 rounded-xl border border-brand-500/20 bg-brand-500/5 p-3 hover:bg-brand-500/10"><p className="text-xl font-semibold">{slot.class?.name}</p><p className="mt-1 text-xs text-surface-400">{slot.subject?.name}</p>{slot.start_time && <p className="mt-3 text-[11px] text-brand-400">{slot.start_time.slice(0, 5)}{slot.end_time ? `–${slot.end_time.slice(0, 5)}` : ''}</p>}</Link> : <span className="block p-3 text-surface-500">—</span>}</td>
+        const SlotTag = slot?.subject_id ? Link : 'div'
+        return <td key={d.day} className="p-2 align-top">{slot ? <SlotTag to={slot.subject_id ? coursePath(slot.class_id, slot.subject_id) : undefined} className="block min-h-28 rounded-xl border border-brand-500/20 bg-brand-500/5 p-3 hover:bg-brand-500/10"><p className="text-xl font-semibold">{slot.class?.name}</p><p className="mt-1 text-xs text-surface-400">{slot.subject?.name || slot.activity_label}</p>{slot.is_provisional && <p className="mt-1 text-[10px] text-amber-400">Ndarje demonstrimi</p>}{slot.start_time && <p className="mt-3 text-[11px] text-brand-400">{slot.start_time.slice(0, 5)}{slot.end_time ? `–${slot.end_time.slice(0, 5)}` : ''}</p>}</SlotTag> : <span className="block p-3 text-surface-500">—</span>}</td>
       })}</tr>)}</tbody>
     </table></div> : <Empty>Administrata ende nuk ka caktuar orar për ty në vitin aktiv.</Empty>}
   </Section></QueryState></div>
-}
-
-export function TeacherHomeroomPage() {
-  const { user } = useAuth()
-  if (user?.role !== 'teacher') return <Navigate to="/dashboard" replace />
-  return <div><PageHeader title="Kujdestari" description="Hapësira e kujdestarit të klasës" /><Section title="Në zhvillim të ardhshëm"><Users className="mb-4 h-8 w-8 text-brand-400" /><Badge variant="slate">Në plan</Badge><Empty>Funksionet e kujdestarisë do të zhvillohen në hapin e ardhshëm.</Empty></Section></div>
 }

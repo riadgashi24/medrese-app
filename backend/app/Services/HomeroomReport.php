@@ -41,18 +41,18 @@ class HomeroomReport
         return ['total' => $rows->count(), 'male' => $rows->where('gender', 'Male')->count(), 'female' => $rows->where('gender', 'Female')->count(), 'unknown' => $rows->whereNotIn('gender', ['Male', 'Female'])->count()];
     }
 
-    public function build(ClassModel $class): array
+    public function build(ClassModel $class, ?array $studentIds = null): array
     {
         $class->load(['academicYear', 'homeroomStaff.user']);
         $settings = $this->settings($class);
         $subjects = $class->subjects()->orderBy('category')->orderBy('name')->get();
-        $roster = $this->roster($class)->get();
+        $roster = $this->roster($class)->when($studentIds !== null, fn ($q) => $q->whereIn('id', $studentIds))->get();
         $ids = $roster->pluck('id');
         $profiles = DB::table('homeroom_profiles')->where('class_id', $class->id)->get()->keyBy('student_id');
         $enrollments = DB::table('student_academic_enrollments')->where('class_id', $class->id)->where('academic_year_id', $class->academic_year_id)->get()->keyBy('student_id');
         $grades = Grade::whereIn('student_id', $ids)->where('academic_year_id', $class->academic_year_id)->get()->groupBy('student_id');
         $overrides = DB::table('homeroom_absences')->where('class_id', $class->id)->get()->keyBy(fn ($r) => "$r->student_id:$r->month");
-        $lessons = DB::table('lesson_sessions')->where('class_id', $class->id)->whereBetween('lesson_date', [$settings['t1_start'], $settings['t2_end']])->get();
+        $lessons = DB::table('lesson_sessions')->where('class_id', $class->id)->whereDate('lesson_date', '>=', $settings['t1_start'])->whereDate('lesson_date', '<=', $settings['t2_end'])->get();
         $lessonAttendance = DB::table('lesson_attendances')->whereIn('lesson_session_id', $lessons->pluck('id'))->whereIn('student_id', $ids)->get();
         $legacy = DB::table('attendance_records')->where('class_id', $class->id)->whereIn('student_id', $ids)->whereBetween('date', [$settings['t1_start'], $settings['t2_end']])->get();
         $lessonMap = $lessons->keyBy('id');
@@ -76,15 +76,27 @@ class HomeroomReport
                 $lessonDates = [];
                 foreach ($lessonAttendance->where('student_id', $student->id) as $record) {
                     $day = substr($lessonMap[$record->lesson_session_id]->lesson_date, 0, 10);
-                    if (substr($day, 0, 7) !== $month) continue;
+                    if (substr($day, 0, 7) !== $month) {
+                        continue;
+                    }
                     $lessonDates[$day] = true;
-                    if ($record->status === 'Absent') $automatic['pending']++;
-                    if ($record->status === 'Late') $automatic['late']++;
+                    if ($record->status === 'Absent') {
+                        $automatic['pending']++;
+                    }
+                    if ($record->status === 'Late') {
+                        $automatic['late']++;
+                    }
                 }
                 // A daily legacy entry is fallback only when lesson-level records exist for no part of that day.
                 foreach ($legacy->where('student_id', $student->id) as $record) {
-                    if (substr($record->date, 0, 7) !== $month || isset($lessonDates[substr($record->date, 0, 10)])) continue;
-                    if ($record->status === 'Late') { $automatic['late']++; continue; }
+                    if (substr($record->date, 0, 7) !== $month || isset($lessonDates[substr($record->date, 0, 10)])) {
+                        continue;
+                    }
+                    if ($record->status === 'Late') {
+                        $automatic['late']++;
+
+                        continue;
+                    }
                     $type = $record->status === 'Excused' || $record->absence_type === 'Excused' ? 'excused' : ($record->absence_type === 'Unexcused' ? 'unexcused' : 'pending');
                     $automatic[$type]++;
                 }
@@ -109,9 +121,14 @@ class HomeroomReport
                 $status = $student['profile'][$term.'_status'] ?? $student['default_status'];
                 $attendance = ['excused' => 0, 'unexcused' => 0, 'pending' => 0, 'late' => 0];
                 foreach ($student['attendance'] as $month => $counts) {
-                    if ($month < substr($start, 0, 7) || $month > substr($end, 0, 7)) continue;
-                    foreach ($attendance as $key => $value) $attendance[$key] += $counts[$key];
+                    if ($month < substr($start, 0, 7) || $month > substr($end, 0, 7)) {
+                        continue;
+                    }
+                    foreach ($attendance as $key => $value) {
+                        $attendance[$key] += $counts[$key];
+                    }
                 }
+
                 return ['id' => $student['id'], 'name' => $student['name'], 'gender' => $student['gender'], 'status' => $status, 'grades' => collect($student['grades'])->map(fn ($g) => $g[$term])->all(), 'missing' => $missing, 'failures' => $failures, 'average' => $average, 'success' => $success, 'attendance' => $attendance];
             });
             $active = $rows->where('status', '!=', 'withdrawn');
@@ -133,11 +150,13 @@ class HomeroomReport
                 foreach ([5, 4, 3, 2, 1, 'ungraded', 'positive'] as $mark) {
                     $matching = $active->filter(function ($r) use ($subject, $mark) {
                         $grade = $r['grades'][$subject->id];
+
                         return $mark === 'ungraded' ? $grade === null : ($mark === 'positive' ? $grade !== null && $grade >= 2 : $grade === $mark);
                     });
                     $distribution[$mark] = [...$this->bucket($matching), 'percent' => $active->count() ? round($matching->count() * 100 / $active->count(), 2) : null];
                 }
                 $marks = $active->map(fn ($r) => $r['grades'][$subject->id])->filter(fn ($n) => $n !== null);
+
                 return ['id' => $subject->id, 'name' => $subject->name, 'category' => $subject->category, 'distribution' => $distribution, 'average' => $marks->count() ? round($marks->avg(), 2) : null, 'total' => $active->count()];
             });
             $attendance = [];
@@ -157,7 +176,10 @@ class HomeroomReport
                 $result[$term] = ['held' => $held, 'missed' => $missed, 'planned' => $held + $missed, 'automatic' => $automatic, 'manual' => $record?->held !== null];
             }
             $result['np'] = [];
-            foreach (['held', 'missed', 'planned'] as $field) $result['np'][$field] = $result['t1'][$field] + $result['t2'][$field];
+            foreach (['held', 'missed', 'planned'] as $field) {
+                $result['np'][$field] = $result['t1'][$field] + $result['t2'][$field];
+            }
+
             return $result;
         });
 

@@ -1,3 +1,4 @@
+import { formatDate } from '../../lib/date.js'
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -13,7 +14,7 @@ import { Lessons } from './Lessons'
 export { usePortal, useInbox } from '@/lib/studentPortal'
 
 const months = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor']
-export const dateLabel = value => { if (!value) return 'Pa datë'; const [year, month, day] = String(value).slice(0, 10).split('-'); return Number(day) + ' ' + (months[Number(month) - 1] || '') + ' ' + year }
+export const dateLabel = value => value ? formatDate(value) : 'Pa datë'
 export const dateKey = value => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
 const today = () => dateKey(new Date())
 const days = ['E hënë', 'E martë', 'E mërkurë', 'E enjte', 'E premte', 'E shtunë', 'E diel']
@@ -44,7 +45,7 @@ export function Schedule({ slots = [], compact = false }) {
   return <div className={compact ? '' : 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3'}>{selected.map(day => {
     const lessons = slots.filter(s => s.day_of_week === day + 1)
     if (!compact && day > 4 && !lessons.length) return null
-    return <div key={day}>{!compact && <h3 className="mb-3 font-medium text-brand-400">{days[day]}</h3>}{lessons.length ? lessons.map(s => <div key={s.id} className="flex items-center gap-4 border-b border-white/10 py-3"><div className="w-20 shrink-0 text-xs text-surface-400"><p className="text-surface-200">Ora {s.slot_number}</p>{s.start_time?.slice(0, 5)}–{s.end_time?.slice(0, 5)}</div><div><p className="text-sm font-medium">{s.subject?.name || 'Lëndë'}</p><p className="mt-1 text-xs text-surface-400">{s.teacher_user?.name || 'Profesori ende nuk është caktuar'}</p></div></div>) : <Empty>Nuk ka orë të planifikuara{compact ? ' sot' : ''}.</Empty>}</div>
+    return <div key={day}>{!compact && <h3 className="mb-3 font-medium text-brand-400">{days[day]}</h3>}{lessons.length ? lessons.map(s => <div key={s.id} className="flex items-center gap-4 border-b border-white/10 py-3"><div className="w-20 shrink-0 text-xs text-surface-400"><p className="text-surface-200">Ora {s.slot_number}</p>{s.start_time?.slice(0, 5)}–{s.end_time?.slice(0, 5)}</div><div><p className="text-sm font-medium">{s.subject?.name || s.activity_label || 'Lëndë'}</p><p className="mt-1 text-xs text-surface-400">{s.teacher_user?.name || 'Profesori ende nuk është caktuar'}</p></div></div>) : <Empty>Nuk ka orë të planifikuara{compact ? ' sot' : ''}.</Empty>}</div>
   })}</div>
 }
 export function calendarEvents(data) {

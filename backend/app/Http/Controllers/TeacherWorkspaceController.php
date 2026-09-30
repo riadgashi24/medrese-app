@@ -50,7 +50,8 @@ class TeacherWorkspaceController extends Controller
             ->with(['attendances.student:id,first_name,last_name'])->orderByDesc('lesson_date')->orderByDesc('slot_number')->get();
         $periods = collect(PeriodGrade::PERIODS)->map(fn ($label, $id) => ['id' => $id, 'label' => $label])->values();
 
-        return response()->json(['data' => compact('class', 'subject', 'students', 'grades', 'assignments', 'announcements', 'lessons', 'periods')]);
+        $termGrades = \App\Models\Grade::whereIn('student_id', $students->pluck('id'))->where('subject_id', $subjectId)->where('academic_year_id', $class->academic_year_id)->get();
+        return response()->json(['data' => [...compact('class', 'subject', 'students', 'grades', 'assignments', 'announcements', 'lessons', 'periods'), 'term_grades' => $termGrades]]);
     }
 
     public function grade(Request $request, int $classId, int $subjectId)
@@ -64,6 +65,41 @@ class TeacherWorkspaceController extends Controller
         ], ['grade' => $data['grade'], 'teacher_user_id' => $request->user()->id]);
 
         return response()->json(['data' => $grade]);
+    }
+
+    public function batchGrades(Request $request, int $classId, int $subjectId)
+    {
+        $class = $this->course($request, $classId, $subjectId);
+        $data = $request->validate([
+            'period' => 'required|in:1,2,3,4,5,t1,t2',
+            'changes' => 'required|array|min:1|max:200',
+            'changes.*.student_id' => 'required|integer|distinct',
+            'changes.*.grade' => 'present|nullable|integer|between:1,5',
+        ]);
+        $roster = $class->students()->where('status', 'Active')->pluck('id');
+        foreach ($data['changes'] as $row) {
+            abort_unless($roster->contains($row['student_id']), 422, 'Nxënësi nuk i përket kësaj klase.');
+        }
+        DB::transaction(function () use ($data, $class, $subjectId, $request) {
+            ClassModel::whereKey($class->id)->lockForUpdate()->first();
+            foreach ($data['changes'] as $row) {
+                $key = ['student_id' => $row['student_id'], 'subject_id' => $subjectId, 'academic_year_id' => $class->academic_year_id];
+                if (in_array($data['period'], ['t1', 't2'])) {
+                    $grade = \App\Models\Grade::firstOrCreate($key);
+                    $grade = \App\Models\Grade::whereKey($grade->id)->lockForUpdate()->firstOrFail();
+                    $grade->{$data['period'] === 't1' ? 'term_1_grade' : 'term_2_grade'} = $row['grade'];
+                    if (! $grade->is_final_overridden) {
+                        $grade->final_grade = \App\Models\Grade::calculateFinalGrade($grade->term_1_grade, $grade->term_2_grade);
+                    }
+                    $grade->save();
+                } else {
+                    $key['period'] = (int) $data['period'];
+                    if ($row['grade'] === null) PeriodGrade::where($key)->delete();
+                    else PeriodGrade::updateOrCreate($key, ['grade' => $row['grade'], 'teacher_user_id' => $request->user()->id]);
+                }
+            }
+        }, 3);
+        return response()->json(['message' => 'Notat u ruajtën.']);
     }
 
     public function publish(Request $request, int $classId, int $subjectId)

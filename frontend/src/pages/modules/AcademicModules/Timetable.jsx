@@ -38,7 +38,7 @@ function PersonalTimetable({ slots, days, slotNumbers, isTeacher, className }) {
                                 const style = slot ? getSubjectStyle(slot.subject_id) : null
                                 return <td key={dayIndex} className="p-2 border-l border-white/5 align-top h-20">{slot ? (
                                     <div className={`h-full min-h-16 rounded-lg border px-3 py-2 ${style.bg}`}>
-                                        {isTeacher ? <><p className="text-base font-bold leading-tight">{slot.class?.name || 'Klasa'}</p><p className="mt-1 text-xs opacity-85">{slot.subject?.name || 'Lënda'}</p></> : <><p className="text-sm font-semibold leading-tight">{slot.subject?.name || 'Lënda'}</p><p className="mt-1 text-[11px] opacity-85">{slot.teacher_user?.name || 'Profesor i pacaktuar'}</p></>}
+                                        {isTeacher ? <><p className="text-base font-bold leading-tight">{slot.class?.name || 'Klasa'}</p><p className="mt-1 text-xs opacity-85">{slot.subject?.name || slot.activity_label || 'Lënda'}</p></> : <><p className="text-sm font-semibold leading-tight">{slot.subject?.name || slot.activity_label || 'Lënda'}</p><p className="mt-1 text-[11px] opacity-85">{slot.teacher_user?.name || 'Profesor i pacaktuar'}</p></>}
                                     </div>
                                 ) : <span className="block h-full rounded-lg bg-surface-900/20" />}</td>
                             })}
@@ -61,6 +61,7 @@ export default function TimetablePage() {
     const [teacherStats, setTeacherStats] = useState({})
     const [teacherRoster, setTeacherRoster] = useState([])
     const [activeAcademicYearId, setActiveAcademicYearId] = useState(null)
+    const [academicYearLabel, setAcademicYearLabel] = useState('')
     const [classes, setClasses] = useState([])
     const [subjects, setSubjects] = useState([])
     const [teacherAssignments, setTeacherAssignments] = useState([])
@@ -103,6 +104,7 @@ export default function TimetablePage() {
             setTeacherStats(payload.teacher_stats || {})
             setTeacherRoster(payload.teachers || [])
             setActiveAcademicYearId(payload.active_academic_year_id || null)
+            setAcademicYearLabel(payload.academic_year_label || '')
             setClasses(options.classes || [])
             setSubjects(Array.isArray(subjectItems) ? subjectItems : [])
             setTeacherAssignments(options.assignments || [])
@@ -265,7 +267,7 @@ export default function TimetablePage() {
                 {Object.values(slotJobs).filter(job => job.status === 'error').map(job => <p key={job.key} className="text-red-400">{job.label}: {job.message} <button className="underline" onClick={() => submitSlotJob(job)}>Provo përsëri</button></p>)}
             </div>
             <div className="flex justify-between items-center">
-                <PageHeader title="ORARI MËSIMOR PËR VITIN SHKOLLOR 2025/2026" description="ShML 'MEDRESEJA ALAUDDIN' PRISHTINË" />
+                <PageHeader title={`ORARI MËSIMOR ${academicYearLabel}`} description="ShML 'MEDRESEJA ALAUDDIN' PRISHTINË" />
                 {canEdit && <button
                     onClick={() => setIsEditMode(!isEditMode)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isEditMode ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-brand-600 text-white'
@@ -275,6 +277,7 @@ export default function TimetablePage() {
                 </button>}
             </div>
 
+            {slots.some(slot => slot.is_provisional) && <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">Orari ndjek fotografinë 2026/27. Ndarja e lëndëve te profesorët me disa lëndë dhe orët e kujdestarisë/përsëritjes janë për demonstrim dhe mund të korrigjohen.</p>}
             {(isStudentView || isTeacherView) ? <>
                 <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 px-4 py-3 text-sm text-brand-200">
                     {isTeacherView ? 'Orari juaj mësimor. Klasa shfaqet e theksuar, ndërsa lënda poshtë saj.' : `Orari për klasën ${user?.class_name || 'tuaj'}. Lënda shfaqet sipër dhe profesori me tekst më të vogël poshtë.`}
@@ -362,7 +365,7 @@ export default function TimetablePage() {
                                             return (
                                                 <td
                                                     key={`${day}-${slotNum}`}
-                                                    title={cellJob?.status === 'pending' ? 'Duke ruajtur…' : cellJob?.status === 'error' ? cellJob.message : undefined}
+                                                    title={cellJob?.status === 'pending' ? 'Duke ruajtur…' : cellJob?.status === 'error' ? cellJob.message : slotData ? `${slotData.subject?.name || slotData.activity_label || ''}${slotData.is_provisional ? ' · Ndarje demonstrimi' : ''}` : undefined}
                                                     onClick={() => {
                                                         if (isEditMode) {
                                                             if (cellJob?.status === 'pending') return

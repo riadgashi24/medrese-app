@@ -91,7 +91,7 @@ class DashboardController extends Controller
                 'start_time' => $slot->start_time,
                 'end_time' => $slot->end_time,
                 'class_name' => $slot->class?->name,
-                'subject_name' => $slot->subject?->name,
+                'subject_name' => $slot->subject?->name ?? $slot->activity_label,
             ]),
         ])->values();
 
@@ -120,7 +120,7 @@ class DashboardController extends Controller
                 'end_time' => $slot->end_time,
                 'class_name' => $slot->class?->name,
                 'class_id' => $slot->class_id,
-                'subject_name' => $slot->subject?->name,
+                'subject_name' => $slot->subject?->name ?? $slot->activity_label,
             ]);
 
         return response()->json([

@@ -13,6 +13,8 @@ class TimetableSlot extends Model
     protected $fillable = [
         'day_of_week',
         'slot_number',
+        'activity_label',
+        'is_provisional',
         'start_time',
         'end_time',
         'class_id',
@@ -25,6 +27,7 @@ class TimetableSlot extends Model
      * Konvertimi automatik i tipave të të dhënave
      */
     protected $casts = [
+        'is_provisional' => 'boolean',
         'day_of_week' => 'integer',
         'slot_number' => 'integer',
         'class_id' => 'integer',

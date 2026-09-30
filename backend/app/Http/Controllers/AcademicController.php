@@ -284,10 +284,12 @@ class AcademicController extends Controller
             ->pluck('scheduled_weekly_hours', 'teacher_user_id');
 
         // Grupimi për çdo profesor
+        $activityHours = $slots->whereNull('subject_id')->countBy('teacher_user_id');
+
         $teacherStats = $teacherAssignments
             ->groupBy('teacher_user_id')
-            ->map(function ($assignments, $teacherId) use ($scheduledHours) {
-                $expected = $assignments->sum(fn($a) => (int) $a->weekly_hours);
+            ->map(function ($assignments, $teacherId) use ($scheduledHours, $activityHours) {
+                $expected = $assignments->sum(fn($a) => (int) $a->weekly_hours) + ($activityHours[$teacherId] ?? 0);
                 $scheduled = (int) ($scheduledHours[$teacherId] ?? 0);
                 return [
                     'teacher_name' => $assignments->first()->teacher_name,
@@ -305,10 +307,10 @@ class AcademicController extends Controller
 
         $teacherSlots = $slots->groupBy('teacher_user_id');
         $assignmentsByTeacher = $teacherAssignments->groupBy('teacher_user_id');
-        $teachers = User::where('role', 'teacher')->with('staff:id,user_id,gender')->orderBy('name')->get(['id', 'name'])->map(function ($teacher) use ($teacherSlots, $assignmentsByTeacher) {
+        $teachers = User::where('role', 'teacher')->where(fn ($q) => $q->whereDoesntHave('staff')->orWhereHas('staff', fn ($q) => $q->where('status', 'Active')))->with('staff:id,user_id,gender')->orderBy('name')->get(['id', 'name'])->map(function ($teacher) use ($teacherSlots, $assignmentsByTeacher, $activityHours) {
             $teacherId = $teacher->id;
             $assignments = $assignmentsByTeacher->get($teacherId, collect());
-            $totalHours = $assignments->sum(fn($assignment) => (int) $assignment->weekly_hours);
+            $totalHours = $assignments->sum(fn($assignment) => (int) $assignment->weekly_hours) + ($activityHours[$teacherId] ?? 0);
             $assignedHours = $teacherSlots->get($teacherId, collect())->count();
 
             return [
@@ -329,6 +331,7 @@ class AcademicController extends Controller
                 'supervisors' => $supervisors,
                 'teacher_stats' => $teacherStats,
                 'teachers' => $teachers,
+                'academic_year_label' => AcademicYear::whereKey($academicYearId)->value('label'),
                 'active_academic_year_id' => $academicYearId
             ]
         ]);
@@ -413,6 +416,7 @@ class AcademicController extends Controller
                 ->sum('class_subject.weekly_hours');
             $assignedHours = TimetableSlot::where('academic_year_id', $validated['academic_year_id'])
                 ->where('teacher_user_id', $validated['teacher_user_id'])
+                ->whereNotNull('subject_id')
                 ->when($existingSlot, fn($query) => $query->where('id', '!=', $existingSlot->id))
                 ->count();
             $sameTeacherEdit = $existingSlot && (int) $existingSlot->teacher_user_id === (int) $validated['teacher_user_id'];
@@ -433,6 +437,8 @@ class AcademicController extends Controller
                 'academic_year_id' => $validated['academic_year_id'],
                 'class_id' => $class->id,
                 'subject_id' => $validated['subject_id'],
+                'activity_label' => null,
+                'is_provisional' => false,
             ]);
             $slot->save();
 

@@ -66,7 +66,16 @@ async function request(path, { method = 'GET', body, query, headers } = {}) {
 }
 
 export const api = {
+  homeroom: {
+    history: id => request(`/homeroom/${id}/history`),
+    historicalReport: (id, historicalId) => request(`/homeroom/${id}/history/${historicalId}`),
+    certificates: id => request(`/homeroom/${id}/certificates`),
+    index: () => request('/homeroom'),
+    show: id => request(`/homeroom/${id}`),
+    save: (id, section, body) => request(`/homeroom/${id}/${section}`, { method: 'PUT', body }),
+  },
   teacherWorkspace: {
+    batchGrades: (classId, subjectId, body) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/grades-batch`, { method: 'PUT', body }),
     index: () => request('/teacher/workspace'),
     course: (classId, subjectId) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}`),
     grade: (classId, subjectId, body) => request(`/teacher/workspace/classes/${classId}/subjects/${subjectId}/grades`, { method: 'PUT', body }),

@@ -47,6 +47,7 @@ export const NAV_BY_ROLE = {
       icon: GraduationCap,
       children: [
         { label: 'Klasat', path: '/classes' },
+        { label: 'Kujdestaria dhe raportet', path: '/teacher/homeroom' },
         { label: 'Lëndët', path: '/subjects' },
         { label: 'Orari', path: '/timetable' },
         { label: 'Vitet Shkollore', path: '/academic-years' },
@@ -116,6 +117,7 @@ export const NAV_BY_ROLE = {
       children: [
         { label: 'Te gjithe nxenesit', path: '/students' },
         { label: 'Caktimet ne klasa', path: '/classes' },
+        { label: 'Kujdestaria dhe raportet', path: '/teacher/homeroom' },
         { label: 'Dokumentet', path: '/documents/my-documents' },
       ],
     },
@@ -205,7 +207,7 @@ export function getNavForRole(role) {
     { label: 'Klasat e mia', path: '/classes', icon: GraduationCap },
     { label: 'Orari mësimor', path: '/timetable', icon: Calendar },
     { label: 'Njoftimet', path: '/announcements', icon: Megaphone },
-    { label: 'Kujdestari', path: '/teacher/homeroom', icon: Users, badge: 'Në plan' },
+    { label: 'Kujdestaria', path: '/teacher/homeroom', icon: Users },
     { label: 'Materiale dhe publikime', path: '/portal/publish', icon: BookOpen },
     { label: 'Profili', path: '/profile', icon: Users },
     { label: 'Cilësimet', path: '/settings', icon: Settings },

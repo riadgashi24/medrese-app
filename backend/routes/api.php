@@ -169,11 +169,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/classes/{classId}/grades', [GradeController::class, 'getClassGrades']);
     Route::put('/classes/{classId}/grades', [GradeController::class, 'updateGrade']);
 
+    Route::middleware('role:teacher,director,secretary')->prefix('homeroom')->group(function () {
+        Route::get('/', [\App\Http\Controllers\HomeroomController::class, 'index']);
+        Route::get('/{classId}', [\App\Http\Controllers\HomeroomController::class, 'show']);
+        Route::get('/{classId}/history', [\App\Http\Controllers\HomeroomController::class, 'history']);
+        Route::get('/{classId}/history/{historicalId}', [\App\Http\Controllers\HomeroomController::class, 'historicalReport']);
+        Route::get('/{classId}/certificates', [\App\Http\Controllers\HomeroomController::class, 'certificates']);
+        Route::put('/{classId}/settings', [\App\Http\Controllers\HomeroomController::class, 'settings']);
+        Route::put('/{classId}/students/{studentId}', [\App\Http\Controllers\HomeroomController::class, 'student']);
+        Route::put('/{classId}/grades', [\App\Http\Controllers\HomeroomController::class, 'grades']);
+        Route::put('/{classId}/absences', [\App\Http\Controllers\HomeroomController::class, 'absences']);
+        Route::put('/{classId}/hours', [\App\Http\Controllers\HomeroomController::class, 'hours']);
+    });
+
     // Teacher dashboard - weekly schedule & lesson cards
     Route::middleware('role:teacher')->prefix('teacher/workspace')->group(function () {
         Route::get('/', [\App\Http\Controllers\TeacherWorkspaceController::class, 'index']);
         Route::get('/classes/{classId}/subjects/{subjectId}', [\App\Http\Controllers\TeacherWorkspaceController::class, 'show']);
         Route::put('/classes/{classId}/subjects/{subjectId}/grades', [\App\Http\Controllers\TeacherWorkspaceController::class, 'grade']);
+        Route::put('/classes/{classId}/subjects/{subjectId}/grades-batch', [\App\Http\Controllers\TeacherWorkspaceController::class, 'batchGrades']);
         Route::post('/classes/{classId}/subjects/{subjectId}/publications', [\App\Http\Controllers\TeacherWorkspaceController::class, 'publish']);
         Route::patch('/classes/{classId}/subjects/{subjectId}/assignments/{assignment}', [\App\Http\Controllers\TeacherWorkspaceController::class, 'completeAssignment']);
         Route::post('/classes/{classId}/subjects/{subjectId}/lessons', [\App\Http\Controllers\TeacherWorkspaceController::class, 'saveLesson']);

@@ -132,4 +132,52 @@ class TeacherWorkspaceTest extends TestCase
         $this->getJson('/api/v1/teacher/schedule')->assertOk()->assertJsonCount(1, 'data')->assertJsonCount(1, 'data.0.slots');
         $this->getJson('/api/v1/teacher/today')->assertOk()->assertJsonCount(1, 'data');
     }
+    public function test_batch_grades_are_atomic_scoped_and_clearable(): void
+    {
+        extract($this->fixture());
+        $change = ['student_id' => $student->id, 'grade' => 5];
+        $payload = ['period' => '1', 'changes' => [$change]];
+        $this->putJson($url.'/grades-batch', $payload)->assertOk();
+        $this->putJson($url.'/grades-batch', ['period' => '1', 'changes' => [[...$change, 'grade' => 2], ['student_id' => 9999, 'grade' => 4]]])->assertUnprocessable();
+        $this->assertDatabaseHas('period_grades', [...$change, 'period' => 1]);
+        $this->putJson($url.'/grades-batch', ['period' => '1', 'changes' => [$change, $change]])->assertUnprocessable();
+        $this->putJson($url.'/grades-batch', ['period' => '1', 'changes' => [[...$change, 'grade' => 6]]])->assertUnprocessable();
+        $this->putJson("/api/v1/teacher/workspace/classes/{$class->id}/subjects/{$otherSubject->id}/grades-batch", $payload)->assertForbidden();
+        $this->putJson($url.'/grades-batch', ['period' => '1', 'changes' => [[...$change, 'grade' => null]]])->assertOk();
+        $this->assertDatabaseCount('period_grades', 0);
+        $year->update(['is_active' => false]);
+        $this->putJson($url.'/grades-batch', $payload)->assertForbidden();
+    }
+
+    public function test_subject_teacher_updates_terms_and_preserves_final_override(): void
+    {
+        extract($this->fixture());
+        $change = ['student_id' => $student->id, 'grade' => 4];
+        $this->putJson($url.'/grades-batch', ['period' => 't1', 'changes' => [$change]])->assertOk();
+        $this->putJson($url.'/grades-batch', ['period' => 't2', 'changes' => [[...$change, 'grade' => 5]]])->assertOk();
+        $key = ['student_id' => $student->id, 'subject_id' => $subject->id, 'academic_year_id' => $year->id];
+        $this->assertDatabaseHas('grades', [...$key, 'term_1_grade' => 4, 'term_2_grade' => 5, 'final_grade' => 5]);
+        \App\Models\Grade::where($key)->update(['is_final_overridden' => true, 'final_grade' => 3]);
+        $this->putJson($url.'/grades-batch', ['period' => 't1', 'changes' => [[...$change, 'grade' => null]]])->assertOk();
+        $this->assertDatabaseHas('grades', [...$key, 'term_1_grade' => null, 'final_grade' => 3]);
+        $this->getJson($url)->assertOk()->assertJsonPath('data.term_grades.0.final_grade', 3);
+    }
+
+    public function test_full_class_of_forty_grades_saves_together(): void
+    {
+        extract($this->fixture());
+        $changes = [['student_id' => $student->id, 'grade' => 5]];
+        for ($i = 1; $i < 40; $i++) {
+            $copy = $student->replicate();
+            $copy->student_id = 'BATCH-'.$i;
+            $copy->user_id = null;
+            $copy->save();
+            $changes[] = ['student_id' => $copy->id, 'grade' => ($i % 5) + 1];
+        }
+        $this->putJson($url.'/grades-batch', ['period' => '2', 'changes' => $changes])->assertOk();
+        $this->assertDatabaseCount('period_grades', 40);
+        foreach ($changes as $row) {
+            $this->assertDatabaseHas('period_grades', [...$row, 'subject_id' => $subject->id, 'period' => 2]);
+        }
+    }
 }
