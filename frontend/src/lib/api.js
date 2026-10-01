@@ -66,6 +66,16 @@ async function request(path, { method = 'GET', body, query, headers } = {}) {
 }
 
 export const api = {
+  certificateTemplates: {
+    show: level => request(`/certificate-templates/${level}`),
+    save: (level, body) => request(`/certificate-templates/${level}`, { method: 'PUT', body }),
+    upload: async (level, body) => {
+      const response = await fetch(`${API_BASE_URL}/certificate-templates/${level}`, { method: 'POST', headers: { Accept: 'application/json', Authorization: `Bearer ${getToken()}` }, body });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.message || 'Ngarkimi dështoi.');
+      return payload;
+    },
+  },
   homeroom: {
     history: id => request(`/homeroom/${id}/history`),
     historicalReport: (id, historicalId) => request(`/homeroom/${id}/history/${historicalId}`),

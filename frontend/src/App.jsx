@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 
 const lazyNamed = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })))
 
+const CertificateTemplatePage = lazy(() => import('@/pages/teachers/CertificateTemplatePage'))
 const LoginPage = lazyNamed(() => import('@/pages/auth/LoginPage'), 'LoginPage')
 const DashboardPage = lazyNamed(() => import('@/pages/dashboard/DashboardPage'), 'DashboardPage')
 const UsersManagementPage = lazy(() => import('@/pages/users/UsersManagement'))
@@ -129,6 +130,7 @@ function AppRoutes() {
           <Route path="/student/:section" element={<StudentPortalPage />} />
           <Route path="/portal/publish" element={<PortalPublishingPage />} />
           <Route path="/teacher/classes/:classId/subjects/:subjectId" element={<TeacherCoursePage />} />
+          <Route path="/certificate-templates" element={<CertificateTemplatePage />} />
           <Route path="/teacher/homeroom" element={<TeacherHomeroomPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 

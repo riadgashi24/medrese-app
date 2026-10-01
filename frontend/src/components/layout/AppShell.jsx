@@ -113,13 +113,14 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
           {!collapsed && (
             <>
               <img src={logo} alt="Medreseja Alauddin" className="h-16 w-16 shrink-0 object-contain" />
-              <span className="font-display text-lg text-surface-50 leading-4 mu-2 ">
-                MEDRESEJA <span className="text-brand-400 ">ALAUDDIN</span>
+              <span className="font-display text-sm font-semibold text-surface-50 leading-4">
+                MEDRESEJA <span className="block mt-1 text-brand-400 tracking-widest">ALAUDDIN</span>
               </span>
             </>
           )}</Link>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-2">
+      {!collapsed && <p className="sidebar-section-label">HAPËSIRA E SHKOLLËS</p>}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6">
         {navItems.map((item) => (
           <NavItem
             key={item.label}
@@ -142,14 +143,14 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }) {
       )}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col border-r border-white/8 bg-surface-950 transition-transform lg:static lg:transform-none',
+          'school-sidebar fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col border-r border-white/8 bg-surface-950 transition-transform lg:static lg:transform-none',
           collapsed ? 'w-[72px]' : 'w-[260px]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
         <div className="flex items-center justify-end p-2 lg:hidden">
           <button type="button" onClick={onMobileClose} className="p-2 text-surface-300">
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-label="Mbyll menynë" />
           </button>
         </div>
         {content}
@@ -162,12 +163,13 @@ export function TopBar({ onMenuClick, collapsed, onToggleCollapse }) {
   const { user, logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/8 bg-surface-950/80 px-4 backdrop-blur-xl md:px-6">
+    <header className="school-topbar sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/8 bg-surface-950/80 px-4 backdrop-blur-xl md:px-6">
       <div className="flex items-center gap-3">
         {['student', 'boarding'].includes(user?.role) && <StudentNotificationBell />}
         <button
           type="button"
           onClick={onMenuClick}
+          aria-label="Hap menynë"
           className="rounded-lg p-2 text-surface-300 hover:bg-white/5 lg:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -175,10 +177,12 @@ export function TopBar({ onMenuClick, collapsed, onToggleCollapse }) {
         <button
           type="button"
           onClick={onToggleCollapse}
+          aria-label={collapsed ? 'Zgjero menynë' : 'Ngushto menynë'}
           className="hidden rounded-lg p-2 text-surface-300 hover:bg-white/5 lg:block"
         >
           <Menu className="h-5 w-5" />
         </button>
+        <div className="topbar-context hidden sm:block"><span>MEDRESEJA ALAUDDIN</span><p>Portali shkollor</p></div>
       </div>
       <div className="flex items-center gap-3">
         <Link to="/profile" aria-label="Hap profilin" className="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
@@ -226,7 +230,7 @@ export function AppShell({ children }) {
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed(!collapsed)}
         />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1400px]">{children}</main>
+        <main className="school-main w-full flex-1 p-4 md:p-6 lg:p-8 max-w-[1500px] mx-auto">{children}</main>
       </div>
     </div>
   )

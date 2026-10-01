@@ -169,6 +169,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/classes/{classId}/grades', [GradeController::class, 'getClassGrades']);
     Route::put('/classes/{classId}/grades', [GradeController::class, 'updateGrade']);
 
+    Route::get('/certificate-templates/{level}', [\App\Http\Controllers\CertificateTemplateController::class, 'show'])->middleware('role:teacher,director,secretary');
+    Route::post('/certificate-templates/{level}', [\App\Http\Controllers\CertificateTemplateController::class, 'upload'])->middleware('role:director');
+    Route::put('/certificate-templates/{level}', [\App\Http\Controllers\CertificateTemplateController::class, 'update'])->middleware('role:director');
+
     Route::middleware('role:teacher,director,secretary')->prefix('homeroom')->group(function () {
         Route::get('/', [\App\Http\Controllers\HomeroomController::class, 'index']);
         Route::get('/{classId}', [\App\Http\Controllers\HomeroomController::class, 'show']);

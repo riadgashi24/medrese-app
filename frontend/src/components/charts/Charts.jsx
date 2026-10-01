@@ -21,15 +21,15 @@ const tooltipStyle = {
   fontSize: 12,
 }
 
-export function AttendanceBarChart({ data }) {
+export function AttendanceBarChart({ data, height = 160 }) {
   return (
-    <ResponsiveContainer width="100%" height={160}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--app-border)" />
         <XAxis dataKey="day" tick={{ fill: 'var(--app-text-muted)', fontSize: 10 }} axisLine={false} />
         <YAxis domain={[0, 100]} tick={{ fill: 'var(--app-text-muted)', fontSize: 10 }} axisLine={false} />
-        <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v}%`, 'Present']} />
-        <Bar dataKey="present" fill="rgba(34,197,94,0.6)" radius={[4, 4, 0, 0]} />
+        <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v}%`, 'Pranishëm']} />
+        <Bar dataKey="present" fill="#248675" radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -79,10 +79,8 @@ export function FeePieChart({ data }) {
 
   return (
     <>
-      <div className="mb-3 space-y-1">
-        <p className="text-sm" style={{ color: "#22c55e" }}>● Prezent</p>
-        <p className="text-sm" style={{ color: "#f6be3b" }}>● Me arsyje</p>
-        <p className="text-sm" style={{ color: "#ef4444" }}>● Mungesë</p>
+      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
+        {data.map((item, index) => <div key={item.name} className="flex items-center gap-1.5 text-xs text-surface-400"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />{item.name}<strong className="ml-1 text-surface-100">{item.value}</strong></div>)}
       </div>
 
       <ResponsiveContainer width="100%" height={160}>

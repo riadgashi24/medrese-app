@@ -1,3 +1,4 @@
+import { buildMappedCertificate, certificateValues, validateTemplate } from './certificateTemplate.js'
 import { formatDate } from '../../lib/date.js'
 
 export const safeFilename = text => String(text).normalize('NFC').replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/[. ]+$/g, '').trim() || 'deftese'
@@ -74,7 +75,7 @@ export function buildCertificate(jsPDF, data, entry, details, assets) {
   return doc
 }
 
-async function loadAssets() {
+export async function loadAssets() {
   const { default: logoUrl } = await import('@/assets/logo.png')
   const toBase64 = async url => {
     const response = await fetch(url); if (!response.ok) throw new Error('Skedari i dëftesës nuk u ngarkua.')
@@ -89,15 +90,20 @@ export async function downloadCertificates(data, details, studentId = null) {
   const entries = studentId == null ? data.certificates : data.certificates.filter(e => e.student.id === studentId)
   if (!entries.length || entries.some(e => !e.ready)) throw new Error('Plotëso notat dhe të dhënat e dëftesave para shkarkimit.')
   const [{ jsPDF }, assets] = await Promise.all([import('jspdf'), loadAssets()])
+  const { api } = await import('../../lib/api.js')
+  const level = Number(data.class.name.split('/')[0])
+  const template = (await api.certificateTemplates.show(level)).data
+  if (template) validateTemplate(template, data.subjects)
+  const build = entry => template ? buildMappedCertificate(jsPDF, template, certificateValues(data, entry, details), assets) : buildCertificate(jsPDF, data, entry, details, assets)
   const filename = e => safeFilename(`${e.student.first_name}_${e.student.last_name}`)
-  if (studentId != null) { buildCertificate(jsPDF, data, entries[0], details, assets).save(filename(entries[0]) + '.pdf'); return }
+  if (studentId != null) { build(entries[0]).save(filename(entries[0]) + '.pdf'); return }
   const { default: JSZip } = await import('jszip'); const zip = new JSZip(); const used = new Set()
   for (const e of entries) {
     let name = filename(e)
     let suffix = 0
     while (used.has(name.toLowerCase())) name = `${filename(e)}_${e.student.id}${suffix++ ? '_' + suffix : ''}`
     used.add(name.toLowerCase())
-    zip.file(name + '.pdf', buildCertificate(jsPDF, data, e, details, assets).output('arraybuffer'))
+    zip.file(name + '.pdf', build(e).output('arraybuffer'))
   }
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' })
   const url = URL.createObjectURL(blob), link = document.createElement('a')

@@ -48,6 +48,7 @@ export const NAV_BY_ROLE = {
       children: [
         { label: 'Klasat', path: '/classes' },
         { label: 'Kujdestaria dhe raportet', path: '/teacher/homeroom' },
+        { label: 'Shabllonet e dëftesave', path: '/certificate-templates' },
         { label: 'Lëndët', path: '/subjects' },
         { label: 'Orari', path: '/timetable' },
         { label: 'Vitet Shkollore', path: '/academic-years' },

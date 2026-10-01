@@ -6,6 +6,7 @@ import { downloadCertificates } from './certificatePdf'
 
 export function HomeroomCertificates({ data, onRegister }) {
   const query = useQuery({ queryKey: ['certificates', data.class.id], queryFn: () => api.homeroom.certificates(data.class.id).then(r => r.data), staleTime: 0 })
+  const templateQuery = useQuery({ queryKey: ['certificate-template', Number(data.class.name.split('/')[0])], queryFn: () => api.certificateTemplates.show(Number(data.class.name.split('/')[0])).then(r => r.data) })
   const [details, setDetails] = useState({ date: data.settings.report_date, place: '', director: '' })
   const [busy, setBusy] = useState(false), [error, setError] = useState('')
   const entries = query.data?.certificates || [], ready = entries.filter(e => e.ready).length
@@ -20,6 +21,7 @@ export function HomeroomCertificates({ data, onRegister }) {
     finally { setBusy(false) }
   }
   return <section className="space-y-4 rounded-xl border border-white/10 bg-surface-900 p-5"><h2 className="text-lg font-semibold">Dëftesat e fundvitit</h2>
+    <p className="text-sm text-brand-500">{templateQuery.isPending ? 'Duke kontrolluar shabllonin…' : templateQuery.isError ? 'Shablloni nuk u ngarkua. Provo përsëri para shkarkimit.' : templateQuery.data ? `Shablloni i drejtorit: ${templateQuery.data.name} · ${templateQuery.data.active ? 'Aktiv' : 'Draft, kërkon aktivizim'}` : 'Përdoret modeli standard derisa drejtori të ngarkojë shabllonin.'}</p>
     <p className="text-sm text-surface-400">PDF për çdo nxënës, me notat përfundimtare të lëndëve të klasës. Plotëso të dhënat personale, sjelljen dhe numrin në amzë te Regjistri. Notat që janë llogaritur vetëm nga një gjysmëvjetor nuk mjaftojnë.</p>
     <div className="grid gap-3 sm:grid-cols-3">{[['date', 'Data e lëshimit', 'date'], ['place', 'Vendi i lëshimit', 'text'], ['director', 'Emri i drejtorit/es', 'text']].map(([key, label, type]) => <label key={key} className="grid gap-1 text-sm">{label}<input required maxLength={100} disabled={busy} type={type} value={details[key]} onChange={e => setDetails({ ...details, [key]: e.target.value })} className="rounded-lg border border-white/10 bg-surface-800 p-2" /></label>)}</div>
     <div className="flex flex-wrap items-center gap-3"><Button disabled={busy || query.isPending || !entries.length || ready !== entries.length} onClick={() => download()}>{busy ? 'Duke përgatitur PDF-të…' : 'Shkarko ZIP për klasën'}</Button><Button variant="secondary" onClick={onRegister}>Plotëso regjistrin</Button><span className="text-sm">{ready}/{entries.length} dëftesa të gatshme</span></div>

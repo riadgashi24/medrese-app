@@ -2,9 +2,9 @@ import { cn } from '@/lib/utils'
 
 export function PageHeader({ title, description, actions }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div className="school-page-heading flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
       <div>
-        <h1 className="font-display text-3xl text-surface-50">{title}</h1>
+        <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-surface-50">{title}</h1>
         {description && (
           <p className="text-sm text-surface-300 mt-1">{description}</p>
         )}
